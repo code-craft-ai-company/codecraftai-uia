@@ -12,6 +12,16 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "envFile": "${workspaceFolder}/.env"
-        }
+        },
+        {
+            "name": "Python: Uia Play",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/source/examples/uiaplay.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "envFile": "${workspaceFolder}/.env"
+        },
+
     ]
 }
