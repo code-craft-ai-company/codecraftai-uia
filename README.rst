@@ -1,7 +1,7 @@
-=======================
-python-package-template
-=======================
-This is a template repository that can be used to quickly create a python package project.
+==================================================
+Automaton Mojo - User Interface Automation Package
+==================================================
+This is repository contains the Automation Mojo - User Interface Automation package for MacOS.
 
 =========================
 Features of this Template
