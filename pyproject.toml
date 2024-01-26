@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "<package name>"
-description = "<package description>"
+name = "mojo-uia-macos"
+description = "The Automation Mojo - User Interface Automation Package"
 version = "0.0.1"
-authors = []
+authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
 license = "LICENSE.txt"
 classifiers = [
