@@ -1,12 +1,17 @@
 
+from typing import Any, TYPE_CHECKING
+
 import AppKit
 
 from mojo.uia.wrappers.uiawrappedobject import UiaWrappedObject
 
+if TYPE_CHECKING:
+    from mojo.uia.uiacontroller import UiaController
+
 class UiaMetadataItem(UiaWrappedObject):
 
-    def __init__(self, native_obj):
-        super().__init__(native_obj)
+    def __init__(self, controller: "UiaController", native_obj: Any):
+        super().__init__(controller, native_obj)
         return
     
     @property

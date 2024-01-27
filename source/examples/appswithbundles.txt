@@ -1,0 +1,288 @@
+
+sociallayerd - com.apple.sociallayerd
+SoftwareUpdateNotificationManager - com.apple.SoftwareUpdateNotificationManager
+Speech Downloader - com.apple.speech.SpeechDataInstallerd
+SpeechRecognitionServer - com.apple.speech.SpeechRecognitionServer
+STMUIHelper - com.apple.STMFramework.UIHelper
+Conflict Resolver - com.apple.syncservices.ConflictResolver
+syncuid - com.apple.syncservices.syncuid
+AXVisualSupportAgent - com.apple.accessibility.AXVisualSupportAgent
+DFRHUD - com.apple.accessibility.DFRHUD
+Voice Control Guide - com.apple.AccessibilityOnboarding
+universalAccessAuthWarn - com.apple.accessibility.universalAccessAuthWarn
+UASharedPasteboardProgressUI - com.apple.coreservices.UASharedPasteboardProgressUI
+ChineseTextConverterService - com.apple.ChineseTextConverterService
+Summary Service - com.apple.SummaryService
+Finder - com.apple.finder
+Family - com.apple.Family
+Installer - com.apple.installer
+
+
+
+IDLE - org.python.IDLE
+Python Launcher - org.python.PythonLauncher
+GarageBand - com.apple.garageband10
+iMovie - com.apple.iMovieApp
+
+
+
+Visual Studio Code - com.microsoft.VSCode
+Google Chrome - com.google.Chrome
+GoogleUpdater - com.google.GoogleUpdater
+Recursive File Processing Droplet - com.apple.ScriptEditor.id.file-processing-droplet-template
+Droplet with Settable Properties - com.apple.ScriptEditor.id.droplet-with-settable-properties-template
+Recursive Image File Processing Droplet - com.apple.ScriptEditor.id.image-file-processing-droplet-template
+Cocoa-AppleScript Applet - com.apple.ScriptEditor.id.cocoa-applet-template
+AppleMobileDeviceHelper - com.apple.SyncServices.AppleMobileDeviceHelper
+MobileDeviceUpdater - com.apple.MobileDeviceUpdater
+AppleMobileSync - com.apple.SyncServices.AppleMobileSync
+AirScanLegacyDiscovery - com.apple.print.AirScanLegacyDiscovery
+Python - com.apple.python3
+MRT - com.apple.MRT
+WindowManagerShowDesktopEducation - com.apple.windowmanager.ShowDesktopEducation
+WorkoutAlert-Mac - com.apple.WorkoutAlert-Mac
+iCloud+ - com.apple.icq
+iCloud - com.apple.CloudKit.ShareBear
+loginwindow - com.apple.loginwindow
+rcd - com.apple.rcd
+screencaptureui - com.apple.screencaptureui
+AddressBookSync - com.apple.AddressBook.sync
+ABAssistantService - com.apple.ABAssistantService
+AddressBookManager - com.apple.AddressBook.abd
+AddressBookSourceSync - com.apple.AddressBookSourceSync
+FontRegistryUIAgent - com.apple.FontRegistryUIAgent
+System Speech - com.apple.speech.synthesis.SpeechSynthesisServer
+CinematicFramingOnboardingUI - com.apple.CMViewSrvc
+ContinuityCaptureOnboardingUI - com.apple.ContinuityCaptureOnboardingUI
+SmartCard Pairing - com.apple.ctkbind
+qlmanage - com.apple.quicklook.qlmanage
+quicklookd - com.apple.QuickLookDaemon
+Quick Look Simulator - com.apple.quicklook.QuickLookSimulator
+QuickLookUIHelper - com.apple.quicklook.ui.helper
+SyncServer - com.apple.syncserver
+Wish - com.tcltk.wish
+Build Web Page - com.apple.BuildWebPage
+MakePDF - com.apple.MakePDF
+AirScanScanner - com.apple.AirScanScanner
+50onPaletteServer - com.apple.50onPaletteIM
+AinuIM - com.apple.inputmethod.Ainu
+Assistive Control - com.apple.inputmethod.AssistiveControl
+CharacterPalette - com.apple.CharacterPaletteIM
+Dictation - com.apple.inputmethod.ironwood
+EmojiFunctionRowIM - com.apple.EmojiFunctionRowItem-Container
+JapaneseIM-KanaTyping - com.apple.JapaneseIM.KanaTyping
+JapaneseIM-RomajiTyping - com.apple.JapaneseIM.RomajiTyping
+KoreanIM - com.apple.KIM-Container
+PluginIM - com.apple.inputmethod.PluginIM
+PressAndHold - com.apple.PAH-Container
+SCIM - com.apple.SCIM-Container
+TCIM - com.apple.TCIM-Container
+TYIM - com.apple.TYIM-Container
+TamilIM - com.apple.inputmethod.Tamil
+TrackpadIM - com.apple.TrackpadIM-Container
+TransliterationIM - com.apple.TransliterationIM-Container
+VietnameseIM - com.apple.VIM-Container
+iCloudUserNotificationsd - com.apple.iCloudUserNotificationsd
+AOSAlertManager - com.apple.AOSAlertManager
+AOSHeartbeat - com.apple.AOSHeartbeat
+AOSPushRelay - com.apple.AOSPushRelay
+Live Captions - com.apple.accessibility.LiveTranscriptionAgent
+LiveSpeech - com.apple.accessibility.LiveSpeech
+AccessibilityVisualsAgent - com.apple.AccessibilityVisualsAgent
+Calibration Assistant - com.apple.Calibration-Assistant
+AppSSOAgent - com.apple.AppSSOAgent
+KerberosMenuExtra - com.apple.KerberosMenuExtra
+AMSEngagementViewService - com.apple.AMSEngagementViewService
+AskPermissionUI - com.apple.AskPermissionUI
+AutoFillPanelService - com.apple.AutoFillPanelService
+AutomationModeUI - com.apple.dt.AutomationModeUI
+BackgroundTaskManagementAgent - com.apple.backgroundtaskmanagement.agent
+iCloud Drive - com.apple.finder.Open-iCloudDrive
+storeuid - com.apple.storeuid
+CIMFindInputCodeTool - com.apple.CCE.CIMFindInputCode
+FollowUpUI - com.apple.FollowUpUI
+DiskImages UI Agent - com.apple.frameworks.diskimages.diuiagent
+eaptlstrust - com.apple.eap8021x.eaptlstrust
+ParentalControls - com.apple.familycontrols.useragent
+FindMyMacMessenger - com.apple.FindMyMacMessenger
+identityservicesd - com.apple.identityservicesd
+IDSRemoteURLConnectionAgent - com.apple.idsfoundation.IDSRemoteURLConnectionAgent
+imagent - com.apple.imagent
+IMAutomaticHistoryDeletionAgent - com.apple.IMAutomaticHistoryDeletionAgent
+IMTransferAgent - com.apple.imtransferservices.IMTransferAgent
+nbagent - com.apple.nbagent
+LinkedNotesUIService - com.apple.LinkedNotesUIService
+ScreenReaderUIServer - com.apple.ScreenReaderUIServer
+VoiceOver Quickstart - com.apple.VoiceOverQuickstart
+AquaAppearanceHelper - com.apple.AquaAppearanceHelper
+Ticket Viewer - com.apple.Ticket-Viewer
+Wireless Diagnostics - com.apple.wifi.diagnostics
+iOS App Installer - com.apple.IPAInstaller
+AirDrop - com.apple.finder.Open-AirDrop
+Computer - com.apple.finder.Open-Computer
+Network - com.apple.finder.Open-Network
+Recents - com.apple.finder.Open-Recents
+Help Viewer - com.apple.helpviewer
+Tips - com.apple.tips
+ClassroomStudentMenuExtra - com.apple.ClassroomStudentMenuExtra
+Display Calibrator - com.apple.ColorSyncCalibrator
+AOSUIPrefPaneLauncher - com.apple.AOSUIPrefPaneLauncher
+AVB Configuration - com.apple.AVB-Audio-Configuration
+Add Printer - com.apple.print.add
+AddressBookUrlForwarder - com.apple.AddressBook.UrlForwarder
+AirPlayUIAgent - com.apple.AirPlayUIAgent
+AirPort Base Station Agent - com.apple.AirPortBaseStationAgent
+AppleScript Utility - com.apple.AppleScriptUtility
+AskToMessagesHost - com.apple.AskToMessagesHost
+Automator Application Stub - com.apple.Automator.Automator-Application-Stub
+Automator Installer - com.apple.AutomatorInstaller
+Batteries - com.apple.Batteries
+Bluetooth Setup Assistant - com.apple.BluetoothSetupAssistant
+BluetoothUIServer - com.apple.BluetoothUIServer
+BluetoothUIService - com.apple.BluetoothUIService
+CalendarFileHandler - com.apple.CalendarFileHandler
+Captive Network Assistant - com.apple.CaptiveNetworkAssistant
+Certificate Assistant - com.apple.CertificateAssistant
+Control Center - com.apple.controlcenter
+ControlStrip - com.apple.controlstrip
+CoreLocationAgent - com.apple.CoreLocationAgent
+CoreServicesUIAgent - com.apple.coreservices.uiagent
+Coverage Details - com.apple.NewDeviceOutreachApp
+
+Diagnostics Reporter - com.apple.DiagnosticsReporter
+DiscHelper - com.apple.DiscHelper
+DiskImageMounter - com.apple.DiskImageMounter
+Dock - com.apple.dock
+Dwell Control - com.apple.DwellControl
+Erase Assistant - com.apple.EraseAssistant
+EscrowSecurityAlert - com.apple.EscrowSecurityAlert
+FolderActionsDispatcher - com.apple.FolderActionsDispatcher
+Game Center - com.apple.gamecenter
+IOUIAgent - com.apple.IOUIAgent
+
+Install Command Line Developer Tools - com.apple.dt.CommandLineTools.installondemand
+Install in Progress - com.apple.PackageUIKit.Install-in-Progress
+Installer Progress - com.apple.Installer-Progress
+JavaLauncher - com.apple.JavaLauncher
+KeyboardAccessAgent - com.apple.KeyboardAccessAgent
+KeyboardSetupAssistant - com.apple.KeyboardSetupAssistant
+Keychain Circle Notification - com.apple.security.Keychain-Circle-Notification
+Language Chooser - com.apple.Language-Chooser
+MTLReplayer - com.apple.MTLReplayer
+ManagedClient - com.apple.ManagedClient
+MediaMLPluginApp - com.apple.MediaMLPluginApp
+Memory Slot Utility - com.apple.MemorySlotUtility
+Music Recognition - com.apple.musicrecognition.mac
+NetAuthAgent - com.apple.NetAuthAgent
+Notification Center - com.apple.notificationcenterui
+NowPlayingTouchUI - com.apple.NowPlayingTouchUI
+OBEXAgent - com.apple.OBEXAgent
+ODSAgent - com.apple.ODSAgent
+OSDUIHelper - com.apple.OSDUIHelper
+PIPAgent - com.apple.PIPAgent
+Paired Devices - com.apple.PairedDevices
+Pass Viewer - com.apple.Pass-Viewer
+PeopleMessageService - com.apple.PeopleMessageService
+Contacts - com.apple.AddressBook
+PodcastsAuthAgent - com.apple.podcasts.PodcastsAuthAgent
+PowerChime - com.apple.PowerChime
+PreviewShell - com.apple.PreviewShell
+Pro Display Calibrator - com.apple.displaycalibrator
+Problem Reporter - com.apple.ProblemReporter
+Profile Installer - com.apple.mcx.ProfileHelper
+RapportUIAgent - com.apple.RapportUIAgent
+RegisterPluginIMApp - com.apple.pluginIM.pluginIMRegistrator
+ARDAgent - com.apple.RemoteDesktopAgent
+SSMenuAgent - com.apple.SSMenuAgent
+Rosetta 2 Updater - com.apple.OAHSoftwareUpdateApp
+Screen Time - com.apple.ScreenTimeWidgetApplication
+ScreenSaverEngine - com.apple.ScreenSaver.Engine
+Script Menu - com.apple.ScriptMenuApp
+ScriptMonitor - com.apple.ScriptMonitor
+Setup Assistant - com.apple.SetupAssistant
+ShortcutDroplet - com.apple.shortcuts.droplet
+Shortcuts Events - com.apple.shortcuts.events
+ShortcutsActions - com.apple.ShortcutsActions
+Siri - com.apple.siri.launcher
+Software Update - com.apple.SoftwareUpdate
+SpacesTouchBarAgent - com.apple.SpacesTouchBarAgent
+Spotlight - com.apple.Spotlight
+StageManagerOnboarding - com.apple.windowmanager.StageManagerOnboarding
+System Events - com.apple.systemevents
+SystemUIServer - com.apple.systemuiserver
+TextInputMenuAgent - com.apple.TextInputMenuAgent
+TextInputSwitcher - com.apple.TextInputSwitcher
+ThermalTrap - com.apple.ThermalTrap
+TMHelperAgent - com.apple.timemachine.HelperAgent
+UIKitSystem - com.apple.UIKitSystemApp
+UniversalAccessControl - com.apple.UniversalAccessControl
+Universal Control - com.apple.universalcontrol
+UnmountAssistantAgent - com.apple.UnmountAssistantAgent
+UserNotificationCenter - com.apple.UserNotificationCenter
+VoiceOver - com.apple.VoiceOver
+Wallpaper - com.apple.wallpaper.agent
+Watch Face Help - com.apple.WatchFaceAlert
+WiFiAgent - com.apple.wifi.WiFiAgent
+WidgetKit Simulator - com.apple.widgetkit.simulator
+WindowManager - com.apple.WindowManager
+
+Photo Booth - com.apple.PhotoBooth
+
+Podcasts - com.apple.podcasts
+
+
+
+
+Stickies - com.apple.Stickies
+
+
+Time Machine - com.apple.backup.launcher
+Activity Monitor - com.apple.ActivityMonitor
+AirPort Utility - com.apple.airport.airportutility
+Audio MIDI Setup - com.apple.audio.AudioMIDISetup
+Bluetooth File Exchange - com.apple.BluetoothFileExchange
+Boot Camp Assistant - com.apple.bootcampassistant
+ColorSync Utility - com.apple.ColorSyncUtility
+
+Digital Color Meter - com.apple.DigitalColorMeter
+Disk Utility - com.apple.DiskUtility
+Grapher - com.apple.grapher
+Keychain Access - com.apple.keychainaccess
+Migration Assistant - com.apple.MigrateAssistant
+Print Center - com.apple.printcenter
+Screen Sharing - com.apple.ScreenSharing
+Screenshot - com.apple.screenshot.launcher
+
+System Information - com.apple.SystemProfiler
+VoiceOver Utility - com.apple.VoiceOverUtility
+Voice Memos - com.apple.VoiceMemos
+Weather - com.apple.weather
+About This Mac - com.apple.AboutThisMacLauncher
+Archive Utility - com.apple.archiveutility
+DVD Player - com.apple.DVDPlayer
+Desk View - com.apple.DeskCam
+Directory Utility - com.apple.DirectoryUtility
+Expansion Slot Utility - com.apple.ExpansionSlotUtility
+Feedback Assistant - com.apple.appleseed.FeedbackAssistant
+Folder Actions Setup - com.apple.FolderActionsSetup
+App Store - com.apple.AppStore
+Books - com.apple.iBooksX
+
+Chess - com.apple.Chess
+Clock - com.apple.clock
+
+FaceTime - com.apple.FaceTime
+Find My - com.apple.findmy
+
+Freeform - com.apple.freeform
+Home - com.apple.Home
+Image Capture - com.apple.Image_Capture
+Launchpad - com.apple.launchpad.launcher
+
+
+Mission Control - com.apple.exposelauncher
+
+News - com.apple.news
+group.is.workflow.my - None
+XProtect - com.apple.XProtectFramework.XProtect
+WebKitPluginHost - None

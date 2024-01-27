@@ -6,7 +6,7 @@ from mojo.uia.uiacontroller import UiaController
 def uiaplay_main():
     controller = UiaController()
 
-    controller.get_application("Finder")
+    app = controller.get_application_by_name("Calculator")
     
     return
 

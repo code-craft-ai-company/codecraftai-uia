@@ -1,5 +1,5 @@
 
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import os
 
@@ -10,6 +10,9 @@ import AppKit
 from mojo.errors.exceptions import SemanticError
 
 from mojo.uia.wrappers.uiametadataitem import UiaMetadataItem
+
+if TYPE_CHECKING:
+    from mojo.uia.uiacontroller import UiaController
 
 EMPTY_TUPLE = tuple()
 
@@ -31,7 +34,8 @@ class SearchPredicate:
 
 class UiaMetadataQuery:
 
-    def __init__(self, predicate: SearchPredicate, timeout: int = 20, interval: float = .5):
+    def __init__(self, controller: "UiaController", predicate: SearchPredicate, timeout: int = 20, interval: float = .5):
+        self._controller = controller
         self._timeout = timeout
         self._interval = interval
 
@@ -88,7 +92,7 @@ class UiaMetadataQuery:
         notification_name = notification.name()
         if notification_name == AppKit.NSMetadataQueryDidFinishGatheringNotification:
             self._mdquery.stopQuery()
-            self._results = [UiaMetadataItem(rv) for rv in notification.object().results()]
+            self._results = [UiaMetadataItem(self._controller, rv) for rv in notification.object().results()]
             self._finished = True
 
         return
