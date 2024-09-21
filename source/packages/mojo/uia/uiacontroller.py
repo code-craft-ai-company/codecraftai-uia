@@ -69,7 +69,23 @@ class UiaController:
             # Re-Wrap the application with a customize type if we have one
             rtn_app = app_type(self, rtn_app.native_obj)
 
+            if rtn_app.APPLICATION_NAME == "NotSet":
+                rtn_app.APPLICATION_NAME = application_name
+            if rtn_app.BUNDLE_IDENTIFIER == "NotSet":
+                rtn_app.BUNDLE_IDENTIFIER = bundle_id
+
         return rtn_app
     
-    def lookup_system_events_process_by_name(self, application_name: str):
-        return
+    def lookup_scripting_process_by_name(self, application_name: str):
+
+        scr_process = None
+
+        scr_process_list = self.system_events.processes()
+
+        for nxtproc in scr_process_list:
+            nxtproc_name = nxtproc.displayedName()
+            if nxtproc_name == application_name:
+                scr_process = nxtproc
+                break
+
+        return scr_process

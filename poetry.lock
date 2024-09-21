@@ -440,6 +440,22 @@ files = [
 ]
 
 [[package]]
+name = "pyobjc-framework-applescriptkit"
+version = "10.1"
+description = "Wrappers for the framework AppleScriptKit on macOS"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyobjc-framework-AppleScriptKit-10.1.tar.gz", hash = "sha256:e41cd0037cbe0af4ffecc42339d1b6255f2539dfb6dedf4f2ae00ac1a260eecf"},
+    {file = "pyobjc_framework_AppleScriptKit-10.1-py2.py3-none-any.whl", hash = "sha256:b88bc8ae9e000d382c3e1d72b3c4f39499323fbe88cc84af259925448c187387"},
+]
+
+[package.dependencies]
+pyobjc-core = ">=10.1"
+pyobjc-framework-Cocoa = ">=10.1"
+
+[[package]]
 name = "pyobjc-framework-applicationservices"
 version = "10.1"
 description = "Wrappers for the framework ApplicationServices on macOS"
@@ -864,4 +880,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "0164771fce41bc941eb2487ed7accba842331ce69cd1bc6737ee6e5ba075c3ea"
+content-hash = "cae96056aaa7c6cb49ad6e9783d30a18118cae7fd1c6ce20d0f969955f5e01cf"

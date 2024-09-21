@@ -6,7 +6,7 @@ import weakref
 if TYPE_CHECKING:
     from mojo.uia.uiacontroller import UiaController
 
-class UiaWrappedObject:
+class WrappedObject:
 
     def __init__(self, controller: "UiaController", native_obj: Any):
         self._controller_ref = weakref.ref(controller)

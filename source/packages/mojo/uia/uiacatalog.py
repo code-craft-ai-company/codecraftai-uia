@@ -32,6 +32,10 @@ from mojo.uia.applications.appterminal import AppTerminal
 from mojo.uia.applications.apptextedit import AppTextEdit
 from mojo.uia.applications.apptv import AppTV
 
+from mojo.uia.appscript.asdatabaseevents import AsDatabaseEvents
+from mojo.uia.appscript.asimageevents import AsImageEvents
+from mojo.uia.appscript.assystemevents import AsSystemEvents
+
 BUNDLE_TO_APPLICATION_TYPES = {
     AppAutomator.BUNDLE_IDENTIFIER: AppAutomator,
     AppCalculator.BUNDLE_IDENTIFIER: AppCalculator,
@@ -60,7 +64,10 @@ BUNDLE_TO_APPLICATION_TYPES = {
     AppSystemSettings.BUNDLE_IDENTIFIER: AppSystemSettings,
     AppTerminal.BUNDLE_IDENTIFIER: AppTerminal,
     AppTextEdit.BUNDLE_IDENTIFIER: AppTextEdit,
-    AppTV.BUNDLE_IDENTIFIER: AppTV
+    AppTV.BUNDLE_IDENTIFIER: AppTV,
+    AsDatabaseEvents.BUNDLE_IDENTIFIER: AsDatabaseEvents,
+    AsImageEvents.BUNDLE_IDENTIFIER: AsImageEvents,
+    AsSystemEvents.BUNDLE_IDENTIFIER: AsSystemEvents
 }
 
 class UiaCatalog:

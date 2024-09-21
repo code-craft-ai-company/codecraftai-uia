@@ -4,8 +4,10 @@ from typing import Any, TYPE_CHECKING
 import weakref
 
 import AppKit
+import ScriptingBridge
 
-from mojo.uia.wrappers.uiawrappedobject import UiaWrappedObject
+from mojo.uia.wrappers.sbwindow import SbWindow
+from mojo.uia.wrappers.wrappedobject import WrappedObject
 
 from mojo.uia.wrappers.uiaicon import UiaIcon
 
@@ -13,11 +15,15 @@ from mojo.uia.wrappers.uiaicon import UiaIcon
 if TYPE_CHECKING:
     from mojo.uia.uiacontroller import UiaController
 
-class UiaApplication(UiaWrappedObject):
+class UiaApplication(WrappedObject):
+
+    APPLICATION_NAME = "NotSet"
+    BUNDLE_IDENTIFIER = "NotSet"
 
     def __init__(self, controller: "UiaController", native_obj: Any):
         super().__init__(controller, native_obj)
-        self._se_process = None
+
+        self._sb_process = None
         return
     
     @property
@@ -74,6 +80,14 @@ class UiaApplication(UiaWrappedObject):
         rtnval = self._native_obj.processIdentifier()
         return rtnval
 
+    @property
+    def sb_process(self):
+
+        if self._sb_process is None:
+            self._sb_process = self.controller.lookup_scripting_process_by_name(self.APPLICATION_NAME)
+
+        return self._sb_process
+
     def activate(self):
 
         if not self._native_obj.isFinishedLaunching():
@@ -119,7 +133,7 @@ class UiaApplication(UiaWrappedObject):
 
         return
     
-    def focus(self):
+    def unfocus(self):
 
         for app in self.controller.workspace.runningApplications():
             app.unhide()
@@ -131,6 +145,12 @@ class UiaApplication(UiaWrappedObject):
         self._native_obj.unhide()
 
         return
+    
+    def windows(self) -> SbWindow:
+
+        sb_wlist = self.sb_process.windows()
+
+        return sb_wlist
 
     def __repr__(self):
         sval = f"UiaApplication< {self.localized_name}: {self.bundle_identifier} >"

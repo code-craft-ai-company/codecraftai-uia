@@ -22,6 +22,7 @@ pyobjc-core = "^10.1"
 pyobjc-framework-scriptingbridge = "^10.1"
 pyobjc-framework-cocoa = "^10.1"
 pyobjc-framework-applicationservices = "^10.1"
+pyobjc-framework-applescriptkit = "^10.1"
 
 [tool.poetry.group.dev.dependencies]
 myst-parser = "^0.18.1"
