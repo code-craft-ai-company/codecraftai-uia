@@ -20,11 +20,14 @@ python = ">=3.10,<4.0"
 automojo-errors = { git = "https://github.com/automationmojo/automojo-errors.git", branch = "main" }
 automojo-credentials = { git = "https://github.com/automationmojo/automojo-credentials.git", branch = "main" }
 automojo-testbase = { git = "https://github.com/automationmojo/automojo-testbase.git", branch = "main" }
-pyobjc-core = { version="^10.1" platform="darwin" }
-pyobjc-framework-scriptingbridge = { version="^10.1" platform="darwin" }
-pyobjc-framework-cocoa = { version="^10.1" platform="darwin" }
-pyobjc-framework-applicationservices = { version="^10.1" platform="darwin" }
-pyobjc-framework-applescriptkit = { version="^10.1" platform="darwin" }
+pyobjc-core = { version="^11.1" platform="darwin" }
+pyobjc-framework-scriptingbridge = { version="^11.1" platform="darwin" }
+pyobjc-framework-cocoa = { version="^11.1" platform="darwin" }
+pyobjc-framework-applicationservices = { version="^11.1" platform="darwin" }
+pyobjc-framework-applescriptkit = { version="^11.1" platform="darwin" }
+pywin32 = { version="310" platform="win32" }
+uiautomation = { version="2.0.28" platform="win32" }
+
 
 [tool.poetry.group.dev.dependencies]
 myst-parser = "^0.18.1"
