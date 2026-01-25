@@ -154,3 +154,19 @@ class UIApplication(UIObject):
             :returns: A list of UIWindow objects.
         """
         pass
+
+
+class AutomationEngine(ABC):
+    """
+        Abstract base class for the automation engine.
+    """
+
+    @abstractmethod
+    def get_application_by_name(self, application_name: str) -> UIApplication:
+        """
+            Gets an application by its name.
+
+            :param application_name: The name of the application.
+            :returns: A UIApplication object.
+        """
+        pass

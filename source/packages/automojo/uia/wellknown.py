@@ -1,11 +1,13 @@
 
-from mojo.uia.uiacontroller import UiaController
+from typing import Any
+from automojo.uia.factory import AutomationFactory
 
 CONTROLLER_SINGLETON_INST = None
 
-def UiaControllerSingleton() -> UiaController:
+def UiaControllerSingleton() -> Any:
     
+    global CONTROLLER_SINGLETON_INST
     if CONTROLLER_SINGLETON_INST is None:
-        CONTROLLER_SINGLETON_INST =  UiaController()
+        CONTROLLER_SINGLETON_INST = AutomationFactory.get_automation_engine()
 
     return CONTROLLER_SINGLETON_INST

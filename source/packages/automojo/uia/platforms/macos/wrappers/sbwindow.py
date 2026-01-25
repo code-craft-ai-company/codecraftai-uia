@@ -1,0 +1,23 @@
+from typing import Any, List, TYPE_CHECKING
+
+import AppleScriptKit
+
+from automojo.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
+
+if TYPE_CHECKING:
+    from automojo.uia.platforms.macos.automation import MacOSAutomation
+
+class SbWindow(WrappedObject):
+
+    def __init__(self, controller: "MacOSAutomation", native_obj: Any):
+        super().__init__(controller, native_obj)
+        return
+    
+    def groups(self) -> list:
+        objlist = [obj for obj in self.native_obj.groups()]
+
+        for obj in objlist:
+            name = obj.name
+            print(name)
+
+        return objlist

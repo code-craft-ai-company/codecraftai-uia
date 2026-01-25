@@ -1,10 +1,10 @@
 
 
-from mojo.uia.uiacontroller import UiaController
+from automojo.uia.factory import AutomationFactory
 
 
 def uiaplay_main():
-    controller = UiaController()
+    controller = AutomationFactory.get_automation_engine()
 
     app = controller.get_application_by_name("Calculator")
     windows = app.windows()
