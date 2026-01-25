@@ -9,6 +9,9 @@ AI Agents working in this repository should refer to themselves as an agent name
 - Use the '<repository>/source/examples' folder for example, debug and test scripts
 
 # Project Overview
+The 'automojo-uia' package is a package that is designed to povide cross-platform (Linux, Windows, MacOS) User Interface automation capabilities.
+
+The code attempts to consolidate the UI patterns of multiple operating systems into a common object mode that scripts can utilize to automation application user interfaces.
 
 
 # Testing Conventions
