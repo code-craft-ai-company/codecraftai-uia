@@ -128,7 +128,7 @@ if [ ! -f $INITIALIZED_FILE ]; then
         exit 1
     fi
 
-    poetry update --no-cache
+    poetry update -vv --no-cache
 
     popd
 

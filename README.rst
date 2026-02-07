@@ -30,6 +30,12 @@ Example usage:
 
     app.terminate()
 
+```
+python3-pyatspi
+sudo apt install libgirepository-2.0-dev
+sudo apt install python3-gi
+```
+
 =======================
 Permissions and Access
 =======================

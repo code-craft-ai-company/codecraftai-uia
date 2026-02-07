@@ -28,7 +28,7 @@ pyobjc-framework-applicationservices = { version="^11.1", platform="darwin" }
 pyobjc-framework-applescriptkit = { version="^11.1", platform="darwin" }
 pywin32 = { version="310", platform="win32" }
 uiautomation = { version="2.0.28", platform="win32" }
-
+pygobject = { version="^3.42.0", platform="linux" }
 
 [tool.poetry.group.dev.dependencies]
 myst-parser = "^0.18.1"

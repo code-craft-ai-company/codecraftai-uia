@@ -26,7 +26,7 @@ class AutomationFactory:
              # Placeholder for Windows support
              raise NotImplementedError("Windows automation is not yet implemented.")
         elif system == "Linux":
-             # Placeholder for Linux support
-             raise NotImplementedError("Linux automation is not yet implemented.")
+             from automojo.uia.platforms.linux.automation import LinuxAutomation
+             return LinuxAutomation()
         else:
             raise NotImplementedError(f"Unsupported platform: {system}")
