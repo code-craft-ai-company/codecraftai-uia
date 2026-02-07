@@ -1,12 +1,16 @@
 
-from typing import Any, TYPE_CHECKING
-
-import weakref
+from typing import Any, List, TYPE_CHECKING
 
 import AppKit
-import ScriptingBridge
 
+from automojo.uia.platforms.base import UIApplication, UIWindow
 from automojo.uia.platforms.macos.wrappers.sbwindow import SbWindow
+from automojo.uia.platforms.macos.wrappers.uiaaccessibility import (
+    UiaAccessibilityApplication,
+    is_accessibility_trusted,
+    send_keys_to_focused
+)
+from automojo.uia.platforms.macos.wrappers.uiawindow import UiaWindow
 from automojo.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
 
 from automojo.uia.platforms.macos.wrappers.uiaicon import UiaIcon
@@ -15,7 +19,12 @@ from automojo.uia.platforms.macos.wrappers.uiaicon import UiaIcon
 if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
 
-class UiaApplication(WrappedObject):
+class UiaApplication(WrappedObject, UIApplication):
+    """
+        Wrapper for an application process. Use this object to attach to and
+        communicate with the application process; window objects are exposed
+        separately via window wrappers.
+    """
 
     APPLICATION_NAME = "NotSet"
     BUNDLE_IDENTIFIER = "NotSet"
@@ -24,7 +33,22 @@ class UiaApplication(WrappedObject):
         super().__init__(controller, native_obj)
 
         self._sb_process = None
+        self._ax_app = None
         return
+
+    @property
+    def name(self) -> str:
+        rtnval = self.localized_name
+
+        if rtnval is None:
+            rtnval = self.APPLICATION_NAME
+
+        return rtnval
+
+    @property
+    def identifier(self) -> str:
+        rtnval = self.bundle_identifier
+        return rtnval
     
     @property
     def bundle_identifier(self) -> str:
@@ -47,7 +71,7 @@ class UiaApplication(WrappedObject):
 
     @property
     def icon(self) -> UiaIcon:
-        rtnval = UiaIcon(self._native_obj.icon())
+        rtnval = UiaIcon(self.controller, self._native_obj.icon())
         return rtnval
 
     @property
@@ -84,13 +108,71 @@ class UiaApplication(WrappedObject):
     def sb_process(self):
 
         if self._sb_process is None:
-            self._sb_process = self.controller.lookup_scripting_process_by_name(self.APPLICATION_NAME)
+            app_name = self.APPLICATION_NAME
+
+            if app_name == "NotSet":
+                app_name = self.localized_name
+
+            if app_name is None:
+                self._sb_process = None
+            else:
+                self._sb_process = self.controller.lookup_scripting_process_by_name(app_name)
 
         return self._sb_process
 
+    @property
+    def scripting_process(self):
+        """
+            Returns the scripting process that represents the application.
+        """
+        rtnval = self.sb_process
+        return rtnval
+
+    @property
+    def accessibility(self) -> UiaAccessibilityApplication:
+        """
+            Returns the accessibility application wrapper.
+
+            :returns: The accessibility application wrapper.
+        """
+        if self._ax_app is None:
+            pid = self.process_identifier
+            self._ax_app = UiaAccessibilityApplication(self.controller, pid)
+
+        return self._ax_app
+
+    def is_accessibility_available(self) -> bool:
+        """
+            Indicates whether Accessibility access is available.
+        """
+        rtnval = is_accessibility_trusted(prompt=False)
+        return rtnval
+
+    def launch(self) -> None:
+        """
+            Ensures the application is launched.
+        """
+        if self._native_obj is None:
+            errmsg = "The application has no native instance to launch."
+            raise ValueError(errmsg)
+
+        if self._native_obj.isFinishedLaunching() is False:
+            app_name = self.localized_name
+
+            if app_name is None:
+                app_name = self.APPLICATION_NAME
+
+            if app_name is None:
+                errmsg = "Unable to determine application name for launch."
+                raise ValueError(errmsg)
+
+            self.controller.workspace.launch_application_by_name(app_name)
+
+        return
+
     def activate(self):
 
-        if not self._native_obj.isFinishedLaunching():
+        if self._native_obj.isFinishedLaunching() is False:
             self.launch()
 
         if self._native_obj.isHidden():
@@ -132,6 +214,94 @@ class UiaApplication(WrappedObject):
         self._native_obj.terminate()
 
         return
+
+    def get_windows(self) -> List[UIWindow]:
+        """
+            Returns window wrappers that represent the application's windows.
+        """
+        window_list = []
+
+        try:
+            ax_windows = self.accessibility.windows()
+            for ax_window in ax_windows:
+                window_list.append(UiaWindow(self.controller, ax_window))
+        except Exception:
+            # Accessibility may be unavailable or denied. Fall back to scripting windows.
+            ax_windows = []
+
+        if len(window_list) > 0:
+            return window_list
+
+        process = self.scripting_process
+        if process is None:
+            rtn_list = []
+            return rtn_list
+
+        sb_windows = process.windows()
+        window_list = []
+        for sb_window in sb_windows:
+            window_list.append(UiaWindow(self.controller, sb_window))
+
+        return window_list
+
+    def find_first_by_role(self, role: str, include_self: bool = False) -> Any:
+        """
+            Finds the first element matching a role using Accessibility when available.
+        """
+        try:
+            return self.accessibility.find_first_by_role(role=role, include_self=include_self)
+        except Exception:
+            return None
+
+    def find_by_title(self, title: str, include_self: bool = False, expression: bool = False) -> List[Any]:
+        """
+            Finds elements by title using Accessibility when available.
+        """
+        try:
+            return self.accessibility.find_by_title(title=title, include_self=include_self, expression=expression)
+        except Exception:
+            return []
+
+    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False) -> List[Any]:
+        """
+            Alias for find_by_title (spelling preserved for compatibility).
+        """
+        try:
+            return self.accessibility.find_by_tytle(title=title, include_self=include_self, expression=expression)
+        except Exception:
+            return []
+
+    def find_by_contents(self, contents: str, include_self: bool = False, expression: bool = False) -> List[Any]:
+        """
+            Finds elements by contents using Accessibility when available.
+        """
+        try:
+            return self.accessibility.find_by_contents(contents=contents, include_self=include_self, expression=expression)
+        except Exception:
+            return []
+
+    def send_keys(self, keys: str) -> None:
+        """
+            Sends a key stream to the focused control after activating the app.
+        """
+        self.activate()
+
+        windows = self.get_windows()
+        if windows is not None:
+            if len(windows) > 0:
+                window = windows[0]
+                try:
+                    window.focus()
+                except NotImplementedError:
+                    pass
+            else:
+                pass
+        else:
+            raise ValueError("Expected a list of windows but received None.")
+
+        send_keys_to_focused(keys)
+
+        return
     
     def unfocus(self):
 
@@ -146,9 +316,17 @@ class UiaApplication(WrappedObject):
 
         return
     
-    def windows(self) -> SbWindow:
+    def windows(self) -> List[SbWindow]:
+        """
+            Returns scripting windows from the application process. This is distinct
+            from UIA window wrappers returned by :meth:`get_windows`.
+        """
+        process = self.scripting_process
+        if process is None:
+            rtn_list = []
+            return rtn_list
 
-        sb_wlist = self.sb_process.windows()
+        sb_wlist = process.windows()
 
         return sb_wlist
 

@@ -27,8 +27,18 @@ class UiaWorkspace:
         return self._controller_ref()
 
     def runningApplications(self) -> List[UiaApplication]:
+        controller = self.controller
+        catalog = controller.catalog
 
-        app_list = [UiaApplication(self, obj) for obj in self._workspace.runningApplications()]
+        app_list = []
+        for obj in self._workspace.runningApplications():
+            bundle_id = obj.bundleIdentifier()
+            if bundle_id is None:
+                app_type = UiaApplication
+            else:
+                app_type = catalog.lookup_application_type_by_bundle_id(bundle_id)
+
+            app_list.append(app_type(controller, obj))
 
         return app_list
     
