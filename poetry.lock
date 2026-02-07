@@ -86,7 +86,7 @@ develop = false
 type = "git"
 url = "https://github.com/automationmojo/automojo-extension.git"
 reference = "main"
-resolved_reference = "ca3a99438ed0d79d16de96b5266c6b04d6026ccd"
+resolved_reference = "d43541c02d781d248cefbe05704f4647af69a24f"
 
 [[package]]
 name = "automojo-interfaces"
@@ -149,7 +149,7 @@ click = "^8.1.8"
 type = "git"
 url = "https://github.com/automationmojo/automojo-testbase.git"
 reference = "main"
-resolved_reference = "14fb974514f95ba7414c9a10e79e8a952958d81b"
+resolved_reference = "b395c1030d4ebfea0d768e75af1c1c5269e368a6"
 
 [[package]]
 name = "automojo-this-app"

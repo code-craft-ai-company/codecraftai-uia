@@ -94,19 +94,6 @@ class LinuxElement(UIElement):
         
         raise NotImplementedError("Click action failed or not supported by this element.")
 
-    def type_keys(self, keys: str) -> None:
-        """
-            Types keys. Uses EditableText interface as a primary method for now.
-        """
-        # Fallback to set_text for now if we can't easily simulate keystrokes without mapping
-        try:
-             self.set_text(keys)
-             return
-        except Exception:
-             pass
-        
-        raise NotImplementedError("Type keys (keyboard simulation) is not yet implemented for Linux.")
-
     def _char_to_keysym(self, char: str) -> str:
         """
             Maps a character to an X11 keysym string.
@@ -154,24 +141,38 @@ class LinuxElement(UIElement):
         }
         return mapping.get(char, char)
 
-    def type_keys(self, text: str) -> bool:
+    def type_keys(self, keys: str) -> None:
         """
             Types keys. Uses pyatspi.Registry.generateKeyboardEvent with explicit PRESS and RELEASE.
         """
         try:
-             import pyatspi
-             import time
-             registry = pyatspi.Registry
-             for char in text:
-                 keysym = self._char_to_keysym(char)
-                 # Generate Press then Release
-                 registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_PRESS)
-                 time.sleep(0.01)
-                 registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_RELEASE)
-                 time.sleep(0.05)
-             return True
-        except Exception:
-             return False
+            import pyatspi
+            import time
+        except Exception as exc:
+            raise NotImplementedError("Type keys is not available because pyatspi is unavailable.") from exc
+
+        try:
+            self.grab_focus()
+            registry = pyatspi.Registry
+            use_key_string = hasattr(pyatspi, "KEY_STRING")
+            use_press_release = hasattr(pyatspi, "KEY_PRESSRELEASE")
+            for char in keys:
+                if use_key_string:
+                    registry.generateKeyboardEvent(0, char, pyatspi.KEY_STRING)
+                else:
+                    keysym = self._char_to_keysym(char)
+                    if use_press_release:
+                        registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_PRESSRELEASE)
+                    else:
+                        try:
+                            registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_PRESS)
+                            time.sleep(0.01)
+                            registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_RELEASE)
+                        except Exception:
+                            registry.generateKeyboardEvent(0, keysym, pyatspi.KEY_SYM)
+                time.sleep(0.05)
+        except Exception as exc:
+            raise NotImplementedError("Type keys failed using the pyatspi Registry.") from exc
 
     def set_text(self, text: str) -> None:
         """
@@ -195,14 +196,17 @@ class LinuxElement(UIElement):
             pass
             
         # 3. Fallback to typing if editable interface is missing
-        if self.type_keys(text):
-             import pyatspi
-             # keysym for Return is "Return"
-             try:
-                 pyatspi.Registry.generateKeyboardEvent(0, "Return", pyatspi.KEY_SYM)
-             except:
-                 pass
-             return
+        try:
+            self.type_keys(text)
+            try:
+                import pyatspi
+                # keysym for Return is "Return"
+                pyatspi.Registry.generateKeyboardEvent(0, "Return", pyatspi.KEY_SYM)
+            except Exception:
+                pass
+            return
+        except NotImplementedError:
+            pass
         
         raise NotImplementedError("Element does not support setting text.")
 
