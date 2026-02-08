@@ -75,6 +75,14 @@ class WindowManagerAgent(ABC):
     def click(self, x: int, y: int) -> None:
          pass
 
+    @abstractmethod
+    def drag_and_drop(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5) -> None:
+         pass
+
+    @abstractmethod
+    def move_mouse(self, x: int, y: int) -> None:
+         pass
+
 class DesktopAgent(ABC):
     """
     Abstract base class for interacting with the Desktop Environment (e.g., GNOME, KDE).

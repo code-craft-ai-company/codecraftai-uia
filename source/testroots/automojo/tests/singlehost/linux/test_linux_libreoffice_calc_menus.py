@@ -7,7 +7,7 @@ import os
 import subprocess
 import shlex
 
-def test_libreoffice_menus_refactored():
+def test_libreoffice_calc_menus_refactored():
     automation = AutomationFactory.get_automation_engine()
     
     # 1. Launch/Find App
@@ -170,4 +170,4 @@ def test_libreoffice_menus_refactored():
             subprocess.run(["pkill", "soffice"])
 
 if __name__ == "__main__":
-    test_libreoffice_menus_refactored()
+    test_libreoffice_calc_menus_refactored()

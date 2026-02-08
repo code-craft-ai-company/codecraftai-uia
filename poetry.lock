@@ -12,6 +12,24 @@ files = [
 ]
 
 [[package]]
+name = "automojo-arcli"
+version = "0.0.1"
+description = "automojo-arcli"
+optional = false
+python-versions = ">=3.10,<4.0"
+files = []
+develop = false
+
+[package.dependencies]
+automojo-errors = {git = "https://github.com/automationmojo/automojo-errors.git", rev = "main"}
+
+[package.source]
+type = "git"
+url = "https://github.com/automationmojo/automojo-arcli.git"
+reference = "main"
+resolved_reference = "69c379e2a049bbb1f7e6f6bb5b492508b4308ee1"
+
+[[package]]
 name = "automojo-configuration"
 version = "0.0.1"
 description = "Automation Mojo - Configuration"
@@ -1379,4 +1397,4 @@ zstd = ["backports-zstd (>=1.0.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "7dda7fd1e283e23effa9e34644c683c5109c8c579538d62d191996a944b12edf"
+content-hash = "d858a75adfaa17d0fbc289fd7584885c7b68e787a05e7842b9719c3ad6207389"

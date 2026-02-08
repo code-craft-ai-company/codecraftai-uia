@@ -139,3 +139,18 @@ class WaylandWindowManagerAgent(X11WindowManagerAgent):
         # Delegate to X11 agent's click
         super().click(x, y)
 
+    def drag_and_drop(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5) -> None:
+        if not self._has_xwayland:
+             raise NotImplementedError(
+                 "XWayland not available. Mouse drag requires XWayland. "
+             )
+        
+        super().drag_and_drop(start_x, start_y, end_x, end_y, duration)
+
+    def move_mouse(self, x: int, y: int) -> None:
+        if not self._has_xwayland:
+             raise NotImplementedError(
+                 "XWayland not available. Mouse move requires XWayland. "
+             )
+        super().move_mouse(x, y)
+

@@ -400,3 +400,46 @@ class X11WindowManagerAgent(WindowManagerAgent):
             time.sleep(0.1)
         except Exception as e:
             print(f"XTest click failed: {e}")
+
+    def drag_and_drop(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5) -> None:
+        """
+        Simulate a drag and drop operation using mouse events.
+        """
+        try:
+            # Move to start
+            xtest.fake_input(self._display, X.MotionNotify, x=start_x, y=start_y)
+            self._display.sync()
+            time.sleep(0.2)
+            
+            # Press button 1
+            xtest.fake_input(self._display, X.ButtonPress, 1)
+            self._display.sync()
+            time.sleep(0.2) # Hold before moving to ensure click registers
+            
+            # Interpolate movement
+            steps = 20
+            dt = duration / steps
+            for i in range(steps):
+                cx = int(start_x + (end_x - start_x) * (i + 1) / steps)
+                cy = int(start_y + (end_y - start_y) * (i + 1) / steps)
+                xtest.fake_input(self._display, X.MotionNotify, x=cx, y=cy)
+                self._display.sync()
+                time.sleep(dt)
+            
+            # Release button 1
+            xtest.fake_input(self._display, X.ButtonRelease, 1)
+            self._display.sync()
+            time.sleep(0.1)
+            
+        except Exception as e:
+            print(f"XTest drag_and_drop failed: {e}")
+
+    def move_mouse(self, x: int, y: int) -> None:
+        """
+        Moves the mouse pointer to the specified coordinates.
+        """
+        try:
+            xtest.fake_input(self._display, X.MotionNotify, x=x, y=y)
+            self._display.sync()
+        except Exception as e:
+            print(f"XTest move_mouse failed: {e}")

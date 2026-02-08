@@ -179,6 +179,20 @@ class LinuxElement(UIElement):
                 value_iface.currentValue = value
         except Exception as e:
             print(f"Error setting value: {e}")
+
+    def drag_to(self, end_x: int, end_y: int, duration: float = 0.5) -> None:
+        """
+        Drags from the center of this element to the specified coordinates.
+        """
+        if not self.wm_agent:
+            raise NotImplementedError("Drag/drop requires Window Manager Agent")
+            
+        # calculate center
+        rect = self.bounds
+        start_x = rect[0] + rect[2] // 2
+        start_y = rect[1] + rect[3] // 2
+        
+        self.wm_agent.drag_and_drop(start_x, start_y, end_x, end_y, duration)
     
     def __repr__(self) -> str:
         return f"LinuxElement<{self.name}>"
