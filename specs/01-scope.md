@@ -5,20 +5,25 @@ Provide a MacOS-first UI automation layer with a stable base interface for appli
 
 ## In Scope
 - MacOS UI automation via AppKit and ScriptingBridge.
-- Application discovery and launch through `NSWorkspace`.
-- Application metadata lookup via `NSMetadataQuery`.
+- **Linux UI automation via AT-SPI and X11.** ✅
+- Application discovery and launch through `NSWorkspace` (MacOS) or AT-SPI Registry (Linux).
+- Application metadata lookup via `NSMetadataQuery` (MacOS).
 - Wrapper classes that expose properties and behaviors of applications and windows.
+- **Enhanced base class hierarchy with DisplayElement, ScreenElement, and UI component types (UIButton, UIText, UITable, UIMenu, etc.).** ✅
 - Well-known application catalog for common MacOS apps.
 - A single controller instance for convenience and reuse.
 
 ## Out Of Scope (Initial)
-- Windows and Linux automation implementations.
-- Cross-platform API parity beyond the abstract base interfaces.
+- Windows automation implementation.
+- Full cross-platform API parity (Linux implements core interfaces but with platform-specific constraints).
 - Performance optimization beyond reasonable responsiveness.
 - End-user CLI tooling or standalone UI test runner.
 
 ## Supported Platforms
-- MacOS only (Darwin). Windows and Linux are explicitly not implemented.
+- **MacOS (Darwin)** - Full implementation via AppKit/ScriptingBridge
+- **Linux** - Implementation via AT-SPI and X11 ✅
+  - Known constraints: X11 window finding issues with some applications (e.g., LibreOffice)
+- **Windows** - Not implemented
 
 ## Dependencies And Environment Assumptions
 - PyObjC frameworks for AppKit and ScriptingBridge.

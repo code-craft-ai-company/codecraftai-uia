@@ -1,11 +1,16 @@
 
 from automojo.uia.platforms.base import UIWindow
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
+from typing import Any, Optional
+from automojo.uia.platforms.base import UIWindow, UIElement
 
 class LinuxWindow(LinuxElement, UIWindow):
     """
-        Wrapper for Linux windows using pyatspi.
+        Wrapper for Linux windows using Agent Architecture.
     """
+    def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
+        super().__init__(native_obj, access_agent, wm_agent, parent=parent)
     
     @property
     def title(self) -> str:
@@ -26,18 +31,53 @@ class LinuxWindow(LinuxElement, UIWindow):
     def activate(self) -> None:
         """
             Activates the window (brings it to foreground).
+            
+            Uses AT-SPI grabFocus as primary method for compatibility with both
+            X11 and Wayland applications. X11 focus is attempted as a fallback.
         """
-        # Try accessible action first
-        self.grab_focus()
-        
-        # If possible, try to raise
+        # Primary method: Use AT-SPI to grab focus
+        # This works for both X11 and Wayland applications
         try:
-            component = self._native_obj.queryComponent()
-            # method grabFocus is already called by grab_focus
-            # layer = component.getLayer()
-            pass
-        except:
-            pass
+            self.grab_focus()
+            # Give the window manager time to process the focus request
+            import time
+            time.sleep(0.2)
+        except Exception as e:
+            print(f"AT-SPI grab_focus failed: {e}")
+        
+        # Secondary method: Try X11/Wayland window manager focus
+        # This only works for X11 applications, but we attempt it anyway
+        if self._wm_agent:
+             # First try using the window name from accessibility tree
+             name = self.name
+             if name:
+                 success = self._wm_agent.focus_window(name)
+                 if success:
+                     return
+             
+             # Try a simpler search - just look for 'Calc' for LibreOffice
+             if name and 'Calc' in name:
+                 success = self._wm_agent.focus_window('Calc')
+                 if success:
+                     return
+             
+             # Fallback: Try using the application name from the accessibility tree
+             # For gnome-calculator, the app name is "gnome-calculator" while window
+             # titles vary (Basic, Advanced, etc.)
+             try:
+                 app_name = self._native_obj.get_application().name
+                 if app_name and app_name != name:
+                     self._wm_agent.focus_window(app_name)
+             except:
+                 pass
+    
+    def bring_to_front(self) -> None:
+        """Brings window to front by activating it."""
+        self.activate()
+    
+    def send_to_back(self) -> None:
+        """Sends window to back - not directly supported on Linux."""
+        raise NotImplementedError("send_to_back is not supported for Linux windows.")
 
     def __repr__(self) -> str:
         return f"LinuxWindow<{self.title}>"

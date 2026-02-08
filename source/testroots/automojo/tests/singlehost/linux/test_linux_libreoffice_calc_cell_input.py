@@ -5,6 +5,8 @@ import time
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from automojo.uia.platforms.linux.wrappers.tableelement import TableElement
+
 
 
 def _try_import_pyatspi() -> bool:
@@ -43,55 +45,46 @@ def _find_all_tables(element: LinuxElement, tables: list, depth: int = 0) -> Non
         count = element._native_obj.childCount
         for i in range(min(count, 50)):
             child = element._native_obj.getChildAtIndex(i)
-            _find_all_tables(LinuxElement(child), tables, depth + 1)
+            child_element = LinuxElement(child, element.access_agent, element.wm_agent, parent=element)
+            _find_all_tables(child_element, tables, depth + 1)
     except Exception:
         pass
 
 
 def _set_cell_value(spreadsheet: LinuxElement, row: int, col: int, value: str, expected: str) -> bool:
-    spreadsheet.clear_selection()
-    spreadsheet.select_from_table(row, col)
-    time.sleep(0.5)
-
-    cell = spreadsheet.get_table_cell(row, col)
+    print(f"Setting cell ({row}, {col}) to '{value}', expecting '{expected}'")
+    
+    cell = spreadsheet.get_cell(row, col)
     if not cell:
+        print(f"  ERROR: Could not get cell ({row}, {col})")
         return False
 
     try:
-        cell.click()
-    except Exception:
-        pass
-    cell.grab_focus()
-    time.sleep(0.2)
-
-    if value.startswith("="):
-        cell.type_keys(value)
-        cell.type_keys("\n")
-    else:
-        try:
-            cell.set_text(value)
-        except Exception:
-            pass
-
-    time.sleep(0.5)
+        if value.startswith("="):
+             print(f"  Typing formula: {value}")
+             cell.set_text(value)
+        else:
+             print(f"  Typing value: {value}")
+             cell.set_text(value)
+    except Exception as e:
+        print(f"  Error setting text: {e}")
+        return False
+    
+    # Give LibreOffice time to commit the value
+    time.sleep(1.0)
+    
     current_text = cell.text
+    print(f"  Current cell text: '{current_text}'")
+    
     if expected in current_text or current_text == expected:
+        print(f"  SUCCESS: Cell value matches expected")
         return True
 
-    if value.startswith("=") and expected:
-        try:
-            cell.set_value(float(expected))
-            time.sleep(0.5)
-            current_text = cell.text
-            if expected in current_text or current_text == expected:
-                return True
-        except Exception:
-            pass
-
+    print(f"  FAILED: Cell text '{current_text}' doesn't match expected '{expected}'")
     return False
 
 
-def test_linux_libreoffice_calc_table_entry():
+def test_linux_libreoffice_calc_cell_input():
     """
         Verifies LibreOffice Calc table entry using Linux UI automation.
     """
@@ -101,7 +94,10 @@ def test_linux_libreoffice_calc_table_entry():
     testbase.assert_equal(_try_import_pyatspi(), True)
 
     try:
-        proc = subprocess.Popen(["libreoffice", "--calc"])
+        import os
+        env = os.environ.copy()
+        env['GDK_BACKEND'] = 'x11'
+        proc = subprocess.Popen(["libreoffice", "--calc"], env=env)
     except FileNotFoundError:
         testbase.assert_equal(True, False)
 
@@ -147,7 +143,8 @@ def test_linux_libreoffice_calc_table_entry():
             count = table._native_obj.childCount
             if count > max_children:
                 max_children = count
-                spreadsheet = table
+                # Wrap the biggest table in TableElement
+                spreadsheet = TableElement(table._native_obj, table.access_agent, table.wm_agent, parent=table.parent)
 
         if not spreadsheet:
             testbase.assert_equal(True, False)

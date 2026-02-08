@@ -9,18 +9,26 @@ from automojo.uia.platforms.base import UIApplication, UIWindow
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
 
+
+from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
+from typing import Optional
+from automojo.uia.platforms.base import UIElement
+
 class LinuxApplication(LinuxElement, UIApplication):
     """
-        Wrapper for Linux applications using pyatspi.
+        Wrapper for Linux applications using Agent Architecture.
     """
     
-    def __init__(self, native_obj: Any):
-        super().__init__(native_obj)
+    def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
+        super().__init__(native_obj, access_agent, wm_agent, parent=parent)
 
     @property
     def identifier(self) -> str:
         # Using ID if available, otherwise name as fallback
-        return str(self._native_obj.id)
+        try:
+             return str(self._native_obj.id)
+        except:
+             return self.name
 
     def launch(self) -> None:
         pass # Assumes already running for now
@@ -29,20 +37,31 @@ class LinuxApplication(LinuxElement, UIApplication):
         raise NotImplementedError("Terminate is not yet implemented for Linux applications.")
 
     def activate(self) -> None:
-        raise NotImplementedError("Activate is not yet implemented for Linux applications.")
+        """Activates the application by activating its first window."""
+        windows = self.get_windows()
+        if windows:
+            windows[0].activate()
+    
+    def bring_to_front(self) -> None:
+        """Brings application to front by activating its first window."""
+        self.activate()
+    
+    def send_to_back(self) -> None:
+        """Sends application to back - not directly supported on Linux."""
+        raise NotImplementedError("send_to_back is not supported for Linux applications.")
 
     def get_windows(self) -> List[UIWindow]:
         windows = []
-        if not pyatspi:
-            return windows
-
-        count = self._native_obj.childCount
-        for i in range(count):
+        children = self.access_agent.get_children(self._native_obj)
+        
+        for child in children:
             try:
-                child = self._native_obj.getChildAtIndex(i)
-                # Check for ROLE_FRAME (standard window) or similar roles
-                if child.getRole() == pyatspi.ROLE_FRAME:
-                    windows.append(LinuxWindow(child))
+                # Check role. PyAtspi constants might need to be abstracted or we check role name/id
+                role = self.access_agent.get_role(child)
+                # For now assuming pyatspi specific role check as we know the agent uses pyatspi underlying
+                # But ideally we should ask agent "is_window(element)"
+                if pyatspi and role == pyatspi.ROLE_FRAME:
+                    windows.append(LinuxWindow(child, self.access_agent, self.wm_agent, parent=self))
             except Exception:
                 continue
                 
