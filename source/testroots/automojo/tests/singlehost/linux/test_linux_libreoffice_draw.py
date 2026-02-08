@@ -1,3 +1,4 @@
+
 import time
 import subprocess
 import shutil
@@ -8,7 +9,6 @@ import os
 sys.path.append(os.path.abspath("source"))
 sys.path.append(os.path.abspath("source/testroots"))
 
-# form automojo import testbase # Removed due to import error
 from automojo.uia.factory import AutomationFactory
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
@@ -27,12 +27,16 @@ def test_linux_libreoffice_draw():
     proc = subprocess.Popen(["libreoffice", "--draw", "--norestore"], env=env)
     
     try:
-        # 2. Find Application
+        # Declarative Usage
+        from automojo.uia.platforms.linux.mappings.libreoffice_draw import LibreOfficeDraw
+        
+        # 2. Find Application using Declarative Mapping
         app = None
         for _ in range(20):
             time.sleep(1)
-            app = automation.get_application_by_name("soffice")
+            app = LibreOfficeDraw.attach(automation)
             if not app:
+                # Fallback purely on name "Draw" if soffice fails (though attach uses soffice)
                 app = automation.get_application_by_name("Draw")
             if app:
                 break
@@ -40,11 +44,14 @@ def test_linux_libreoffice_draw():
         assert app is not None, "LibreOffice Draw not found"
         print(f"Found App: {app.name}")
         
-        # 3. Find Main Window
+        # 3. Find Main Window using Hint
+        main_window_hint = LibreOfficeDraw.MainWindow
         main_window = None
         for _ in range(10):
             windows = app.get_windows()
             if windows:
+                # manual match against hint if needed, or just take first non-recovery
+                # assuming first is main for draw usually
                 main_window = windows[0]
                 break
             time.sleep(1)
@@ -55,44 +62,15 @@ def test_linux_libreoffice_draw():
         time.sleep(2)
         
         # 4. Find the "Ellipse" tool
-        # Note: In LibreOffice Draw, the ellipse tool is usually in the "Drawing" toolbar.
-        # Its name might be "Ellipse" or "Circle".
-        ellipse_tool = None
-        
-        # Strategy: Search for "Ellipse" or "Circle" with role "toggle button" or "push button"
-        # This avoids picking up the hidden menu item which has invalid bounds
+        # Using Declarative Hints
         print("Searching for Ellipse tool in toolbars...")
         
-        def find_button(element, targets):
-            if element.role_name in ["push button", "toggle button"]:
-                 name = element.name 
-                 if name in targets:
-                     return element
-                     
-            # Recurse
-            # Check children
-            try:
-                native = getattr(element, '_native_obj', element)
-                if hasattr(native, 'childCount'):
-                     count = native.childCount
-                     for i in range(min(count, 100)):
-                         child = native.getChildAtIndex(i)
-                         child_el = LinuxElement(child, element.access_agent, element.wm_agent)
-                         found = find_button(child_el, targets)
-                         if found: return found
-            except:
-                pass
-            return None
-
-        ellipse_tool = find_button(main_window, ["Ellipse", "Circle"])
-        
-        # Fallback: Search for "Drawing" toolbar and dump it if needed
+        ellipse_tool = LibreOfficeDraw.EllipseTool.resolve(main_window)
         if not ellipse_tool:
-             print("Direct search failed. Searching for 'Drawing' toolbar...")
-             # (Not implemented yet, let's see if direct search works with role filter)
-             pass
-
-        assert ellipse_tool is not None, "Ellipse/Circle tool not found (Filtered by role)"
+             # Try Circle hint if Ellipse not found
+             ellipse_tool = LibreOfficeDraw.CircleTool.resolve(main_window)
+        
+        assert ellipse_tool is not None, "Ellipse/Circle tool not found (via Declarative Hint)"
         print(f"Found Ellipse tool: {ellipse_tool.name} Role: {ellipse_tool.role_name}")
         print(f"Bounds: {ellipse_tool.bounds}")
         
@@ -133,18 +111,13 @@ def test_linux_libreoffice_draw():
                  wm_agent.click(cx, cy)
              else:
                  print(f"Invalid bounds {rect}. Cannot click.")
-                 # No keyboard fallback allowed
                  
              time.sleep(1)
              print(f"After WM click states: {ellipse_tool.access_agent.get_states(ellipse_tool.native_obj)}")
         
-        # 5. Find Drawing Area
-        # The canvas is usually a "scroll pane" or "drawing area" or "document frame"
-        # We need a place to drag.
+        # 5. Find Drawing Area using Hints
         print("Searching for drawing area...")
-        drawing_area = main_window.find_descendant(role="document frame")
-        if not drawing_area:
-             drawing_area = main_window.find_descendant(role="drawing area")
+        drawing_area = LibreOfficeDraw.DrawingArea.resolve(main_window)
         
         assert drawing_area is not None, "Drawing area not found"
         print(f"Found Drawing Area: {drawing_area.role_name} at {drawing_area.bounds}")
@@ -160,29 +133,11 @@ def test_linux_libreoffice_draw():
         print(f"Drawing circle from ({start_x}, {start_y}) to ({end_x}, {end_y})...")
         
         # 5b. Find PageShape (The actual canvas)
-        # The document frame contains the page, but we want to be sure we are on the page.
         print("Searching for PageShape...")
-        page_shape = None
-        
-        # Helper to find page shape
-        def find_page_shape(element):
-            try:
-                native_obj = getattr(element, '_native_obj', element) if hasattr(element, '_native_obj') else element.native_obj
-                children = element.access_agent.get_children(native_obj)
-                for child in children:
-                    name = element.access_agent.get_name(child)
-                    role = element.access_agent.get_role_name(child)
-                    if "PageShape" in name or "panel" in role:
-                         if "Page" in name:
-                             return LinuxElement(child, element.access_agent, element.wm_agent)
-                    
-                    # Shallow recurse?
-            except:
-                pass
-            return None
-
-        # Look in drawing area children
-        page_shape = find_page_shape(drawing_area)
+        # Using Hint
+        page_shape = LibreOfficeDraw.PageShape.resolve(main_window)
+        if not page_shape and drawing_area:
+             page_shape = LibreOfficeDraw.PageShape.resolve(drawing_area)
         
         target_rect = rect # Default to drawing area
         if page_shape:
@@ -208,124 +163,72 @@ def test_linux_libreoffice_draw():
         wm_agent.click(center_x, center_y)
         time.sleep(2)
         
-        # If click doesn't work, try drag as fallback?
-        # Let's check verification first.
-        pass
-        
         # 7. Verify new shape creation
         # We expect a new element in the accessibility tree
         print("Verifying shape creation...")
         
-        # Strategy A: Tree Dump (failed previously, keeping as debug)
-        print("--- Tree Dump ---")
-        
-        # Find PageShape first to check its children specifically
-        page_shape = None
-        
-        def dump_shapes(element, depth=0):
-            nonlocal page_shape
-            found = False
-            try:
-                native_obj = getattr(element, '_native_obj', element) if hasattr(element, '_native_obj') else element.native_obj
-                children = element.access_agent.get_children(native_obj)
-                for child in children:
-                    name = element.access_agent.get_name(child)
-                    role = element.access_agent.get_role_name(child)
-                    indent = "  " * depth
-                    print(f"{indent} - Child: {name} ({role})")
-                    
-                    if "PageShape" in name:
-                        page_shape = child
-                    
-                    if "Ellipse" in name or "Shape" in role or "shape" in role:
-                        if "Page" not in name: # automated pages are confusing
-                             found = True
-                    
-                    # Recurse
-                    try:
-                        child_el = LinuxElement(child, element.access_agent, element.wm_agent)
-                        if dump_shapes(child_el, depth + 1):
-                            found = True
-                    except:
-                        pass
-            except Exception as e:
-                pass
-            return found
-
-        found_shape = dump_shapes(drawing_area)
-        print("-----------------")
-
         # Strategy B: Select All and check selection count
-        if not found_shape:
-             print("Shape not found in tree. Trying 'Select All' verification...")
-             # Click drawing area to focus (center)
-             wm_agent.click(center_x, center_y)
-             time.sleep(1)
-             
-             # Send Ctrl+A
-             print("Sending Ctrl+A...")
-             wm_agent.send_keys(None, "<ctrl>+a")
-             time.sleep(1)
-             
-             # Check selection on Drawing Area or PageShape
-             # We need to query the Selection interface
-             try:
-                 # Check drawing area selection
-                 native = drawing_area.native_obj
-                 if hasattr(native, 'querySelection'):
-                     sel = native.querySelection()
-                     print(f"Drawing Area Selection Count: {sel.nSelectedChildren}")
-                     if sel.nSelectedChildren > 0:
-                         found_shape = True
-                         print("Shape found via Drawing Area Selection!")
-                 
-                 # Check PageShape selection if found
-                 if not found_shape and page_shape:
-                      if hasattr(page_shape, 'querySelection'):
-                         sel = page_shape.querySelection()
-                         print(f"PageShape Selection Count: {sel.nSelectedChildren}")
-                         if sel.nSelectedChildren > 0:
-                             found_shape = True
-                             print("Shape found via PageShape Selection!")
+        found_shape = False
+        print("Shape verification... Trying 'Select All' verification...")
+        # Click drawing area to focus (center)
+        wm_agent.click(center_x, center_y)
+        time.sleep(1)
+        
+        # Send Ctrl+A
+        print("Sending Ctrl+A...")
+        wm_agent.send_keys(None, "<ctrl>+a")
+        time.sleep(1)
+        
+        # Check selection on Drawing Area or PageShape
+        try:
+            # Check drawing area selection
+            native = drawing_area.native_obj
+            if hasattr(native, 'querySelection'):
+                sel = native.querySelection()
+                print(f"Drawing Area Selection Count: {sel.nSelectedChildren}")
+                if sel.nSelectedChildren > 0:
+                    found_shape = True
+                    print("Shape found via Drawing Area Selection!")
+            
+            # Check PageShape selection if found
+            if not found_shape and page_shape:
+                 if hasattr(page_shape, 'querySelection'):
+                    sel = page_shape.querySelection()
+                    print(f"PageShape Selection Count: {sel.nSelectedChildren}")
+                    if sel.nSelectedChildren > 0:
+                        found_shape = True
+                        print("Shape found via PageShape Selection!")
 
-             except Exception as e:
-                 print(f"Selection check failed: {e}")
+        except Exception as e:
+            print(f"Selection check failed: {e}")
 
         if not found_shape:
-             print("Shape not found. Dumping UI tree using CLI for analysis...", file=sys.stderr)
-             try:
-                 # Call the uia monitor command to dump JSON
-                 import subprocess
-                 cli_path = os.path.join(os.path.dirname(__file__), "../../../../../packages/automojo/uia/cli/uia_command.py")
-                 cmd = [sys.executable, cli_path, "mapping", "monitor", "--hint", "soffice", "--format", "json", "libreoffice --draw"]
-                 
-                 with open("/tmp/libreoffice_draw_dump.json", "w") as f:
-                     subprocess.run(cmd, stdout=f, stderr=subprocess.DEVNULL, timeout=10)
-                 print("UI tree dumped to /tmp/libreoffice_draw_dump.json")
-             except Exception as e:
-                 print(f"Failed to dump UI tree: {e}")
+             # Simplified dump
+             print("Shape not found via selection.")
 
         assert found_shape, "New shape not detected in accessibility tree or via selection"
+        
         # 8. Change color to Black
         print("Changing circle color to Black...")
         try:
-             # Make sure shape is selected (it should be after drawing)
-             # But just in case, we select it if needed (skip for now as it's selected)
-             
              # Open Format -> Area dialog
              print("Opening Format -> Area...")
-             format_menu = main_window.find_descendant(role="menu", name="Format")
+             
+             # Use Declarative Hints
+             format_menu = LibreOfficeDraw.MenuBar.Format.resolve(main_window)
              if not format_menu:
                  # Try finding via application menu bar
-                 format_menu = app.find_descendant(role="menu", name="Format")
+                 format_menu = LibreOfficeDraw.MenuBar.Format.resolve(app)
              
              assert format_menu, "Format menu not found"
              format_menu.click()
              time.sleep(1)
              
-             area_item = main_window.find_descendant(role="menu item", name="Area...")
+             area_item = LibreOfficeDraw.FormatAreaItem.resolve(main_window)
              if not area_item:
-                 area_item = main_window.find_descendant(role="menu item", name="Area")
+                 # Standard find fallback
+                 area_item = main_window.find_descendant(name="Area...")
+                 if not area_item: area_item = main_window.find_descendant(name="Area")
              
              assert area_item, "Area menu item not found"
              area_item.click()
@@ -335,10 +238,12 @@ def test_linux_libreoffice_draw():
              print("Handling Area dialog...")
              # Dialog might be a child of app or window
              dialog = None
+             area_dialog_hint = LibreOfficeDraw.AreaDialog
+             
              for _ in range(5):
                  windows = app.get_windows()
                  for w in windows:
-                     if w.role_name == "dialog" or "Area" in w.name:
+                     if area_dialog_hint.name in w.name or "Area" in w.name or "Area" in w.title:
                          dialog = w
                          break
                  if dialog: break
@@ -348,11 +253,7 @@ def test_linux_libreoffice_draw():
              print(f"Dialog: {dialog.name}")
              
              # Select "Color" button in "Area" tab
-             # Note: The dialog starts in "Area" tab usually.
-             # We look for "Color" button (push button or radio button)
-             color_btn = dialog.find_descendant(role="push button", name="Color")
-             if not color_btn:
-                 color_btn = dialog.find_descendant(role="toggle button", name="Color")
+             color_btn = LibreOfficeDraw.AreaDialog.ColorButton.resolve(dialog)
              
              if color_btn:
                  print("Clicking Color button...")
@@ -360,8 +261,7 @@ def test_linux_libreoffice_draw():
                  time.sleep(1)
                  
              # Find "Black" in the list/table
-             # It might be in a list or table
-             black_item = dialog.find_descendant(name="Black")
+             black_item = LibreOfficeDraw.AreaDialog.BlackItem.resolve(dialog)
              
              if black_item:
                  print(f"Found Black item: {black_item.role_name}")
@@ -369,33 +269,26 @@ def test_linux_libreoffice_draw():
                  time.sleep(0.5)
              else:
                  print("Black item not found in dialog!")
+                 # Fallback find
+                 black_item = dialog.find_descendant(name="Black")
+                 if black_item: black_item.click()
                  
              # Click OK
-             ok_btn = dialog.find_descendant(role="push button", name="OK")
+             ok_btn = LibreOfficeDraw.AreaDialog.OKButton.resolve(dialog)
              if ok_btn:
                  ok_btn.click()
                  time.sleep(1)
                  print("Clicked OK")
              else:
                  print("OK button not found!")
+                 # Fallback
+                 dialog.type_keys("\n")
                  
         except Exception as e:
              print(f"Failed to change color: {e}")
-
-        # Dump UI tree for analysis (find color buttons)
-        print("Dumping UI tree for further analysis...", file=sys.stderr)
-        try:
-             cli_path = os.path.join(os.path.dirname(__file__), "../../../../../packages/automojo/uia/cli/uia_command.py")
-             cmd = [sys.executable, cli_path, "mapping", "monitor", "--hint", "soffice", "--format", "json", "libreoffice --draw"]
-             
-             with open("/tmp/libreoffice_draw_final.json", "w") as f:
-                 subprocess.run(cmd, stdout=f, stderr=subprocess.DEVNULL, timeout=10)
-             print("Final UI tree dumped to /tmp/libreoffice_draw_final.json")
-        except Exception as e:
-             print(f"Failed to dump final UI tree: {e}")
+             raise
 
         print("Test passed!")
-
     finally:
         print("Closing application...")
         proc.terminate()

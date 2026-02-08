@@ -11,9 +11,11 @@ def test_libreoffice_calc_menus_refactored():
     automation = AutomationFactory.get_automation_engine()
     
     # 1. Launch/Find App
-    app = automation.get_application_by_name("soffice")
-    if not app:
-        app = automation.get_application_by_name("Calc")
+    # Declarative Usage
+    from automojo.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
+    
+    # 1. Launch/Find App
+    app = LibreOfficeCalc.attach(automation)
     
     launched_app = False
     if not app:
@@ -23,9 +25,7 @@ def test_libreoffice_calc_menus_refactored():
         
         for _ in range(10):
             time.sleep(2)
-            app = automation.get_application_by_name("soffice")
-            if not app:
-                app = automation.get_application_by_name("Calc")
+            app = LibreOfficeCalc.attach(automation)
             if app:
                 print(f"Launched App: {app}")
                 break
@@ -52,8 +52,9 @@ def test_libreoffice_calc_menus_refactored():
                             # Update windows list
                             windows = app.get_windows()
                 
-                # Pick the first non-recovery window
+                # Pick the first non-recovery window matching hint if possible
                 for w in windows:
+                    # Naively match main window hint manually or just take first non-recovery
                     if "Recovery" not in w.title:
                         main_window = w
                         break
@@ -69,24 +70,27 @@ def test_libreoffice_calc_menus_refactored():
         
         # 3. Menu Interaction
         menu_bar = main_window.main_menu
-        if not menu_bar:
-            print("Menu bar not found. Dumping window children:")
-            children = main_window.access_agent.get_children(main_window.native_obj)
-            for child in children:
-                try:
-                    print(f" - {main_window.access_agent.get_role_name(child)}: {main_window.access_agent.get_name(child)}")
-                except: pass
-                
+        # Note: mapping has MenuBar hint but we use standard prop for now
+        
         testbase.assert_equal(menu_bar is not None, True, "Main Menu Bar not found")
         
-        file_menu = menu_bar.get_menu("File")
+        # Declarative Menu Item finding
+        # Using hinting from the class if we can resolve it?
+        # LibreOfficeCalc.MenuBar.File is an ElementHint("menu", "File")
+        
+        # Manually resolving the File menu using the hint
+        file_menu_hint = LibreOfficeCalc.MenuBar.File
+        file_menu = menu_bar.get_menu(file_menu_hint.name)
+        
         testbase.assert_equal(file_menu is not None, True, "File menu not found")
         file_menu.open()
         time.sleep(1)
         
-        save_as_item = file_menu.get_item("Save As...")
+        # Save As Item
+        save_as_hint = LibreOfficeCalc.SaveAsMenuItem
+        save_as_item = file_menu.get_item(save_as_hint.name)
         if not save_as_item:
-             # Fallback search
+             # Fallback search matching hint name in items
              for item in file_menu.get_items():
                  if "Save As" in item.name:
                      save_as_item = item
@@ -96,48 +100,70 @@ def test_libreoffice_calc_menus_refactored():
         save_as_item.invoke()
         time.sleep(2)
         
-        # 4. Handle Save Dialog using new Class
-        # Find the raw window first
-        raw_dialog = None
+        # 4. Handle Save Dialog using Declarative Mapping
+        # Find the window matching the hint
+        save_as_hint = LibreOfficeCalc.SaveAs
+        
+        save_dialog_window = None
         for _ in range(5):
             for w in app.get_windows():
-                if "Save As" in w.title or "Save" in w.title:
-                    raw_dialog = w
+                # manual match against hint
+                # hint.name is "Save As", we check if title contains it
+                if save_as_hint.name in w.title or "Save" in w.title:
+                    save_dialog_window = w
                     break
-            if raw_dialog: break
+            if save_dialog_window: break
             time.sleep(1)
             
-        testbase.assert_equal(raw_dialog is not None, True, "Save As dialog not found")
+        testbase.assert_equal(save_dialog_window is not None, True, "Save As dialog not found")
         
-        # Upgrade to LinuxSaveAsDialog
-        save_dialog = LinuxSaveAsDialog(raw_dialog.native_obj, raw_dialog.access_agent, raw_dialog.wm_agent)
-        
-        # 5. Set Filename and Save
+        # 5. Set Filename and Save using hints
         timestamp = int(time.time())
         temp_filename = os.path.abspath(f"test_refactored_{timestamp}.ods")
         print(f"Saving to: {temp_filename}")
         
-        save_dialog.set_filename(temp_filename)
+        # Resolve children
+        filename_input = LibreOfficeCalc.SaveAs.FileNameInput.resolve(save_dialog_window)
+        if not filename_input:
+             # Try entry fallback
+             filename_input = LibreOfficeCalc.SaveAs.FileNameEntry.resolve(save_dialog_window)
+             
+        if filename_input:
+            filename_input.click()
+            time.sleep(0.5)
+            filename_input.type_keys(temp_filename)
+        else:
+            # Fallback
+            save_dialog_window.type_keys(temp_filename)
+        
         time.sleep(1)
-        save_dialog.save()
+        
+        save_button = LibreOfficeCalc.SaveAs.SaveButton.resolve(save_dialog_window)
+        if save_button:
+            save_button.click()
+        else:
+            save_dialog_window.type_keys("\n")
+            
         time.sleep(3)
         
-        # 6. Handle Confirmation (File Exists) if needed
-        # Check for alert dialog
+        # 6. Handle Confirmation (File Exists)
+        confirm_hint = LibreOfficeCalc.ConfirmOverwrite
         confirm_dialog = None
+        
         for _ in range(3):
             # Check windows
             for w in app.get_windows():
-                if "Confirm" in w.title or "Exist" in w.title:
+                if confirm_hint.name in w.title or "Exist" in w.title:
                     confirm_dialog = w
                     break
             
-            # Check alerts (children of app)
+            # Check alerts (children of app) - existing logic preserved 
             if not confirm_dialog:
                  children = app.access_agent.get_children(app.native_obj)
                  for child in children:
                      try:
-                         if app.access_agent.get_role(child) == 2 or app.access_agent.get_name(child) == "Question":
+                         # name might be "Question"
+                         if app.access_agent.get_name(child) == "Question":
                              confirm_dialog = LinuxWindow(child, app.access_agent, app.wm_agent)
                              break
                      except: pass
@@ -147,13 +173,14 @@ def test_libreoffice_calc_menus_refactored():
             
         if confirm_dialog:
             print(f"Handling Confirmation Dialog: {confirm_dialog.title}")
-            # Try to print text content of dialog to understand what it is
-            try:
-                print(f"Dialog Text: {confirm_dialog.text}")
-            except: pass
             
-            confirm_wrapper = LinuxModalDialogFileAlreadyExists(confirm_dialog.native_obj, confirm_dialog.access_agent, confirm_dialog.wm_agent)
-            confirm_wrapper.confirm_overwrite()
+            # Resolve buttons using hints
+            yes_btn = LibreOfficeCalc.ConfirmOverwrite.YesButton.resolve(confirm_dialog)
+            if not yes_btn:
+                 yes_btn = LibreOfficeCalc.ConfirmOverwrite.ReplaceButton.resolve(confirm_dialog)
+            
+            if yes_btn:
+                yes_btn.click()
             time.sleep(3)
             
         # 7. Verification

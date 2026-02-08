@@ -10,6 +10,12 @@ from automojo.uia.platforms.macos.wrappers.uiaaccessibility import (
     is_accessibility_trusted,
     send_keys_to_focused
 )
+from automojo.uia.exceptions import (
+    UIAException,
+    ElementNotFoundError,
+    InteractionError,
+    PlatformNotSupportedError
+)
 from automojo.uia.platforms.macos.wrappers.uiawindow import UiaWindow
 from automojo.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
 
@@ -164,7 +170,7 @@ class UiaApplication(WrappedObject, UIApplication):
 
             if app_name is None:
                 errmsg = "Unable to determine application name for launch."
-                raise ValueError(errmsg)
+                raise InteractionError(errmsg)
 
             self.controller.workspace.launch_application_by_name(app_name)
 
@@ -297,7 +303,7 @@ class UiaApplication(WrappedObject, UIApplication):
             else:
                 pass
         else:
-            raise ValueError("Expected a list of windows but received None.")
+            raise InteractionError("Expected a list of windows but received None.")
 
         send_keys_to_focused(keys)
 

@@ -2,6 +2,12 @@ from typing import Any, List, Tuple, TYPE_CHECKING
 
 from automojo.uia.platforms.base import UIWindow
 from automojo.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
+from automojo.uia.exceptions import (
+    UIAException,
+    ElementNotFoundError,
+    InteractionError,
+    PlatformNotSupportedError
+)
 
 if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
@@ -88,7 +94,7 @@ class UiaWindow(WrappedObject, UIWindow):
 
         if found is False:
             errmsg = "The native window does not expose a title or name."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         return value
 
@@ -100,7 +106,7 @@ class UiaWindow(WrappedObject, UIWindow):
 
         if found is False:
             errmsg = "The native window does not expose visibility."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         rtnval = bool(value)
         return rtnval
@@ -113,7 +119,7 @@ class UiaWindow(WrappedObject, UIWindow):
 
         if found is False:
             errmsg = "The native window does not expose enabled state."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         rtnval = bool(value)
         return rtnval
@@ -153,7 +159,7 @@ class UiaWindow(WrappedObject, UIWindow):
         method_names = ["close", "performClose", "performClose_"]
         if self._call_native_method(method_names) is False:
             errmsg = "Close is not supported for this window object."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         return
 
@@ -161,7 +167,7 @@ class UiaWindow(WrappedObject, UIWindow):
         method_names = ["zoom", "performZoom", "performZoom_"]
         if self._call_native_method(method_names) is False:
             errmsg = "Maximize is not supported for this window object."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         return
 
@@ -169,7 +175,7 @@ class UiaWindow(WrappedObject, UIWindow):
         method_names = ["minimize", "miniaturize", "performMiniaturize", "performMiniaturize_"]
         if self._call_native_method(method_names) is False:
             errmsg = "Minimize is not supported for this window object."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         return
 
@@ -177,7 +183,7 @@ class UiaWindow(WrappedObject, UIWindow):
         method_names = ["deminiaturize", "performDeminiaturize", "performDeminiaturize_"]
         if self._call_native_method(method_names) is False:
             errmsg = "Restore is not supported for this window object."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         return
 
@@ -191,7 +197,7 @@ class UiaWindow(WrappedObject, UIWindow):
 
         if found is False:
             errmsg = "The native window does not expose minimized state."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         rtnval = bool(value)
         return rtnval
@@ -209,7 +215,7 @@ class UiaWindow(WrappedObject, UIWindow):
 
         if found is False:
             errmsg = "The native window does not expose focused state."
-            raise NotImplementedError(errmsg)
+            raise PlatformNotSupportedError(errmsg)
 
         rtnval = bool(value)
         return rtnval

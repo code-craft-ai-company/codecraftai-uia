@@ -74,10 +74,25 @@ def test_linux_calc_send_keys():
         automation = AutomationFactory.get_automation_engine()
         time.sleep(2.0)
 
-        app = automation.get_application_by_name("gnome-calculator")
-        if not app:
+        # Declarative Usage
+        from automojo.uia.platforms.linux.mappings.calculator import Calculator
+        
+        # 1. Attach/Launch
+        # Note: launch_or_attach implementation in DeclarativeApplication might be stubbed, 
+        # but we can implement/verify it or just use the hint manually if needed.
+        # For now, let's try using the class method if available or simulate it.
+        # Actually, let's use the standard factory but try to resolve the app via the class
+        
+        # automation is already gotten
+        # app = Calculator.attach(automation) 
+        # logic in DeclarativeApplication.attach is:
+        # return automation_engine.get_application_by_name(cls.APPLICATION_NAME)
+        
+        app = Calculator.attach(automation)
+        if not app: 
+            # Fallback if name mismatch or timing
             app = automation.get_application_by_name("Calculator")
-
+            
         testbase.assert_equal(app is not None, True)
 
         windows = app.get_windows()
@@ -90,45 +105,12 @@ def test_linux_calc_send_keys():
             main_window.activate()
         except Exception:
             pass
-        
-        # Additional wait for focus settling
         time.sleep(1.0)
         
-        # Attempt to grab focus explicitly on the window wrapper
-        try:
-            main_window.grab_focus()
-        except: 
-            pass
-        time.sleep(0.5)
-
-        # Helper to find the display element (role: text, parent role: scroll pane usually)
-        display_element = None
-        def find_display(element, depth=0):
-            if depth > 30: return None
-            
-            # The debug output showed a 'text' role with some content
-            if element.role_name == "text" or element.role_name == "entry":
-                return element
-                
-            try:
-                native = getattr(element, '_native_obj', element)
-                if hasattr(native, 'childCount'):
-                    for i in range(native.childCount):
-                        found = find_display(LinuxElement(native.getChildAtIndex(i), element._access_agent, element._wm_agent), depth + 1)
-                        if found: return found
-            except:
-                pass
-            return None
-
-        # High-level API usage
-        # High-level API usage
-        print("Activating main window...")
-        main_window.activate()
-        time.sleep(1.0)
-        
-        print("Finding display element to ensure focus...")
-        # Note: 'text' role is generic, but usually works for calculator display
-        display = main_window.find_descendant(role="text")
+        # 3. Resolve Display Element
+        # Using the hint from the mapping
+        print("Resolving Display element using Declarative Mapping...")
+        display = Calculator.Display.resolve(main_window)
         
         if display:
              print(f"Found display: {display}")
@@ -142,7 +124,7 @@ def test_linux_calc_send_keys():
              print("Typing '12*3=' into display...")
              display.type_keys("12*3=")
         else:
-             print("Display not found via find_descendant! Falling back to window typing...")
+             print("Display not found via mapping! Falling back to window typing...")
              main_window.type_keys("12*3=")
 
         time.sleep(1.0)

@@ -2,6 +2,12 @@
 from abc import ABC, abstractmethod
 from typing import List, Any, Tuple, Optional
 import weakref
+from automojo.uia.exceptions import (
+    UIAException,
+    ElementNotFoundError,
+    InteractionError,
+    PlatformNotSupportedError
+)
 
 
 class UIObject(ABC):
@@ -123,6 +129,24 @@ class UIElement(DisplayElement):
             Types keys into the element.
 
             :param keys: The keys to type.
+        """
+        pass
+
+    @abstractmethod
+    def find_element(self, **kwargs) -> Optional['UIElement']:
+        """
+            Finds the first child element matching criteria.
+            :param kwargs: Search criteria (name, role, etc.)
+            :returns: Matching UIElement or None
+        """
+        pass
+
+    @abstractmethod
+    def find_elements(self, **kwargs) -> List['UIElement']:
+        """
+            Finds all child elements matching criteria.
+            :param kwargs: Search criteria (name, role, etc.)
+            :returns: List of matching UIElements
         """
         pass
 

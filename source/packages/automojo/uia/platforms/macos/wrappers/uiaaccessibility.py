@@ -4,6 +4,12 @@ import weakref
 
 import re
 from automojo.uia.platforms.base import UIElement
+from automojo.uia.exceptions import (
+    UIAException,
+    ElementNotFoundError,
+    InteractionError,
+    PlatformNotSupportedError
+)
 try:
     from ApplicationServices import (
         AXIsProcessTrusted,
@@ -488,13 +494,167 @@ class UiaAccessibilityElement(UIElement):
             if self._perform_action(kAXRaiseAction):
                 return
 
-        errmsg = "Unable to focus the element."
-        raise NotImplementedError(errmsg)
+        raise InteractionError("Unable to focus the element.")
 
     def type_keys(self, keys: str) -> None:
-        send_keys_to_focused(keys)
+        try:
+            send_keys_to_focused(keys)
+        except Exception as e:
+            raise InteractionError(f"Failed to type keys: {e}")
 
         return
+
+    def find_element(self, **kwargs) -> Optional['UIElement']:
+        """
+        Finds the first child element matching criteria.
+        Args:
+            name (str): The name/label of the element (exact match)
+            role (str): The role of the element
+            recursive (bool): Whether to search recursively (default: True)
+        """
+        name = kwargs.get('name')
+        role = kwargs.get('role')
+        recursive = kwargs.get('recursive', True)
+        
+        # Reuse existing iterator
+        # include_self=False by default for children search
+        iterator = self._iter_descendants(include_self=False) if recursive else self.children()
+        
+        for element in iterator:
+            match = True
+            if name and element.name != name:
+                match = False
+            if role and element.role != role:
+                match = False
+            
+            if match:
+                return element
+                
+        return None
+
+    def find_elements(self, **kwargs) -> List['UIElement']:
+        """
+        Finds all child elements matching criteria.
+        """
+        name = kwargs.get('name')
+        role = kwargs.get('role')
+        recursive = kwargs.get('recursive', True)
+        
+        iterator = self._iter_descendants(include_self=False) if recursive else self.children()
+        
+        matches = []
+        for element in iterator:
+            match = True
+            if name and element.name != name:
+                match = False
+            if role and element.role != role:
+                match = False
+            
+            if match:
+                matches.append(element)
+                
+        return matches
+
+class UiaAccessibilityApplication:
+    """
+        Accessibility wrapper for an application process.
+    """
+
+    def __init__(self, controller: "MacOSAutomation", process_identifier: int):
+        self._controller_ref = weakref.ref(controller)
+        self._process_identifier = process_identifier
+        self._ax_app = None
+        return
+
+    @property
+    def controller(self) -> "MacOSAutomation":
+        return self._controller_ref()
+
+    @property
+    def process_identifier(self) -> int:
+        return self._process_identifier
+
+    @property
+    def ax_app(self) -> Any:
+        if self._ax_app is None:
+            require_accessibility_trusted(prompt=False)
+
+            if AXUIElementCreateApplication is None:
+                errmsg = "Accessibility APIs are not available."
+                raise PlatformNotSupportedError(errmsg)
+
+            self._ax_app = AXUIElementCreateApplication(self._process_identifier)
+
+        return self._ax_app
+
+    def root_element(self) -> UiaAccessibilityElement:
+        """
+            Returns the root accessibility element for the application.
+        """
+        element = UiaAccessibilityElement(self.controller, self.ax_app)
+        return element
+
+    def find_first_by_role(self, role: str, include_self: bool = False) -> Optional[UiaAccessibilityElement]:
+        """
+            Finds the first element that matches the given role.
+        """
+        root = self.root_element()
+        return root.find_first_by_role(role=role, include_self=include_self)
+
+    def find_by_title(self, title: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
+        """
+            Finds all elements whose title matches the given string.
+        """
+        root = self.root_element()
+        return root.find_by_title(title=title, include_self=include_self, expression=expression)
+
+    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
+        """
+            Alias for find_by_title (spelling preserved for compatibility).
+        """
+        root = self.root_element()
+        return root.find_by_tytle(title=title, include_self=include_self, expression=expression)
+
+    def find_by_contents(self, contents: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
+        """
+            Finds all elements whose title or value contains the given string.
+        """
+        root = self.root_element()
+        return root.find_by_contents(contents=contents, include_self=include_self, expression=expression)
+
+    def windows(self) -> List[UiaAccessibilityElement]:
+        """
+            Returns accessibility window elements for the application.
+
+            :returns: A list of accessibility window elements.
+        """
+        found, value = self._copy_attribute(self.ax_app, kAXWindowsAttribute)
+        if found is False:
+            rtn_list = []
+            return rtn_list
+
+        window_list = []
+        for wobj in value:
+            window_list.append(UiaAccessibilityElement(self.controller, wobj))
+
+        return window_list
+
+    def _copy_attribute(self, obj: Any, attribute_name: str) -> Tuple[bool, Any]:
+        if AXUIElementCopyAttributeValue is None:
+            return False, None
+
+        result = AXUIElementCopyAttributeValue(obj, attribute_name, None)
+
+        if isinstance(result, tuple) and len(result) == 2:
+            err, value = result
+        else:
+            err = AX_SUCCESS
+            value = result
+
+        if err != AX_SUCCESS:
+            return False, None
+
+        return True, value
 
 
 class UiaAccessibilityApplication:

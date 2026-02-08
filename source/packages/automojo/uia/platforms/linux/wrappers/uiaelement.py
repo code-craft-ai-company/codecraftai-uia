@@ -1,8 +1,14 @@
 
 import weakref
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, List
 from automojo.uia.platforms.base import UIElement
 from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
+from automojo.uia.exceptions import (
+    UIAException,
+    ElementNotFoundError,
+    InteractionError,
+    PlatformNotSupportedError
+)
 
 class LinuxElement(UIElement):
     """
@@ -14,6 +20,7 @@ class LinuxElement(UIElement):
         self._access_agent = weakref.ref(access_agent)
         self._wm_agent = weakref.ref(wm_agent) if wm_agent else None
 
+    # ... (properties unchanged) ...
     @property
     def access_agent(self) -> AccessibilityAgent:
         return self._access_agent()
@@ -59,9 +66,6 @@ class LinuxElement(UIElement):
     @property
     def is_visible(self) -> bool:
         states = self.access_agent.get_states(self._native_obj)
-        # We need to check if 'visible' state is present. 
-        # The agent returns list of states, we check string representation or object
-        # PyAtspi states are objects, let's assume agent handles conversion or we check name
         for state in states:
              if str(state) == "visible" or str(state).endswith("VISIBLE"):
                  return True
@@ -84,15 +88,11 @@ class LinuxElement(UIElement):
         return False
     
     def grab_focus(self) -> bool:
-        # Try accessibility layer focus first (often works for widgets)
         try:
              component = self._native_obj.queryComponent()
              return component.grabFocus()
         except:
              pass
-             
-        # Use WM agent if it's a window or we can find the window
-        # This is a bit tricky for individual elements.
         return False
 
     def click(self) -> None:
@@ -115,61 +115,115 @@ class LinuxElement(UIElement):
                     self.wm_agent.click(center_x, center_y)
                     return
         except Exception as e:
-            print(f"Fallback click failed: {e}")
-            pass
+            raise InteractionError(f"Fallback click failed: {e}")
 
-        raise NotImplementedError("Click action failed or not supported by this element.")
+        raise InteractionError("Click action failed or not supported by this element.")
 
     def type_keys(self, keys: str) -> None:
         """
             Types keys using the Window Manager Agent.
-            Note: Requires X11. On Wayland systems, this will fail gracefully.
         """
         if not self.wm_agent:
-             raise NotImplementedError(
+             raise PlatformNotSupportedError(
                  "Keyboard input requires X11 WM Agent. "
-                 "On Wayland systems, X11 is not available. "
-                 "Consider using set_text() fallback or AT-SPI EditableText if supported."
+                 "On Wayland systems, X11 is not available."
              )
         
-        # We need to ensure focus first.
         self.grab_focus()
-        
-        # Delegate to WM agent. 
-        # Note: WM Agent usually takes a window handle or name, but our X11 agent implementation
-        # currently behaves globally or takes a window object.
-        # For X11Agent, we pass the element's window if possible, or just let it type globally
-        # assuming focus is set.
-        self.wm_agent.send_keys(None, keys)
+        try:
+            self.wm_agent.send_keys(None, keys)
+        except Exception as e:
+            raise InteractionError(f"Failed to type keys: {e}")
 
     def set_text(self, text: str) -> None:
-        # Try EditableText interface via Accessibility Agent?
-        # For now, simplistic fallback
         self.type_keys(text)
 
     def find_descendant(self, name: str = None, role:str = None, max_depth: int = 10) -> 'LinuxElement':
-        if max_depth < 0:
+        # Alias specifically for internal/legacy use, delegates to find_element logic but recursive
+        # Re-implementing using find_element logic is cleaner
+        return self.find_element(name=name, role=role, recursive=True, max_depth=max_depth)
+
+    def find_element(self, **kwargs) -> Optional['UIElement']:
+        """
+        Finds the first child element matching criteria.
+        Args:
+            name (str): The name/label of the element
+            role (str): The role name of the element
+            role_type (Any): The raw role object
+            recursive (bool): Whether to search recursively (default: True)
+            max_depth (int): Maximum depth for recursive search (default: 10)
+        """
+        name = kwargs.get('name')
+        role = kwargs.get('role')
+        recursive = kwargs.get('recursive', True)
+        max_depth = kwargs.get('max_depth', 10)
+        
+        if recursive:
+             return self._find_recursive(name, role, max_depth)
+        
+        # Immediate children search
+        children = self.access_agent.get_children(self._native_obj)
+        for child in children:
+            child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+            if self._matches(child_wrapper, name, role):
+                return child_wrapper
+        return None
+
+    def find_elements(self, **kwargs) -> List['UIElement']:
+        """
+        Finds all child elements matching criteria.
+        """
+        name = kwargs.get('name')
+        role = kwargs.get('role')
+        recursive = kwargs.get('recursive', True)
+        max_depth = kwargs.get('max_depth', 10)
+        
+        found_elements = []
+        if recursive:
+             self._find_recursive_all(name, role, max_depth, found_elements)
+        else:
+            children = self.access_agent.get_children(self._native_obj)
+            for child in children:
+                child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+                if self._matches(child_wrapper, name, role):
+                    found_elements.append(child_wrapper)
+        return found_elements
+
+    def _matches(self, element: 'LinuxElement', name: str, role: str) -> bool:
+        if name and element.name != name:
+            return False
+        if role and element.role_name != role:
+            return False
+        return True
+
+    def _find_recursive(self, name: str, role: str, depth: int) -> Optional['LinuxElement']:
+        if depth < 0:
             return None
         
         children = self.access_agent.get_children(self._native_obj)
         for child in children:
             child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
             
-            match = True
-            if name and child_wrapper.name != name:
-                match = False
-            
-            if role and child_wrapper.role_name != role:
-                match = False
-            
-            if match:
+            if self._matches(child_wrapper, name, role):
                 return child_wrapper
             
-            found = child_wrapper.find_descendant(name, role, max_depth - 1)
+            found = child_wrapper._find_recursive(name, role, depth - 1)
             if found:
                 return found
-                 
         return None
+
+    def _find_recursive_all(self, name: str, role: str, depth: int, results: List['LinuxElement']):
+        if depth < 0:
+            return
+            
+        children = self.access_agent.get_children(self._native_obj)
+        for child in children:
+            child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+            
+            if self._matches(child_wrapper, name, role):
+                results.append(child_wrapper)
+            
+            child_wrapper._find_recursive_all(name, role, depth - 1, results)
 
     def set_value(self, value: float) -> None:
         """Sets a numeric value on an element using the Value interface."""
