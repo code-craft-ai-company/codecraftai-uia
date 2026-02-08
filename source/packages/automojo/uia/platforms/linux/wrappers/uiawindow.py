@@ -16,6 +16,23 @@ class LinuxWindow(LinuxElement, UIWindow):
     def title(self) -> str:
         return self.name
 
+    @property
+    def main_menu(self) -> Optional['LinuxMenuBar']:
+        """Returns the main menu bar of the window."""
+        return self.get_main_menu()
+
+    def get_main_menu(self) -> Optional['LinuxMenuBar']:
+        from automojo.uia.platforms.linux.wrappers.menuelement import LinuxMenuBar
+        
+        # Menu bar might be nested (e.g. in a root pane), so search for it
+        menu_bar = self.find_descendant(role="menu bar", max_depth=5)
+        
+        if menu_bar:
+             # Repackage as LinuxMenuBar (reusing native obj and agents)
+             return LinuxMenuBar(menu_bar.native_obj, self.access_agent, self.wm_agent, parent=self)
+            
+        return None
+
     def close(self) -> None:
         raise NotImplementedError("Close is not yet implemented for Linux windows.")
 
@@ -47,17 +64,17 @@ class LinuxWindow(LinuxElement, UIWindow):
         
         # Secondary method: Try X11/Wayland window manager focus
         # This only works for X11 applications, but we attempt it anyway
-        if self._wm_agent:
+        if self.wm_agent:
              # First try using the window name from accessibility tree
              name = self.name
              if name:
-                 success = self._wm_agent.focus_window(name)
+                 success = self.wm_agent.focus_window(name)
                  if success:
                      return
              
              # Try a simpler search - just look for 'Calc' for LibreOffice
              if name and 'Calc' in name:
-                 success = self._wm_agent.focus_window('Calc')
+                 success = self.wm_agent.focus_window('Calc')
                  if success:
                      return
              
@@ -67,7 +84,7 @@ class LinuxWindow(LinuxElement, UIWindow):
              try:
                  app_name = self._native_obj.get_application().name
                  if app_name and app_name != name:
-                     self._wm_agent.focus_window(app_name)
+                     self.wm_agent.focus_window(app_name)
              except:
                  pass
     

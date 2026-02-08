@@ -159,6 +159,9 @@ class LinuxElement(UIElement):
             if name and child_wrapper.name != name:
                 match = False
             
+            if role and child_wrapper.role_name != role:
+                match = False
+            
             if match:
                 return child_wrapper
             

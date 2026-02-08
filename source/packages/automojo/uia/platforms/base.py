@@ -550,3 +550,78 @@ class AutomationEngine(ABC):
             :returns: A UIApplication object.
         """
         pass
+
+
+class UIDialog(UIWindow):
+    """
+        Abstract base class for dialog windows.
+    """
+    pass
+
+
+class UIModalDialog(UIDialog):
+    """
+        Abstract base class for modal dialogs.
+    """
+    pass
+
+
+class UISaveDialog(UIModalDialog):
+    """
+        Abstract base class for Save dialogs.
+    """
+
+    @abstractmethod
+    def set_filename(self, filename: str) -> None:
+        """
+            Sets the filename to save.
+        """
+        pass
+
+    @abstractmethod
+    def save(self) -> None:
+        """
+            Performs the save action (clicks Save button).
+        """
+        pass
+
+
+class UISaveAsDialog(UISaveDialog):
+    """
+        Abstract base class for Save As dialogs.
+    """
+    pass
+
+
+class UIOpenDialog(UIModalDialog):
+    """
+        Abstract base class for Open dialogs.
+    """
+
+    @abstractmethod
+    def set_filename(self, filename: str) -> None:
+        """
+            Sets the filename to open.
+        """
+        pass
+
+    @abstractmethod
+    def open(self) -> None:
+        """
+            Performs the open action (clicks Open button).
+        """
+        pass
+
+
+class UIModalDialogFileAlreadyExists(UIModalDialog):
+    """
+        Abstract base class for "File Already Exists" confirmation dialogs.
+    """
+
+    @abstractmethod
+    def confirm_overwrite(self) -> None:
+        """
+            Confirms the overwrite action (clicks Yes/Replace).
+        """
+        pass
+

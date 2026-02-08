@@ -32,7 +32,7 @@
                 "testing",
                 "run",
                 "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.linux.test_linux_libreoffice_calc_cell_input",
+                "--includes=automojo.tests.singlehost.linux.test_linux_libreoffice_calc_menus",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",

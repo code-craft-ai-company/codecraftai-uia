@@ -60,7 +60,7 @@ class LinuxApplication(LinuxElement, UIApplication):
                 role = self.access_agent.get_role(child)
                 # For now assuming pyatspi specific role check as we know the agent uses pyatspi underlying
                 # But ideally we should ask agent "is_window(element)"
-                if pyatspi and role == pyatspi.ROLE_FRAME:
+                if pyatspi and (role == pyatspi.ROLE_FRAME or role == pyatspi.ROLE_DIALOG or role == pyatspi.ROLE_FILE_CHOOSER):
                     windows.append(LinuxWindow(child, self.access_agent, self.wm_agent, parent=self))
             except Exception:
                 continue
