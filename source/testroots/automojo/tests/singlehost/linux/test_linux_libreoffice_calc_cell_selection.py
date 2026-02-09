@@ -2,11 +2,10 @@
 import platform
 import subprocess
 import time
-import os
 
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from automojo.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
 from automojo.uia.platforms.linux.wrappers.tableelement import TableElement
 
 
@@ -18,43 +17,37 @@ def _try_import_pyatspi() -> bool:
         return False
 
 
-def _handle_tip_dialog(automation) -> None:
-    tip_dialog = automation.get_application_by_name("Tip of the Day")
-    if not tip_dialog:
-        return
+def _handle_tip_dialog(app) -> None:
+    # Use Declarative Hint
+    # Use Declarative Hint
+    # Optimization: Check windows first
+    tip_dialog = None
+    if app:
+        windows = app.get_windows()
+        for w in windows:
+             if "Tip" in w.title:
+                 from automojo.uia.platforms.linux.wrappers.dialogelement import LinuxDialog
+                 tip_dialog = LinuxDialog(w.native_obj, w.access_agent, w.wm_agent)
+                 break
 
-    ok_btn = tip_dialog.find_descendant(name="OK")
-    if not ok_btn:
-        ok_btn = tip_dialog.find_descendant(name="Close")
-
-    if ok_btn:
-        try:
-            ok_btn.click()
-            time.sleep(1.0)
-        except Exception:
-            pass
-
-
-def _find_all_tables(element: LinuxElement, tables: list, depth: int = 0) -> None:
-    if depth > 15:
-        return
-
-    try:
-        if element.role_name == "table":
-            tables.append(element)
-
-        count = element._native_obj.childCount
-        for i in range(min(count, 50)):
-            child = element._native_obj.getChildAtIndex(i)
-            child_element = LinuxElement(child, element.access_agent, element.wm_agent, parent=element)
-            _find_all_tables(child_element, tables, depth + 1)
-    except Exception:
-        pass
+    if tip_dialog:
+        print("Handling Tip of the Day dialog...")
+        ok_btn = LibreOfficeCalc.TipOfTheDay.OKButton.resolve(tip_dialog)
+        if not ok_btn:
+             ok_btn = LibreOfficeCalc.TipOfTheDay.CloseButton.resolve(tip_dialog)
+        
+        if ok_btn:
+            try:
+                ok_btn.click()
+                time.sleep(1.0)
+            except Exception:
+                pass
 
 
 def test_libreoffice_selection():
     """
     Verifies cell selection in LibreOffice Calc: D1, D3, D5, B2, B4.
+    Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
         return
@@ -62,9 +55,10 @@ def test_libreoffice_selection():
     testbase.assert_equal(_try_import_pyatspi(), True)
 
     try:
+        import os
         env = os.environ.copy()
         env['GDK_BACKEND'] = 'x11'
-        proc = subprocess.Popen(["libreoffice", "--calc"], env=env)
+        proc = subprocess.Popen(["libreoffice", "--calc", "--norestore"], env=env)
     except FileNotFoundError:
         testbase.assert_equal(True, False, "libreoffice not found")
 
@@ -74,26 +68,24 @@ def test_libreoffice_selection():
         testbase.assert_equal(proc.poll() is None, True)
 
         automation = AutomationFactory.get_automation_engine()
-        _handle_tip_dialog(automation)
-
-        app = None
-        for name in ["soffice", "LibreOffice", "libreoffice", "calc"]:
-            app = automation.get_application_by_name(name)
-            if app:
-                break
+        
+        # Declarative Attach
+        app = LibreOfficeCalc.attach(automation)
+        if not app:
+             app = automation.get_application_by_name("LibreOffice")
         
         testbase.assert_equal(app is not None, True, "Correct application not found")
 
-        windows = app.get_windows()
-        testbase.assert_equal(len(windows) > 0, True)
+        _handle_tip_dialog(app)
 
-        main_window = None
-        for window in windows:
-            if "Calc" in window.title:
-                main_window = window
-                break
+        # MainWindow
+        main_window = LibreOfficeCalc.MainWindow.resolve(app)
         if not main_window:
-            main_window = windows[0]
+             windows = app.get_windows()
+             if windows:
+                 main_window = windows[0]
+        
+        testbase.assert_equal(main_window is not None, True, "Main window not found")
 
         try:
             main_window.activate()
@@ -101,24 +93,16 @@ def test_libreoffice_selection():
             pass
         time.sleep(1.0)
 
-        tables_found = []
-        _find_all_tables(main_window, tables_found)
-
-        spreadsheet = None
-        max_children = -1
-        for table in tables_found:
-             # Heuristic: main spreadsheet usually has many children (cells)
-             count = table._native_obj.childCount
-             if count > max_children:
-                 max_children = count
-                 spreadsheet = TableElement(table._native_obj, table.access_agent, table.wm_agent, parent=table.parent)
+        # Spreadsheet
+        spreadsheet = LibreOfficeCalc.Spreadsheet.resolve(main_window)
+        
+        # Validation of type and manual cast if needed
+        if spreadsheet and not isinstance(spreadsheet, TableElement):
+             spreadsheet = TableElement(spreadsheet.native_obj, spreadsheet.access_agent, spreadsheet.wm_agent, parent=main_window)
         
         testbase.assert_equal(spreadsheet is not None, True, "Spreadsheet table not found")
 
         # Cells to select: D1, D3, D5, B2, B4
-        # Columns (0-indexed): A=0, B=1, C=2, D=3
-        # Rows (0-indexed): 1=0, 2=1, ...
-        
         targets = [
             (0, 3, "D1"),
             (2, 3, "D3"),
@@ -131,7 +115,6 @@ def test_libreoffice_selection():
             print(f"Selecting {label} (Row {row}, Col {col})...")
             
             # Use basic selection
-            # Note: select_cell is the new/preferred method on UITable
             spreadsheet.select_cell(row, col)
             
             time.sleep(0.5)
@@ -145,7 +128,6 @@ def test_libreoffice_selection():
             # Using raw pyatspi check for robustness in validation
             states = cell._native_obj.getState()
             
-            # State set usually contains STATE_FOCUSED and/or STATE_SELECTED/STATE_ACTIVE
             import pyatspi
             
             is_focused = states.contains(pyatspi.STATE_FOCUSED)
@@ -153,7 +135,6 @@ def test_libreoffice_selection():
             
             print(f"  {label} -> Focused: {is_focused}, Selected: {is_selected}")
             
-            # Assert either focused or selected is true
             testbase.assert_equal(is_focused or is_selected, True, f"Cell {label} was not selected/focused")
             
         # Verify get_range
@@ -168,3 +149,6 @@ def test_libreoffice_selection():
     finally:
         proc.terminate()
         proc.wait()
+
+if __name__ == "__main__":
+    test_libreoffice_selection()

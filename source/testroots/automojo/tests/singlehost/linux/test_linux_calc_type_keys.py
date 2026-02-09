@@ -4,7 +4,8 @@ import time
 
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from automojo.uia.model.declarative import ButtonHint
+from automojo.uia.platforms.linux.mappings.calculator import Calculator
 
 
 def _try_import_pyatspi() -> bool:
@@ -15,107 +16,22 @@ def _try_import_pyatspi() -> bool:
         return False
 
 
-def _find_result_deep(element: LinuxElement, target: str, depth: int = 0) -> bool:
-    if depth > 30:
-        return False
-
-    try:
-        native = getattr(element, '_native_obj', element)
-
-        try:
-            if target in element.text:
-                return True
-        except Exception:
-            pass
-
-        if native.name == target:
-            return True
-
-        if hasattr(native, 'queryText'):
-            try:
-                text_iface = native.queryText()
-                content = text_iface.getText(0, -1)
-                if target in content:
-                    return True
-            except Exception:
-                pass
-
-        if hasattr(native, 'childCount'):
-            count = native.childCount
-            for i in range(min(count, 50)):
-                child = native.getChildAtIndex(i)
-                child_element = LinuxElement(child, element._access_agent, element._wm_agent)
-                if _find_result_deep(child_element, target, depth + 1):
-                    return True
-    except Exception:
-        pass
-
-    return False
-
-
-def _find_input_element(element: LinuxElement, depth: int = 0) -> LinuxElement | None:
-    if depth > 10:
-        return None
-
-    try:
-        role_name = element.role_name.lower()
-        if role_name in {"entry", "text", "text entry", "editable text"}:
-            return element
-
-        native = getattr(element, '_native_obj', element)
-        if hasattr(native, 'childCount'):
-            count = native.childCount
-            for i in range(min(count, 50)):
-                child = native.getChildAtIndex(i)
-                child_element = LinuxElement(child, element._access_agent, element._wm_agent)
-                found = _find_input_element(child_element, depth + 1)
-                if found is not None:
-                    return found
-    except Exception:
-        pass
-
-    return None
-
-
-
-def _find_button_by_name(element: LinuxElement, name: str, depth: int = 0) -> LinuxElement | None:
-    if depth > 20:
-        return None
-
-    try:
-        if element.role_name == "push button":
-            n_obj = getattr(element, '_native_obj', element)
-            if n_obj.name == name:
-                return element
-        
-        native = getattr(element, '_native_obj', element)
-        if hasattr(native, 'childCount'):
-            count = native.childCount
-            for i in range(min(count, 50)):
-                child = native.getChildAtIndex(i)
-                child_element = LinuxElement(child, element._access_agent, element._wm_agent)
-                found = _find_button_by_name(child_element, name, depth + 1)
-                if found is not None:
-                    return found
-    except Exception:
-        pass
-    
-    return None
-
-
 def test_linux_calc_type_keys():
     """
         Verifies type_keys by typing into gnome-calculator and checking the result.
+        Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
         return
 
     testbase.assert_equal(_try_import_pyatspi(), True)
 
+    # Launch logic (or rely on launch_or_attach, but Calculator.launch_or_attach is a stub for now that does attach)
+    # We'll launch manually to ensure clean state as per original test
     try:
         proc = subprocess.Popen(["gnome-calculator"])
     except FileNotFoundError:
-        testbase.assert_equal(True, False)
+        testbase.assert_equal(True, False, "gnome-calculator not found")
 
     try:
         time.sleep(2.0)
@@ -124,48 +40,47 @@ def test_linux_calc_type_keys():
         automation = AutomationFactory.get_automation_engine()
         time.sleep(2.0)
 
-        app = automation.get_application_by_name("gnome-calculator")
-        if not app:
-            app = automation.get_application_by_name("Calculator")
+        # Declarative Attach
+        app = Calculator.attach(automation)
+        testbase.assert_equal(app is not None, True, "Could not attach to Calculator")
 
-        testbase.assert_equal(app is not None, True)
+        main_window = Calculator.MainWindow.resolve(app)
+        testbase.assert_equal(main_window is not None, True, "Could not find Main Window")
 
-        windows = app.get_windows()
-        testbase.assert_equal(len(windows) > 0, True)
-
-        main_window = windows[0]
         try:
             main_window.activate()
         except Exception:
             pass
         time.sleep(1.0)
 
-        # Fallback to button clicking if type_keys is unreliable in test env
+        # Typing sequence using ButtonHints
         sequence = "12+34="
         for char in sequence:
-            btn = _find_button_by_name(main_window, char)
+            # Dynamic hint creation for buttons
+            # We could use Calculator.Button1 etc, but dynamic is cleaner for loop
+            btn = ButtonHint(name=char).resolve(main_window)
             if btn:
                 btn.click()
                 time.sleep(0.5)
             else:
-                # Fallback to typing if button not found (e.g. standard keyboard input)
-                # But here we expect buttons to exist for calculator
-                input_element = _find_input_element(main_window)
-                if input_element:
-                    input_element.type_keys(char)
+                testbase.assert_equal(True, False, f"Could not find button for '{char}'")
             time.sleep(0.2)
         
         time.sleep(1.0)
 
+        # Verification
         found_result = False
-        for _ in range(5):
-            # Increased depth because result might be deep in the tree
-            if _find_result_deep(main_window, "46", depth=0):
-                found_result = True
-                break
-            time.sleep(1.0)
+        display = Calculator.Display.resolve(main_window)
+        
+        if display:
+             # Check text
+             # Display might contain "46" or "46\n"
+             print(f"Display text: '{display.text}'")
+             if "46" in display.text:
+                 found_result = True
+        
+        testbase.assert_equal(found_result, True, "Result '46' not found in display")
 
-        testbase.assert_equal(found_result, True)
     finally:
         proc.terminate()
 

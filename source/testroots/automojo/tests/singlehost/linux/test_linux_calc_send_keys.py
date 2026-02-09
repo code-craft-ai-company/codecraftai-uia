@@ -111,7 +111,25 @@ def test_linux_calc_send_keys():
         # Using the hint from the mapping
         print("Resolving Display element using Declarative Mapping...")
         display = Calculator.Display.resolve(main_window)
+        if not display:
+            display = Calculator.DisplayEntry.resolve(main_window)
+        if not display:
+             display = Calculator.DisplayEdit.resolve(main_window)
+
+        time.sleep(1.0)
         
+        # Clear specific logic
+        print("Clearing calculator...")
+        clear_btn = Calculator.ButtonClear.resolve(main_window)
+        if clear_btn:
+            try:
+                clear_btn.click()
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"Clear click failed: {e}")
+        else:
+             print("Warning: Clear button not found")
+
         if display:
              print(f"Found display: {display}")
              print("Clicking display to ensure widget focus...")
@@ -119,7 +137,8 @@ def test_linux_calc_send_keys():
                  display.click()
                  time.sleep(0.5)
              except Exception as e:
-                 print(f"Click failed: {e}")
+                 # print(f"Click failed: {e}")
+                 pass
                  
              print("Typing '12*3=' into display...")
              display.type_keys("12*3=")

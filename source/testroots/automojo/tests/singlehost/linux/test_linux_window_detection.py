@@ -6,6 +6,7 @@ import os
 
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
+from automojo.uia.platforms.linux.mappings.calculator import Calculator
 
 
 def _try_import_pyatspi() -> bool:
@@ -20,6 +21,7 @@ def test_linux_window_detection_x11():
     """
         Verifies that window detection correctly identifies X11 windows 
         when an application is forced to run with GDK_BACKEND=x11.
+        Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
         return
@@ -32,8 +34,6 @@ def test_linux_window_detection_x11():
         env['GDK_BACKEND'] = 'x11'
         proc = subprocess.Popen(["gnome-calculator"], env=env)
     except FileNotFoundError:
-        # If gnome-calculator not installed, skip or fail depending on strictness
-        # For now, fail as tests should have environment ready
         testbase.assert_equal(True, False, "gnome-calculator not found")
 
     try:
@@ -43,35 +43,36 @@ def test_linux_window_detection_x11():
 
         automation = AutomationFactory.get_automation_engine()
         
-        # Retry finding window a few times
-        main_window = None
-        for _ in range(5):
-             time.sleep(1.0)
-             app = automation.get_application_by_name("gnome-calculator")
-             if not app:
-                 app = automation.get_application_by_name("Calculator")
-             
-             if app:
-                 windows = app.get_windows()
-                 if windows:
-                     main_window = windows[0]
-                     break
+        # Declarative Attach
+        app = Calculator.attach(automation)
+        testbase.assert_equal(app is not None, True, "Could not attach to Calculator")
+
+        # MainWindow
+        main_window = Calculator.MainWindow.resolve(app)
+        
+        # Fallback if window not found by strict mapping (though it should be)
+        if not main_window:
+             windows = app.get_windows()
+             if windows:
+                 main_window = windows[0]
         
         testbase.assert_equal(main_window is not None, True, "Could not find gnome-calculator window")
 
         # Verify detection type via the agent
         # The window wrapper (LinuxElement) has _wm_agent. 
-        # Ideally we access via specific API if available, or check private agent as this is a platform test
         
-        wm_agent = main_window._wm_agent
-        if hasattr(wm_agent, 'detect_window_type'):
+        wm_agent = getattr(main_window, '_wm_agent', None)
+        # WeakRef handling if needed, but property usually returns the agent or None
+        if hasattr(main_window, 'wm_agent'):
+             wm_agent = main_window.wm_agent
+             
+        if wm_agent and hasattr(wm_agent, 'detect_window_type'):
              # Should be 'x11' because we forced GDK_BACKEND=x11
              win_type = wm_agent.detect_window_type(main_window.name)
              print(f"Window '{main_window.name}' detected as: {win_type}")
              testbase.assert_equal(win_type, 'x11', "Forced X11 app should be detected as 'x11'")
         else:
              print("Warning: WM Agent does not support detection (Pure X11 agent?)")
-             # If it's pure X11 agent, it doesn't have detect_window_type, essentially defaulting to X11 handling
              pass
 
     finally:
@@ -81,9 +82,8 @@ def test_linux_window_detection_x11():
 
 def test_linux_window_detection_default():
     """
-        Verifies window detection for default launch (likely Wayland in this environment).
-        Note: If the system is X11, this will detect x11. If Wayland, likely wayland.
-        We mainly verify it returns a valid type.
+        Verifies window detection for default launch.
+        Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
         return
@@ -101,24 +101,20 @@ def test_linux_window_detection_default():
         
         automation = AutomationFactory.get_automation_engine()
         
-        # Retry finding window
-        main_window = None
-        for _ in range(5):
-             time.sleep(1.0)
-             app = automation.get_application_by_name("gnome-calculator")
-             if not app:
-                 app = automation.get_application_by_name("Calculator")
-             
-             if app:
-                 windows = app.get_windows()
-                 if windows:
-                     main_window = windows[0]
-                     break
+        # Declarative Attach
+        app = Calculator.attach(automation)
+        testbase.assert_equal(app is not None, True, "Could not attach to Calculator")
+
+        main_window = Calculator.MainWindow.resolve(app)
+        if not main_window:
+             windows = app.get_windows()
+             if windows:
+                 main_window = windows[0]
         
         testbase.assert_equal(main_window is not None, True, "Could not find gnome-calculator window")
 
-        wm_agent = main_window._wm_agent
-        if hasattr(wm_agent, 'detect_window_type'):
+        wm_agent = getattr(main_window, 'wm_agent', None)
+        if wm_agent and hasattr(wm_agent, 'detect_window_type'):
              win_type = wm_agent.detect_window_type(main_window.name)
              print(f"Default Window detected as: {win_type}")
              
@@ -126,15 +122,10 @@ def test_linux_window_detection_default():
              is_valid = win_type in ['x11', 'wayland']
              testbase.assert_equal(is_valid, True, f"Invalid window type detected: {win_type}")
              
-             # In our specific environment (Wayland), we expect 'wayland' for native apps
-             # But tests might run elsewhere, so we just ensure it's valid. 
-             # (Optional: check env to be stricter)
              if os.environ.get("WAYLAND_DISPLAY"):
-                  # On Wayland, default gnome-calculator usually runs as native Wayland
-                  # unless forced otherwise or missing wayland plugin?
-                  # We'll just log it for now.
                   pass
 
     finally:
         proc.terminate()
         proc.wait()
+

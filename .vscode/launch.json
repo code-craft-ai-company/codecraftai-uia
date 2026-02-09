@@ -23,7 +23,7 @@
             "envFile": "${workspaceFolder}/.env"
         },
         {
-            "name": "Python: Internal Tests - Run",
+            "name": "Python: Internal Linux Tests - Run",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/.venv/bin/testbase",
@@ -32,7 +32,7 @@
                 "testing",
                 "run",
                 "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.linux.test_linux_libreoffice_draw",
+                "--includes=automojo.tests.singlehost.linux",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",

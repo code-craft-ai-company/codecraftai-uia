@@ -365,6 +365,11 @@ class MenuItemHint(ElementHint[UIMenuItem]):
     def __init__(self, name: str = None, role: str = "menu item", access_name: str = None, path: str = None):
         super().__init__(UIMenuItem, name, role, access_name, path)
 
+class TableHint(ElementHint[UITable]):
+    """Hint for locating a Table control."""
+    def __init__(self, name: str = None, role: str = "table", access_name: str = None, path: str = None):
+        super().__init__(UITable, name, role, access_name, path)
+
 
 class DeclarativeApplication:
     """
@@ -373,9 +378,8 @@ class DeclarativeApplication:
     It returns a concrete UIApplication when valid.
     """
     
-    APPLICATION_HINT: str = None
-    APPLICATION_NAME: str = None
-    
+    APPLICATION_COMMAND: str = None
+
     @classmethod
     def attach(cls, automation_engine: Optional[AutomationEngine] = None) -> Optional[UIApplication]:
         """
@@ -399,6 +403,20 @@ class DeclarativeApplication:
         if app:
             return app
             
-        # Launch logic would go here, possibly using the hint
-        # For now, we rely on attach logic which might auto-launch on some platforms (MacOS)
+        if cls.APPLICATION_COMMAND:
+            import subprocess
+            import shlex
+            import time
+            
+            print(f"Launching application: {cls.APPLICATION_COMMAND}")
+            subprocess.Popen(shlex.split(cls.APPLICATION_COMMAND))
+            
+            # Wait for app to appear
+            for _ in range(20):
+                time.sleep(1)
+                app = cls.attach(automation_engine)
+                if app:
+                    print(f"Attached to launched app: {app.name}")
+                    return app
+        
         return None

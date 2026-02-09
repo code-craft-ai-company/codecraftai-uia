@@ -138,6 +138,29 @@ class LinuxElement(UIElement):
     def set_text(self, text: str) -> None:
         self.type_keys(text)
 
+    def _create_child_wrapper(self, native_child: Any) -> 'LinuxElement':
+        """
+        Creates a wrapper for a native child element, using specialized classes if available.
+        """
+        role = self.access_agent.get_role_name(native_child)
+        if role == 'table':
+            try:
+                from automojo.uia.platforms.linux.wrappers.tableelement import TableElement
+                # TableElement inherits UITable but effectively wraps LinuxElement logic manually?
+                # Based on file read, TableElement(native_obj, access_agent, wm_agent, parent)
+                return TableElement(native_child, self.access_agent, self.wm_agent, parent=self)
+            except ImportError:
+                pass
+        
+        elif role in ['frame', 'window']:
+            try:
+                from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+                return LinuxWindow(native_child, self.access_agent, self.wm_agent, parent=self)
+            except ImportError:
+                pass
+        
+        return LinuxElement(native_child, self.access_agent, self.wm_agent, parent=self)
+
     def find_descendant(self, name: str = None, role:str = None, max_depth: int = 10) -> 'LinuxElement':
         # Alias specifically for internal/legacy use, delegates to find_element logic but recursive
         # Re-implementing using find_element logic is cleaner
@@ -164,7 +187,7 @@ class LinuxElement(UIElement):
         # Immediate children search
         children = self.access_agent.get_children(self._native_obj)
         for child in children:
-            child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+            child_wrapper = self._create_child_wrapper(child)
             if self._matches(child_wrapper, name, role):
                 return child_wrapper
         return None
@@ -184,16 +207,29 @@ class LinuxElement(UIElement):
         else:
             children = self.access_agent.get_children(self._native_obj)
             for child in children:
-                child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+                child_wrapper = self._create_child_wrapper(child)
                 if self._matches(child_wrapper, name, role):
                     found_elements.append(child_wrapper)
         return found_elements
 
     def _matches(self, element: 'LinuxElement', name: str, role: str) -> bool:
-        if name and element.name != name:
-            return False
         if role and element.role_name != role:
             return False
+            
+        if name:
+            el_name = element.name or ""
+            if name.startswith('~'):
+                if name[1:] not in el_name:
+                    return False
+            elif name.endswith('*'):
+                 if not el_name.startswith(name[:-1]):
+                     return False
+            elif name.startswith('*'):
+                 if not el_name.endswith(name[1:]):
+                     return False
+            elif element.name != name:
+                return False
+                
         return True
 
     def _find_recursive(self, name: str, role: str, depth: int) -> Optional['LinuxElement']:
@@ -202,10 +238,17 @@ class LinuxElement(UIElement):
         
         children = self.access_agent.get_children(self._native_obj)
         for child in children:
-            child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+            child_wrapper = self._create_child_wrapper(child)
             
             if self._matches(child_wrapper, name, role):
                 return child_wrapper
+            
+            # Recurse only if not found (DFS)
+            # Optimization: If child is a table, should we search inside it via recursion?
+            # Yes, standard behavior.
+            
+            # Note: We must call internal _find_recursive to avoid re-wrapping if possible?
+            # But _find_recursive is on instance.
             
             found = child_wrapper._find_recursive(name, role, depth - 1)
             if found:
@@ -218,7 +261,7 @@ class LinuxElement(UIElement):
             
         children = self.access_agent.get_children(self._native_obj)
         for child in children:
-            child_wrapper = LinuxElement(child, self.access_agent, self.wm_agent, parent=self)
+            child_wrapper = self._create_child_wrapper(child)
             
             if self._matches(child_wrapper, name, role):
                 results.append(child_wrapper)

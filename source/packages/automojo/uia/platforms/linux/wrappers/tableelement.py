@@ -1,5 +1,5 @@
 import weakref
-from typing import Any, Tuple, Optional
+from typing import Any, Tuple, Optional, List
 from automojo.uia.platforms.base import UITable, UICell, UIElement
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
@@ -40,10 +40,7 @@ class CellElement(LinuxElement, UICell):
 
     def set_text(self, text: str) -> None:
         # For spreadsheet cells, we usually need to type the value
-        # But we can try EditableText? 
-        # For consistency with current tests, we'll use type_keys with enter
         self.click()
-        # Give focus a moment
         import time
         time.sleep(0.1)
         self.type_keys(text + "\n")
@@ -65,89 +62,17 @@ class CellElement(LinuxElement, UICell):
         return f"CellElement<Row={self.row}, Col={self.column}, Text='{self.text}'>"
 
 
-class TableElement(UITable):
+class TableElement(LinuxElement, UITable):
     """
     Specialized wrapper for table elements (e.g., LibreOffice Calc spreadsheets).
     Provides table-specific manipulation methods using AT-SPI Table interface.
     """
     
     def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
-        # We need to initialize LinuxElement mixin if we inherited from it, 
-        # but pure UITable inherits UIElement. TableElement structure in file is:
-        # class TableElement(UITable):
-        # But it implements Linux logic, so likely usually wraps LinuxElement or should inherit it?
-        # Looking at previous file content, it inherited ONLY UITable, but took agents in init.
-        # It replicates some LinuxElement properties.
-        # Ideally it should inherit LinuxElement too to get weakref logic for agents.
-        # Let's check imports. It imports LinuxElement.
-        # If I change it to inherit LinuxElement, it simplifies things.
-        # But for now, I will just implement the weakref pattern here too if it doesn't inherit.
-        # Update: The file content shows `class TableElement(UITable):`
-        # So I must implement weakref for agents here manually or change inheritance.
-        # Changing inheritance to `class TableElement(LinuxElement, UITable):` is better but risky for MRO.
-        # Let's stick to manual weakref here to match existing structure, OR use LinuxElement composition?
-        # Actually, `TableElement` has `_native_obj` etc. It IS a LinuxElement in spirit.
-        # Let's use weakref here manually to avoid big inheritance changes.
+        super().__init__(native_obj, access_agent, wm_agent, parent)
         
-        super().__init__(parent)
-        self._native_obj = native_obj
-        self._access_agent = weakref.ref(access_agent)
-        self._wm_agent = weakref.ref(wm_agent) if wm_agent else None
-    
-    @property
-    def access_agent(self) -> AccessibilityAgent:
-        return self._access_agent()
+    # Inherit standard UIElement methods from LinuxElement (bounds, click, etc.)
 
-    @property
-    def wm_agent(self) -> Optional[WindowManagerAgent]:
-        if self._wm_agent:
-            return self._wm_agent()
-        return None
-
-    # DisplayElement properties
-    @property
-    def bounds(self) -> Tuple[int, int, int, int]:
-        """Returns (x, y, width, height) bounding rectangle."""
-        coords = self.access_agent.get_coordinates(self._native_obj)
-        if coords:
-            return coords
-        return (0, 0, 0, 0)
-
-    @property
-    def position(self) -> Tuple[int, int]:
-        """Returns (x, y) position."""
-        bounds = self.bounds
-        return (bounds[0], bounds[1])
-
-    @property
-    def size(self) -> Tuple[int, int]:
-        """Returns (width, height) size."""
-        bounds = self.bounds
-        return (bounds[2], bounds[3])
-    
-    @property
-    def is_visible(self) -> bool:
-        """True if the table is visible."""
-        states = self.access_agent.get_states(self._native_obj)
-        for state in states:
-            if str(state) == "visible" or str(state).endswith("VISIBLE"):
-                return True
-        return False
-    
-    @property
-    def name(self) -> str:
-        """The name of the table."""
-        return self.access_agent.get_name(self._native_obj)
-    
-    @property
-    def is_enabled(self) -> bool:
-        """True if the table is enabled."""
-        states = self.access_agent.get_states(self._native_obj)
-        for state in states:
-            if str(state) == "enabled" or str(state).endswith("ENABLED"):
-                return True
-        return False
-    
     # UITable properties
     @property
     def row_count(self) -> int:
@@ -171,18 +96,6 @@ class TableElement(UITable):
             pass
         return 0
     
-    def click(self) -> None:
-        """Clicks on the table."""
-        if self.access_agent.do_action(self._native_obj, 0):
-            return
-        raise NotImplementedError("Click action not supported by this table.")
-    
-    def type_keys(self, keys: str) -> None:
-        """Types keys into the table."""
-        if not self.wm_agent:
-            raise NotImplementedError("WM Agent not available for typing keys.")
-        self.wm_agent.send_keys(None, keys)
-    
     def get_cell(self, row: int, column: int) -> Optional[CellElement]:
         """Gets a cell element from a table at the specified row and column."""
         try:
@@ -195,7 +108,7 @@ class TableElement(UITable):
             print(f"Error getting table cell ({row},{column}): {e}")
         return None
     
-    def get_range(self, start_row: int, start_column: int, end_row: int, end_column: int) -> list[CellElement]:
+    def get_range(self, start_row: int, start_column: int, end_row: int, end_column: int) -> List[CellElement]:
         """Gets a range of cells."""
         cells = []
         for r in range(start_row, end_row + 1):
@@ -215,7 +128,6 @@ class TableElement(UITable):
     def clear_selection(self) -> None:
         """Clears the current selection in a table via AT-SPI Table interface."""
         try:
-            table = self._native_obj.queryTable()
             selection = self._native_obj.querySelection()
             if selection:
                 # Clear all selected children
@@ -229,22 +141,36 @@ class TableElement(UITable):
         try:
             table = self._native_obj.queryTable()
             if table:
-                # Get the cell at this position
-                cell = table.getAccessibleAt(row, col)
-                if cell:
-                    # Try to select it via Selection interface
-                    try:
-                        selection = self._native_obj.querySelection()
-                        if selection:
-                            # Get the child index for this cell
-                            index = table.getIndexAt(row, col)
-                            selection.selectChild(index)
-                            return True
-                    except:
-                        pass
-                return True
-        except Exception:
+                # Try to select it via Selection interface
+                try:
+                    selection = self._native_obj.querySelection()
+                    if selection:
+                        # Get the child index for this cell
+                        index = table.getIndexAt(row, col)
+                        # print(f"DEBUG: Selecting child index {index} for cell ({row}, {col})")
+                        did_select = selection.selectChild(index)
+                        if did_select:
+                             return True
+                        # If selectChild returned False, continue to fallback
+                        # print(f"DEBUG: selectChild({index}) returned False")
+                except Exception as e:
+                    # print(f"DEBUG: select_from_table inner error: {e}")
+                    pass
+        except Exception as e:
+            # print(f"DEBUG: select_from_table outer error: {e}")
             pass
+        
+        # Fallback: Try to get cell and click it
+        # print(f"DEBUG: select_from_table fallback to click ({row}, {col})")
+        cell = self.get_cell(row, col)
+        if cell:
+            try:
+                cell.click()
+                return True
+            except Exception as e:
+                # print(f"DEBUG: Fallback click failed: {e}")
+                pass
+                
         return False
 
     def get_table_cell(self, row: int, col: int) -> CellElement:

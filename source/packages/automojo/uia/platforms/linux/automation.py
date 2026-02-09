@@ -61,7 +61,7 @@ class LinuxAutomation(AutomationEngine):
         else:
             print(f"Warning: Unknown session type '{session_type}', no WM agent initialized")
 
-    def get_application_by_name(self, application_name: str) -> UIApplication:
+    def get_application_by_name(self, application_name: str) -> Optional[LinuxApplication]:
         """
             Gets an application by its name from the Accessibility Agent.
         """
@@ -69,4 +69,48 @@ class LinuxAutomation(AutomationEngine):
         if app_node:
              return LinuxApplication(app_node, self._access_agent, self._wm_agent)
         return None
+
+    def find_window(self, name_pattern: str) -> Optional['LinuxWindow']:
+        """
+        Finds a window by name pattern.
+        Returns a LinuxWindow wrapper containing both the Accessibility object
+        and the Native Window object (if available).
+        """
+        from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+        
+        # 1. Find Accessibility Object (AT-SPI)
+        # We search across all desktop children
+        # This implementation requires PyAtspiAccessibilityAgent to have a suitable method
+        # or we iterate manually here.
+        
+        found_node = None
+        # Use existing agent methods if possible, or iterate
+        # PyAtspiAgent doesn't have global find_window exposed, let's implement a search here using it
+        
+        # Iterate apps
+        try:
+            desktop = self._access_agent.get_root()
+            for i in range(desktop.childCount):
+                app = desktop.getChildAtIndex(i)
+                # Iterate windows in app
+                for j in range(app.childCount):
+                    win = app.getChildAtIndex(j)
+                    if win.getRoleName() == 'frame' and name_pattern in win.name:
+                        found_node = win
+                        break
+                if found_node: break
+        except Exception as e:
+            print(f"Error searching AT-SPI: {e}")
+            
+        if not found_node:
+            print(f"Window '{name_pattern}' not found in Accessibility Tree.")
+            return None
+            
+        # 2. Find Native Window Object
+        native_window = None
+        if self._wm_agent and hasattr(self._wm_agent, 'find_native_window'):
+             native_window = self._wm_agent.find_native_window(name_pattern)
+             
+        # 3. Create Wrapper
+        return LinuxWindow(found_node, self._access_agent, self._wm_agent, native_window=native_window)
 

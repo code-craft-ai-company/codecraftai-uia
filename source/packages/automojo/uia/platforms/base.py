@@ -637,6 +637,7 @@ class UIOpenDialog(UIModalDialog):
         pass
 
 
+
 class UIModalDialogFileAlreadyExists(UIModalDialog):
     """
         Abstract base class for "File Already Exists" confirmation dialogs.
@@ -648,4 +649,11 @@ class UIModalDialogFileAlreadyExists(UIModalDialog):
             Confirms the overwrite action (clicks Yes/Replace).
         """
         pass
+
+
+class UIDropDownMenu(UIMenu):
+    """
+    Abstract base class for drop-down menus (typically in a menu bar).
+    """
+    pass
 

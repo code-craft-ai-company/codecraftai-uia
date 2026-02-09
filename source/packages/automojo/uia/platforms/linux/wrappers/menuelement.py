@@ -1,5 +1,5 @@
 from typing import List, Optional, Any
-from automojo.uia.platforms.base import UIMenuBar, UIMenu, UIMenuItem, UISubMenu, UIElement
+from automojo.uia.platforms.base import UIMenuBar, UIMenu, UIMenuItem, UISubMenu, UIElement, UIDropDownMenu
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
 
@@ -23,6 +23,29 @@ class LinuxMenuItem(LinuxElement, UIMenuItem):
     def is_separator(self) -> bool:
         return self.role_name == "separator"
 
+    def click(self) -> None:
+        """
+        Overrides click to prefer Window Manager (physical) click over Accessibility Action.
+        This is crucial for Wayland/GTK environments where accessibility actions 
+        are often ignored by menus.
+        """
+        # Try WM click first if coordinates available
+        try:
+            coords = self.bounds
+            if coords and coords[2] > 0 and coords[3] > 0:
+                x, y, w, h = coords
+                center_x = x + (w // 2)
+                center_y = y + (h // 2)
+                
+                if self.wm_agent:
+                    self.wm_agent.click(center_x, center_y)
+                    return
+        except Exception:
+            pass
+            
+        # Fallback to standard accessibility action
+        super().click()
+
     def invoke(self) -> None:
         """Invokes the menu item (click)."""
         self.click()
@@ -45,6 +68,27 @@ class LinuxMenu(LinuxElement, UIMenu):
 
     def open(self) -> None:
         self.click()
+
+    def click(self) -> None:
+        """
+        Overrides click to prefer Window Manager (physical) click over Accessibility Action.
+        """
+        # Try WM click first if coordinates available
+        try:
+            coords = self.bounds
+            if coords and coords[2] > 0 and coords[3] > 0:
+                x, y, w, h = coords
+                center_x = x + (w // 2)
+                center_y = y + (h // 2)
+                
+                if self.wm_agent:
+                    self.wm_agent.click(center_x, center_y)
+                    return
+        except Exception:
+            pass
+            
+        # Fallback to standard accessibility action
+        super().click()
 
     def close(self) -> None:
         # Click again to close? Or Escape?
@@ -94,3 +138,12 @@ class LinuxMenuBar(LinuxElement, UIMenuBar):
         for child in children:
              menus.append(LinuxMenu(child, self.access_agent, self.wm_agent, parent=self))
         return menus
+
+
+class LinuxDropDownMenu(LinuxMenu, UIDropDownMenu):
+    """
+    Wrapper for drop-down menus. Currently behaves identically to LinuxMenu
+    but provides a specific type for mapping.
+    """
+    def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
+        super().__init__(native_obj, access_agent, wm_agent, parent=parent)

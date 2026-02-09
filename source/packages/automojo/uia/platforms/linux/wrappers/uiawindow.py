@@ -1,16 +1,17 @@
+from typing import Any, Optional, Tuple
 
 from automojo.uia.platforms.base import UIWindow
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
-from typing import Any, Optional
 from automojo.uia.platforms.base import UIWindow, UIElement
 
 class LinuxWindow(LinuxElement, UIWindow):
     """
         Wrapper for Linux windows using Agent Architecture.
     """
-    def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
+    def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None, native_window: Any = None):
         super().__init__(native_obj, access_agent, wm_agent, parent=parent)
+        self.native_window = native_window
     
     @property
     def title(self) -> str:
@@ -32,6 +33,9 @@ class LinuxWindow(LinuxElement, UIWindow):
              return LinuxMenuBar(menu_bar.native_obj, self.access_agent, self.wm_agent, parent=self)
             
         return None
+
+    def get_position(self) -> Tuple[int, int]:
+        return self.native_obj.get_coordinates()
 
     def close(self) -> None:
         raise NotImplementedError("Close is not yet implemented for Linux windows.")

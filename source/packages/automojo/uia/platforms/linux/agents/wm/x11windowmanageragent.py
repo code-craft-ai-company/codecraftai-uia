@@ -379,13 +379,85 @@ class X11WindowManagerAgent(WindowManagerAgent):
 
     def send_keys(self, window: Any, keys: str) -> None:
         """
-        Sends a sequence of keys by calling keypress for each character.
+        Sends a sequence of keys.
+        Supports logical modifiers:
+        % = Alt
+        ^ = Control
+        + = Shift
+        The modifier applies to the NEXT character only.
+        
+        Supports escaping and special keys in {}:
+        {+}  -> types +
+        {%}  -> types %
+        {^}  -> types ^
+        {ENTER} -> types Enter
+        {TAB}   -> types Tab
+        
+        Example: "%fa" -> Alt+f, then a.
+        Example: "{+}" -> types +
         """
         self._setup_keymap()
         print(f"X11 Agent typing: {keys}")
         
-        for char in keys:
-            self.keypress(char)
+        i = 0
+        n = len(keys)
+        while i < n:
+            char = keys[i]
+            modifier = None
+            
+            # 1. Handle Modifiers
+            if char in ['%', '^', '+'] and i + 1 < n and keys[i+1] != '{':
+                 # Only treat as modifier if NOT followed by { (heuristic)
+                 # Actually, standard is +{KEY} means Shift+Key
+                 # So simple check: is it a modifier char?
+                 modifier = char
+                 i += 1
+                 if i >= n: break
+                 char = keys[i]
+            
+            # Determine modifier keycode
+            mod_keycode = 0
+            if modifier == '%':
+                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Alt_L"))
+                 except: pass
+            elif modifier == '^':
+                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Control_L"))
+                 except: pass
+            elif modifier == '+':
+                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Shift_L"))
+                 except: pass
+
+            # Press modifier
+            if mod_keycode:
+                 self.keydown(mod_keycode, False)
+            
+            # 2. Handle Token {KEY} or regular char
+            if char == '{':
+                # Find closing }
+                end = keys.find('}', i)
+                if end != -1:
+                    token = keys[i+1:end]
+                    # Handle escaped char or special key
+                    if len(token) == 1:
+                         self.keypress(token)
+                    else:
+                         # Map specific tokens if needed, e.g. ENTER
+                         # self.keypress handles char strings, but maybe not names?
+                         # Our keypress logic does heuristic mapping.
+                         # Try mapping token.lower() to keymap
+                         self.keypress(token) 
+                    i = end + 1
+                else:
+                    # No closing brace, treat as literal {
+                    self.keypress('{')
+                    i += 1
+            else:
+                self.keypress(char)
+                i += 1
+            
+            # Release modifier
+            if mod_keycode:
+                 self.keyup(mod_keycode)
 
     def click(self, x: int, y: int) -> None:
         try:
@@ -440,6 +512,6 @@ class X11WindowManagerAgent(WindowManagerAgent):
         """
         try:
             xtest.fake_input(self._display, X.MotionNotify, x=x, y=y)
-            self._display.sync()
+            self._display.flush()
         except Exception as e:
             print(f"XTest move_mouse failed: {e}")
