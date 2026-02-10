@@ -4,6 +4,7 @@ from automojo.arcli.model.fields.optionfield import OptionField
 from automojo.arcli.model.parameters.stringparameter import StringParameter
 from automojo.uia.factory import AutomationFactory
 from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from automojo.uia.platforms.macos.wrappers.uiaaccessibility import UiaAccessibilityElement
 import subprocess
 import time
 import os
@@ -97,13 +98,19 @@ class MonitorCommand(Command):
                 print("Detaching from application (leaving it running).", file=sys.stderr)
 
     def _walk_element(self, element, depth=0):
+        # Unwrap if we were handed a platform wrapper with a native object
+        native_obj = getattr(element, "native_obj", None)
+        if native_obj is not None:
+            if isinstance(native_obj, UiaAccessibilityElement):
+                element = native_obj
+
         # Basic attributes
         data = {
-            "name": element.name,
-            "role": element.role_name,
+            "name": getattr(element, "name", ""),
+            "role": getattr(element, "role_name", getattr(element, "role", "")),
             "description": getattr(element, 'description', ''),
-            "states": [], 
-            "bounds": element.bounds,
+            "states": [],
+            "bounds": getattr(element, "bounds", (0, 0, 0, 0)),
             "interfaces": [],
             "children": []
         }
@@ -137,7 +144,16 @@ class MonitorCommand(Command):
                 for child in children:
                     child_el = LinuxElement(child, element.access_agent, element.wm_agent)
                     data["children"].append(self._walk_element(child_el, depth + 1))
+            elif isinstance(element, UiaAccessibilityElement):
+                children = element.children()
+                for child in children:
+                    data["children"].append(self._walk_element(child, depth + 1))
+            else:
+                if hasattr(element, "children"):
+                    children = element.children()
+                    for child in children:
+                        data["children"].append(self._walk_element(child, depth + 1))
         except:
-             pass
+            pass
              
         return data

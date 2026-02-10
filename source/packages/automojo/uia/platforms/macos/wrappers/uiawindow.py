@@ -256,6 +256,15 @@ class UiaWindow(WrappedObject, UIWindow):
 
         return []
 
+    def children(self):
+        """
+            Returns child accessibility elements when available.
+        """
+        if hasattr(self._native_obj, "children"):
+            return self._native_obj.children()
+
+        return []
+
     def send_keys(self, keys: str) -> None:
         """
             Focuses the window and sends keys to the focused control.

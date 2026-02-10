@@ -292,6 +292,39 @@ class UiaAccessibilityElement(UIElement):
 
         return x, y
 
+    def _get_bounds(self) -> Optional[Tuple[float, float, float, float]]:
+        if AXValueGetValue is None:
+            return None
+
+        found, position_value = self._copy_attribute(kAXPositionAttribute)
+        if found is False:
+            return None
+
+        found, size_value = self._copy_attribute(kAXSizeAttribute)
+        if found is False:
+            return None
+
+        if CGPointMake is None or CGSizeMake is None:
+            return None
+
+        position = CGPointMake(0.0, 0.0)
+        size = CGSizeMake(0.0, 0.0)
+
+        ok_pos = AXValueGetValue(position_value, kAXValueCGPointType, position)
+        ok_size = AXValueGetValue(size_value, kAXValueCGSizeType, size)
+
+        if ok_pos is False or ok_size is False:
+            return None
+
+        width = getattr(size, "width", None)
+        height = getattr(size, "height", None)
+        if width is None:
+            width = getattr(size, "x", 0.0)
+        if height is None:
+            height = getattr(size, "y", 0.0)
+
+        return (position.x, position.y, width, height)
+
     @property
     def name(self) -> str:
         found, value = self._copy_attribute(kAXTitleAttribute)
@@ -309,6 +342,11 @@ class UiaAccessibilityElement(UIElement):
             return rtnval
 
         return value
+
+    @property
+    def role_name(self) -> str:
+        rtnval = self.role
+        return rtnval
 
     @property
     def title(self) -> str:
@@ -334,6 +372,18 @@ class UiaAccessibilityElement(UIElement):
 
         rtnval = bool(value)
         return rtnval
+
+    @property
+    def bounds(self) -> Tuple[float, float, float, float]:
+        """
+            Returns (x, y, width, height) bounding rectangle when available.
+        """
+        bounds = self._get_bounds()
+        if bounds is None:
+            rtnval = (0.0, 0.0, 0.0, 0.0)
+            return rtnval
+
+        return bounds
 
     def children(self) -> List["UiaAccessibilityElement"]:
         """

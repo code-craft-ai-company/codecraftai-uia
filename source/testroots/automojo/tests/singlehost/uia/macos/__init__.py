@@ -1,0 +1,3 @@
+"""
+    MacOS-specific UIA tests.
+"""
