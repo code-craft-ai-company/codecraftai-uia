@@ -23,9 +23,9 @@ testbase testing run --root source/testroots/automojo --includes=automojo.tests.
 | --- | --- | --- |
 | Platform | MacOS | Windows and Linux are not implemented. |
 | Engine | `MacOSAutomation` | Factory returns MacOS on Darwin only. |
-| Apps | Well-known MacOS apps | Coverage should follow `UiaCatalog`. |
+| Apps | Well-known MacOS apps | Coverage should follow `MacCatalog`. |
 | Metadata | `UiaMetadataQuery` | Validate timeouts and lookup behavior. |
-| Windows | `UiaApplication.windows()` | Validate window list access and basic properties. |
+| Windows | `MacApplication.windows()` | Validate window list access and basic properties. |
 
 ## Planned Additions
 - Factory and catalog unit tests under `source/testroots/automojo/tests/singlehost/uia/`.

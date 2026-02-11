@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AppCalendar(UiaApplication):
+class AppCalendar(MacApplication):
     """
         Represents and instance of the 'Calendar' application.
     """

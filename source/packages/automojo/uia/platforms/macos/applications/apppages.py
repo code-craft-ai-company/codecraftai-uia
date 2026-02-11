@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AppPages(UiaApplication):
+class AppPages(MacApplication):
     """
         Represents and instance of the 'Pages' application.
     """

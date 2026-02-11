@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AppSafari(UiaApplication):
+class AppSafari(MacApplication):
     """
         Represents and instance of the 'Safari' application.
     """

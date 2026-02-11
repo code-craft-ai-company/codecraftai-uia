@@ -4,12 +4,12 @@ from typing import Any, TYPE_CHECKING
 import ScriptingBridge
 
 from automojo.uia.platforms.macos.wrappers.sbprocess import SbProcess
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
 
-class AsSystemEvents(UiaApplication):
+class AsSystemEvents(MacApplication):
     """
         Represents and instance of the 'System Events' application.
     """

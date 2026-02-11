@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AppScriptEditor(UiaApplication):
+class AppScriptEditor(MacApplication):
     """
         Represents and instance of the 'Script Editor' application.
     """

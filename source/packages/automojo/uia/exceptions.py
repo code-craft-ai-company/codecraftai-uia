@@ -22,3 +22,15 @@ class PlatformNotSupportedError(UIAException):
     Raised when a requested feature or action is not supported on the current platform.
     """
     pass
+
+class ConfigurationError(UIAException):
+    """
+    Raised when a configuration error occurs.
+    """
+    pass
+
+class SemanticError(UIAException):
+    """
+    Raised when a semantic error occurs.
+    """
+    pass

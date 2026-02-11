@@ -7,7 +7,7 @@ import time
 
 import AppKit
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 from automojo.uia.platforms.macos.wrappers.uiametadataquery import UiaMetadataQuery, SearchPredicate
 from automojo.uia.platforms.macos.wrappers.uiametadataitem import UiaMetadataItem
 from automojo.uia.constraints import APP_LAUNCH_RETRY_COUNT, APP_LAUNCH_RETRY_INTERVAL
@@ -15,7 +15,7 @@ from automojo.uia.constraints import APP_LAUNCH_RETRY_COUNT, APP_LAUNCH_RETRY_IN
 if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
 
-class UiaWorkspace:
+class MacWorkspace:
     """
     """
 
@@ -29,7 +29,7 @@ class UiaWorkspace:
     def controller(self) -> "MacOSAutomation":
         return self._controller_ref()
 
-    def runningApplications(self) -> List[UiaApplication]:
+    def runningApplications(self) -> List[MacApplication]:
         controller = self.controller
         catalog = controller.catalog
 
@@ -37,7 +37,7 @@ class UiaWorkspace:
         for obj in self._workspace.runningApplications():
             bundle_id = obj.bundleIdentifier()
             if bundle_id is None:
-                app_type = UiaApplication
+                app_type = MacApplication
             else:
                 app_type = catalog.lookup_application_type_by_bundle_id(bundle_id)
 
@@ -45,7 +45,7 @@ class UiaWorkspace:
 
         return app_list
     
-    def launch_application_by_name(self, application_name: str, metadata_refresh: bool=False) -> UiaApplication:
+    def launch_application_by_name(self, application_name: str, metadata_refresh: bool=False) -> MacApplication:
 
         rtn_app = None
 

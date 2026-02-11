@@ -1,11 +1,10 @@
 
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
 
 import AppKit
 
-from automojo.uia.platforms.base import UIApplication, UIWindow
+from automojo.uia.platforms.base import UIApplication, UIWindow, UIElement
 from automojo.uia.platforms.macos.wrappers.sbwindow import SbWindow
-from automojo.errors.exceptions import ConfigurationError
 from automojo.uia.platforms.macos.wrappers.uiaaccessibility import (
     UiaAccessibilityApplication,
     is_accessibility_trusted,
@@ -15,18 +14,19 @@ from automojo.uia.exceptions import (
     UIAException,
     ElementNotFoundError,
     InteractionError,
-    PlatformNotSupportedError
+    PlatformNotSupportedError,
+    ConfigurationError
 )
-from automojo.uia.platforms.macos.wrappers.uiawindow import UiaWindow
+from automojo.uia.platforms.macos.wrappers.uiawindow import MacWindow
 from automojo.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
 
-from automojo.uia.platforms.macos.wrappers.uiaicon import UiaIcon
+from automojo.uia.platforms.macos.wrappers.uiaicon import MacIcon
 
 
 if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
 
-class UiaApplication(WrappedObject, UIApplication):
+class MacApplication(WrappedObject, UIApplication):
     """
         Wrapper for an application process. Use this object to attach to and
         communicate with the application process; window objects are exposed
@@ -41,21 +41,10 @@ class UiaApplication(WrappedObject, UIApplication):
 
         self._sb_process = None
         self._ax_app = None
-        self._declarative_model = None
+        # declarative_model initialized in base class
         return
 
-    @property
-    def declarative_model(self):
-        """
-        The declarative model class associated with this application instance.
-        """
-        return self._declarative_model
-
-    @declarative_model.setter
-    def declarative_model(self, value):
-        self._declarative_model = value
-
-    def get_focus_window(self) -> 'UiaWindow':
+    def get_focus_window(self) -> 'MacWindow':
         """
         Returns the currently focused window of the application.
         """
@@ -63,7 +52,7 @@ class UiaApplication(WrappedObject, UIApplication):
             # Try to get the focused window via accessibility
             focused_window = self.accessibility.get_focus_window()
             if focused_window:
-                win = UiaWindow(self.controller, focused_window)
+                win = MacWindow(self.controller, focused_window)
                 return win
         except Exception:
             pass
@@ -77,27 +66,6 @@ class UiaApplication(WrappedObject, UIApplication):
             except Exception:
                 # If window doesn't support focus check or other error, skip it
                 continue
-        
-        return None
-
-    def resolve_to_hint(self, window: 'UiaWindow'):
-        """
-        Resolves a window instance to its corresponding ElementHint in the declarative model.
-        """
-        if not self.declarative_model:
-            return None
-        
-        if not window:
-            return None
-
-        # Iterate through the model's attributes to find matching hints
-        # We look for WindowHint or DialogHint
-        from automojo.uia.model.declarative import WindowHint, DialogHint
-
-        for name, value in vars(self.declarative_model).items():
-            if isinstance(value, (WindowHint, DialogHint)):
-                if value.matches(window):
-                    return value
         
         return None
 
@@ -180,8 +148,8 @@ class UiaApplication(WrappedObject, UIApplication):
         return rtnval
 
     @property
-    def icon(self) -> UiaIcon:
-        rtnval = UiaIcon(self.controller, self._native_obj.icon())
+    def icon(self) -> MacIcon:
+        rtnval = MacIcon(self.controller, self._native_obj.icon())
         return rtnval
 
     @property
@@ -342,7 +310,7 @@ class UiaApplication(WrappedObject, UIApplication):
         try:
             ax_windows = self.accessibility.windows()
             for ax_window in ax_windows:
-                window_list.append(UiaWindow(self.controller, ax_window))
+                window_list.append(MacWindow(self.controller, ax_window))
         except ConfigurationError:
             raise
         except Exception:
@@ -360,7 +328,7 @@ class UiaApplication(WrappedObject, UIApplication):
         sb_windows = process.windows()
         window_list = []
         for sb_window in sb_windows:
-            window_list.append(UiaWindow(self.controller, sb_window))
+            window_list.append(MacWindow(self.controller, sb_window))
 
         return window_list
 
@@ -392,17 +360,6 @@ class UiaApplication(WrappedObject, UIApplication):
         except Exception:
             return []
 
-    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False) -> List[Any]:
-        """
-            Alias for find_by_title (spelling preserved for compatibility).
-        """
-        try:
-            return self.accessibility.find_by_tytle(title=title, include_self=include_self, expression=expression)
-        except ConfigurationError:
-            raise
-        except Exception:
-            return []
-
     def find_by_contents(self, contents: str, include_self: bool = False, expression: bool = False) -> List[Any]:
         """
             Finds elements by contents using Accessibility when available.
@@ -411,6 +368,26 @@ class UiaApplication(WrappedObject, UIApplication):
             return self.accessibility.find_by_contents(contents=contents, include_self=include_self, expression=expression)
         except ConfigurationError:
             raise
+        except Exception:
+            return []
+
+    def find_element(self, **kwargs) -> Optional[UIElement]:
+        """
+        Finds the first child element matching criteria.
+        Delegates to the accessibility root element.
+        """
+        try:
+            return self.accessibility.root_element().find_element(**kwargs)
+        except Exception:
+            return None
+
+    def find_elements(self, **kwargs) -> List[UIElement]:
+        """
+        Finds all child elements matching criteria.
+        Delegates to the accessibility root element.
+        """
+        try:
+            return self.accessibility.root_element().find_elements(**kwargs)
         except Exception:
             return []
 
@@ -465,9 +442,9 @@ class UiaApplication(WrappedObject, UIApplication):
         return sb_wlist
 
     def __repr__(self):
-        sval = f"UiaApplication< {self.localized_name}: {self.bundle_identifier} >"
+        sval = f"MacApplication< {self.localized_name}: {self.bundle_identifier} >"
         return sval
 
     def __str__(self):
-        sval = f"UiaApplication< {self.localized_name}: {self.bundle_identifier} >"
+        sval = f"MacApplication< {self.localized_name}: {self.bundle_identifier} >"
         return sval

@@ -6,9 +6,9 @@ import weakref
 
 import re
 
-from automojo.errors.exceptions import ConfigurationError
 from automojo.uia.platforms.base import UIElement
 from automojo.uia.exceptions import (
+    ConfigurationError,
     UIAException,
     ElementNotFoundError,
     InteractionError,
@@ -298,312 +298,94 @@ class UiaAccessibilityElement(UIElement):
 
         if ok_pos is False or ok_size is False:
             return None
-
-        width = getattr(size, "width", None)
-        height = getattr(size, "height", None)
-        if width is None:
-            width = getattr(size, "x", 0.0)
-        if height is None:
-            height = getattr(size, "y", 0.0)
-
-        x = position.x + (width / 2.0)
-        y = position.y + (height / 2.0)
-
-        return x, y
-
-    def _get_bounds(self) -> Optional[Tuple[float, float, float, float]]:
-        if AXValueGetValue is None:
-            return None
-
-        found, position_value = self._copy_attribute(kAXPositionAttribute)
-        if found is False:
-            return None
-
-        found, size_value = self._copy_attribute(kAXSizeAttribute)
-        if found is False:
-            return None
-
-        if CGPointMake is None or CGSizeMake is None:
-            return None
-
-        # valid output pointers found through inspection: None needed
-        ok_pos, position = AXValueGetValue(position_value, kAXValueCGPointType, None)
-        ok_size, size = AXValueGetValue(size_value, kAXValueCGSizeType, None)
-
-        if ok_pos is False or ok_size is False:
-            return None
-
-        width = getattr(size, "width", None)
-        height = getattr(size, "height", None)
-        if width is None:
-            width = getattr(size, "x", 0.0)
-        if height is None:
-            height = getattr(size, "y", 0.0)
-
-        return (position.x, position.y, width, height)
-
-    @property
-    def name(self) -> str:
-        value = ""
-
-        found, title_value = self._copy_attribute(kAXTitleAttribute)
-        if found is True and isinstance(title_value, str):
-            value = title_value
-
-        if value:
-            return value
-
-        found, identifier_value = self._copy_attribute(kAXIdentifierAttribute)
-        if found is True and isinstance(identifier_value, str):
-            return identifier_value
-
-        return ""
+        super().__init__(controller, native_obj)
+        return
 
     @property
     def role(self) -> str:
-        found, value = self._copy_attribute(kAXRoleAttribute)
-        if found is False:
-            rtnval = ""
-            return rtnval
-
-        return value
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXRole", None)
+        if error == 0:
+            return value
+        return ""
 
     @property
-    def role_name(self) -> str:
-        rtnval = self.role
-        return rtnval
+    def subrole(self) -> str:
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXSubrole", None)
+        if error == 0:
+            return value
+        return ""
 
     @property
     def title(self) -> str:
-        rtnval = self.name
-        return rtnval
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXTitle", None)
+        if error == 0:
+            return value
+        return ""
 
     @property
-    def identifier(self) -> str:
-        """
-            Returns the AXIdentifier attribute when available.
-        """
-        found, value = self._copy_attribute(kAXIdentifierAttribute)
-        if found is False or isinstance(value, str) is False:
-            return ""
+    def name(self) -> str:
+        # AXTitle is usually the name
+        return self.title
 
-        return value
+    @property
+    def value(self) -> Any:
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXValue", None)
+        if error == 0:
+            return value
+        return None
 
     @property
     def help(self) -> str:
-        """
-            Returns the AXHelp attribute when available.
-        """
-        found, value = self._copy_attribute(kAXHelpAttribute)
-        if found is False or isinstance(value, str) is False:
-            return ""
-
-        return value
-
-    @property
-    def is_visible(self) -> bool:
-        found, value = self._copy_attribute(kAXVisibleAttribute)
-        if found is False:
-            errmsg = "The accessibility element does not expose visibility."
-            raise NotImplementedError(errmsg)
-
-        rtnval = bool(value)
-        return rtnval
-
-    @property
-    def is_focused(self) -> bool:
-        found, value = self._copy_attribute(kAXFocusedAttribute)
-        if found is False:
-             return False
-
-        rtnval = bool(value)
-        return rtnval
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXHelp", None)
+        if error == 0:
+            return value
+        return ""
 
     @property
     def is_enabled(self) -> bool:
-        found, value = self._copy_attribute(kAXEnabledAttribute)
-        if found is False:
-            errmsg = "The accessibility element does not expose enabled state."
-            raise NotImplementedError(errmsg)
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXEnabled", None)
+        if error == 0:
+            return bool(value)
+        return False
 
-        rtnval = bool(value)
-        return rtnval
+    @property
+    def is_visible(self) -> bool:
+        # AX API doesn't have a direct "IsVisible" property usually,
+        # but we can check if it has a size/position or not hidden.
+        # Often checks if it is in the view hierarchy or not.
+        return True # Default to true for AX elements if we can reference them
 
     @property
     def is_focused(self) -> bool:
-        found, value = self._copy_attribute(kAXFocusedAttribute)
-        if found is False:
-             # Fallback? No, just return False if not found/supported
-             return False
-
-        rtnval = bool(value)
-        return rtnval
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXFocused", None)
+        if error == 0:
+             return bool(value)
+        return False
 
     @property
-    def bounds(self) -> Tuple[float, float, float, float]:
-        """
-            Returns (x, y, width, height) bounding rectangle when available.
-        """
-        bounds = self._get_bounds()
-        if bounds is None:
-            rtnval = (0.0, 0.0, 0.0, 0.0)
-            return rtnval
-
-        return bounds
+    def position(self) -> Tuple[int, int]:
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXPosition", None)
+        if error == 0:
+            # value is a CGPoint structure wrapped
+            # In PyObjC/Quartz it might come back as a point object or tuple
+            # Assuming it handles the conversion to something usable
+            return (int(value.x), int(value.y))
+        return (0, 0)
 
     @property
-    def position(self) -> Tuple[float, float]:
-        """
-            Returns (x, y) position from the bounds.
-        """
-        bounds = self.bounds
-        rtnval = (bounds[0], bounds[1])
-        return rtnval
+    def size(self) -> Tuple[int, int]:
+        error, value = ApplicationServices.AXUIElementCopyAttributeValue(self._native_obj, "AXSize", None)
+        if error == 0:
+            return (int(value.width), int(value.height))
+        return (0, 0)
 
     @property
-    def size(self) -> Tuple[float, float]:
-        """
-            Returns (width, height) size from the bounds.
-        """
-        bounds = self.bounds
-        rtnval = (bounds[2], bounds[3])
-        return rtnval
-
-    def children(self) -> List["UiaAccessibilityElement"]:
-        """
-            Returns child accessibility elements.
-        """
-        found, value = self._copy_attribute(kAXChildrenAttribute)
-        if found is False:
-            rtn_list = []
-            return rtn_list
-
-        child_list = []
-        for child in value:
-            child_list.append(UiaAccessibilityElement(self.controller, child))
-
-        return child_list
-
-    def find_first_by_role(self, role: str, include_self: bool = False) -> Optional["UiaAccessibilityElement"]:
-        """
-            Finds the first element that matches the given role.
-
-            :param role: The role to match.
-            :param include_self: True to include this element in the search.
-
-            :returns: The first matching element or None.
-            :raises: ValueError
-        """
-        if role is None:
-            errmsg = "The role parameter cannot be None."
-            raise ValueError(errmsg)
-
-        for element in self._iter_descendants(include_self=include_self):
-            if element.role == role:
-                return element
-
-        return None
-
-    def find_by_title(self, title: str, include_self: bool = False, expression: bool = False) -> List["UiaAccessibilityElement"]:
-        """
-            Finds all elements with a title that matches the given string.
-
-            :param title: The title to match.
-            :param include_self: True to include this element in the search.
-            :param expression: True to treat the title as a regular expression.
-
-            :returns: A list of matching elements.
-            :raises: ValueError
-        """
-        if title is None:
-            errmsg = "The title parameter cannot be None."
-            raise ValueError(errmsg)
-
-        matches = []
-        for element in self._iter_descendants(include_self=include_self):
-            candidate = element.title
-            if expression:
-                if candidate is not None:
-                    if re.search(title, candidate) is not None:
-                        matches.append(element)
-            else:
-                if candidate == title:
-                    matches.append(element)
-
-        return matches
-
-    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False) -> List["UiaAccessibilityElement"]:
-        """
-            Alias for find_by_title (spelling preserved for compatibility).
-        """
-        return self.find_by_title(title=title, include_self=include_self, expression=expression)
-
-    def find_by_contents(self, contents: str, include_self: bool = False, expression: bool = False) -> List["UiaAccessibilityElement"]:
-        """
-            Finds all elements whose title or value contains the given string.
-
-            :param contents: The substring to search for.
-            :param include_self: True to include this element in the search.
-            :param expression: True to treat the contents as a regular expression.
-
-            :returns: A list of matching elements.
-            :raises: ValueError
-        """
-        if contents is None:
-            errmsg = "The contents parameter cannot be None."
-            raise ValueError(errmsg)
-
-        matches = []
-        for element in self._iter_descendants(include_self=include_self):
-            title = element.title
-            value = element._get_value_text()
-
-            if expression:
-                if title is not None:
-                    if re.search(contents, title) is not None:
-                        matches.append(element)
-                        continue
-
-                if value is not None:
-                    if re.search(contents, value) is not None:
-                        matches.append(element)
-            else:
-                if title is not None:
-                    if contents in title:
-                        matches.append(element)
-                        continue
-
-                if value is not None:
-                    if contents in value:
-                        matches.append(element)
-
-        return matches
-
-    def _get_value_text(self) -> Optional[str]:
-        if kAXValueAttribute is None:
-            return None
-
-        found, value = self._copy_attribute(kAXValueAttribute)
-        if found is False:
-            return None
-
-        if isinstance(value, str) is False:
-            return None
-
-        return value
+    def bounds(self) -> Tuple[int, int, int, int]:
+        pos = self.position
+        sz = self.size
+        return (pos[0], pos[1], sz[0], sz[1])
 
     def click(self) -> None:
-        if self._perform_action(kAXPressAction):
-            return
-
-        center = self._get_center_point()
-        if center is None:
-            errmsg = "Unable to click the element. No press action or position available."
-            raise NotImplementedError(errmsg)
-
-        if CGEventCreateMouseEvent is None or CGEventPost is None:
-            errmsg = "Quartz mouse event APIs are not available."
-            raise NotImplementedError(errmsg)
 
         x, y = center
         point = CGPointMake(x, y)
@@ -638,11 +420,31 @@ class UiaAccessibilityElement(UIElement):
 
         return
 
+    def _matches(self, element: 'UiaAccessibilityElement', name: str, role: str) -> bool:
+        if role and element.role != role:
+            return False
+            
+        if name:
+            el_name = element.name or ""
+            if name.startswith('~'):
+                if name[1:] not in el_name:
+                    return False
+            elif name.endswith('*'):
+                if not el_name.startswith(name[:-1]):
+                    return False
+            elif name.startswith('*'):
+                if not el_name.endswith(name[1:]):
+                    return False
+            elif element.name != name:
+                return False
+                
+        return True
+
     def find_element(self, **kwargs) -> Optional['UIElement']:
         """
         Finds the first child element matching criteria.
         Args:
-            name (str): The name/label of the element (exact match)
+            name (str): The name/label of the element (supports wildcards *, ~)
             role (str): The role of the element
             recursive (bool): Whether to search recursively (default: True)
         """
@@ -655,13 +457,7 @@ class UiaAccessibilityElement(UIElement):
         iterator = self._iter_descendants(include_self=False) if recursive else self.children()
         
         for element in iterator:
-            match = True
-            if name and element.name != name:
-                match = False
-            if role and element.role != role:
-                match = False
-            
-            if match:
+            if self._matches(element, name, role):
                 return element
                 
         return None
@@ -678,13 +474,7 @@ class UiaAccessibilityElement(UIElement):
         
         matches = []
         for element in iterator:
-            match = True
-            if name and element.name != name:
-                match = False
-            if role and element.role != role:
-                match = False
-            
-            if match:
+            if self._matches(element, name, role):
                 matches.append(element)
                 
         return matches

@@ -1,10 +1,10 @@
 
 import AppKit
 
-from automojo.uia.platforms.macos.uiacatalog import UiaCatalog
+from automojo.uia.platforms.macos.uiacatalog import MacCatalog
 
-from automojo.uia.platforms.macos.wrappers.uiaworkspace import UiaWorkspace
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaworkspace import MacWorkspace
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 from automojo.uia.platforms.macos.appscript.asdatabaseevents import AsDatabaseEvents
 from automojo.uia.platforms.macos.appscript.asimageevents import AsImageEvents
@@ -19,8 +19,8 @@ class MacOSAutomation(AutomationEngine):
     """
 
     def __init__(self):
-        self._workspace = UiaWorkspace(self)
-        self._catalog = UiaCatalog()
+        self._workspace = MacWorkspace(self)
+        self._catalog = MacCatalog()
 
         self._database_events = self.get_application_by_name(AsDatabaseEvents.APPLICATION_NAME)
         self._image_events = self.get_application_by_name(AsImageEvents.APPLICATION_NAME)
@@ -28,7 +28,7 @@ class MacOSAutomation(AutomationEngine):
         return
 
     @property
-    def catalog(self) -> UiaCatalog:
+    def catalog(self) -> MacCatalog:
         return self._catalog
 
     @property
@@ -47,7 +47,7 @@ class MacOSAutomation(AutomationEngine):
     def workspace(self):
         return self._workspace
 
-    def get_application_by_name(self, application_name: str, auto_launch: bool = True, metadata_refresh: bool = False) -> UiaApplication:
+    def get_application_by_name(self, application_name: str, auto_launch: bool = True, metadata_refresh: bool = False) -> MacApplication:
 
         rtn_app = None
 

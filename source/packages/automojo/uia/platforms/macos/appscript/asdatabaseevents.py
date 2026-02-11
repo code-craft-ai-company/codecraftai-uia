@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AsDatabaseEvents(UiaApplication):
+class AsDatabaseEvents(MacApplication):
     """
         Represents and instance of the 'Database Events' application.
     """

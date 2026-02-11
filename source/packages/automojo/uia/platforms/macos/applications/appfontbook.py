@@ -1,7 +1,7 @@
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-class AppFontBook(UiaApplication):
+class AppFontBook(MacApplication):
     """
         Represents and instance of the 'FontBook' application.
     """

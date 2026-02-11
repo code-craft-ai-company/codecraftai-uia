@@ -102,11 +102,14 @@ Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/platform
   - `bring_to_front()`, `send_to_back()`
 
 - `UIElement(DisplayElement)` (UI controls/widgets)
-  - `name`, `is_enabled`
+  - `name`, `is_enabled`, `exists`
   - `click()`, `type_keys(keys: str)`
   - **Search**:
     - `find_element(**kwargs) -> Optional[UIElement]`
     - `find_elements(**kwargs) -> List[UIElement]`
+  - **Wait**:
+    - `wait_for_element(timeout=10.0, **kwargs) -> UIElement`
+    - `wait_until_gone(timeout=10.0) -> bool`
 
 ### UI Component Classes
 All inherit from `UIElement`:
@@ -127,8 +130,15 @@ Defined in `/Users/myron/repos/automojo-uia/source/packages/automojo/uia/platfor
 ## MacOS Application Wrappers
 Defined under `/Users/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/macos/`.
 
+- `MacApplication(UIApplication)`
+  - Represents a running application.
+  - Implements `find_element` and `find_elements` (delegates to accessibility).
+
+- `MacWindow(UIWindow)`
+  - Represents a window.
+
 - `UiaAccessibilityElement`
-  - Implements standard `find_element` and `find_elements` APIs.
+  - Implements standard `find_element` and `find_elements` APIs with **wildcard support** (`*`, `~`).
   - Implements `UIElement` interface.
 
 ---

@@ -8,9 +8,10 @@ Provide a MacOS-first UI automation layer with a stable base interface for appli
 - **Linux UI automation via AT-SPI and X11.** ✅
 - Application discovery and launch through `NSWorkspace` (MacOS) or AT-SPI Registry (Linux).
 - Application metadata lookup via `NSMetadataQuery` (MacOS).
-- Wrapper classes that expose properties and behaviors of applications and windows.
+- Wrapper classes that expose properties and behaviors of applications and windows (**MacApplication**, **MacWindow**, etc.).
 - **Enhanced base class hierarchy with DisplayElement, ScreenElement, and UI component types (UIButton, UIText, UITable, UIMenu, etc.).** ✅
-- Well-known application catalog for common MacOS apps.
+- **Base element utilities: `exists`, `wait_for_element`, and `wait_until_gone`.** ✅
+- Well-known application catalog for common MacOS apps (**MacCatalog**).
 - A single controller instance for convenience and reuse.
 
 ## Out Of Scope (Initial)

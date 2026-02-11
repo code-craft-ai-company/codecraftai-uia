@@ -22,6 +22,15 @@ class UIObject(ABC):
         """
         pass
 
+    @property
+    def exists(self) -> bool:
+        """
+        Checks if the object currently exists/is valid.
+        Default implementation assumes object exists if python object exists.
+        Subclasses should override if they wrap a transient native object.
+        """
+        return True
+
 
 class DisplayElement(UIObject):
     """
@@ -149,6 +158,45 @@ class UIElement(DisplayElement):
             :returns: List of matching UIElements
         """
         pass
+
+    def wait_for_element(self, timeout: float = 10.0, interval: float = 0.5, **kwargs) -> 'UIElement':
+        """
+        Waits for a child element matching criteria to appear.
+        
+        :param timeout: Maximum time to wait in seconds.
+        :param interval: Time to wait between checks.
+        :param kwargs: Search criteria (name, role, etc.)
+        :returns: The found UIElement.
+        :raises: ElementNotFoundError if not found within timeout.
+        """
+        import time
+        end_time = time.time() + timeout
+        
+        while time.time() < end_time:
+            element = self.find_element(**kwargs)
+            if element and element.exists:
+                return element
+            time.sleep(interval)
+            
+        raise ElementNotFoundError(f"Element matching {kwargs} not found within {timeout}s")
+
+    def wait_until_gone(self, timeout: float = 10.0, interval: float = 0.5) -> bool:
+        """
+        Waits until this element no longer exists/is visible.
+        
+        :param timeout: Maximum time to wait in seconds.
+        :param interval: Time to wait between checks.
+        :returns: True if gone, False if timeout reached.
+        """
+        import time
+        end_time = time.time() + timeout
+        
+        while time.time() < end_time:
+            if not self.exists or not self.is_visible:
+                return True
+            time.sleep(interval)
+            
+        return False
 
 
 class UIButton(UIElement):
@@ -498,6 +546,43 @@ class UIApplication(ScreenElement):
     """
         Abstract base class for applications.
     """
+
+    def __init__(self, parent: Optional['UIElement'] = None):
+        super().__init__(parent)
+        self._declarative_model = None
+
+    @property
+    def declarative_model(self):
+        """
+        The declarative model class associated with this application instance.
+        """
+        return self._declarative_model
+
+    @declarative_model.setter
+    def declarative_model(self, value):
+        self._declarative_model = value
+
+    def resolve_to_hint(self, window: 'UIWindow'):
+        """
+        Resolves a window instance to its corresponding ElementHint in the declarative model.
+        """
+        if not self.declarative_model:
+            return None
+        
+        if not window:
+            return None
+
+        # Iterate through the model's attributes to find matching hints
+        # We look for WindowHint or DialogHint
+        # Import here to avoid circular dependency
+        from automojo.uia.model.declarative import WindowHint, DialogHint
+
+        for name, value in vars(self.declarative_model).items():
+            if isinstance(value, (WindowHint, DialogHint)):
+                if value.matches(window):
+                    return value
+        
+        return None
 
     @property
     @abstractmethod

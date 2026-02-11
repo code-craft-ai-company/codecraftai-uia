@@ -1,7 +1,7 @@
 
 from typing import Type
 
-from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 from automojo.uia.platforms.macos.applications.appautomator import AppAutomator
 from automojo.uia.platforms.macos.applications.appcalculator import AppCalculator
@@ -70,7 +70,7 @@ BUNDLE_TO_APPLICATION_TYPES = {
     AsSystemEvents.BUNDLE_IDENTIFIER: AsSystemEvents
 }
 
-class UiaCatalog:
+class MacCatalog:
     """
     """
 
@@ -85,6 +85,6 @@ class UiaCatalog:
         if bundle_id in self._application_types:
             app_type = self._application_types[bundle_id]
         else:
-            app_type = UiaApplication
+            app_type = MacApplication
 
         return app_type

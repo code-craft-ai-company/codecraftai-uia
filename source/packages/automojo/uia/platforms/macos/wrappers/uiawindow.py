@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from automojo.uia.platforms.macos.automation import MacOSAutomation
 
 
-class UiaWindow(WrappedObject, UIWindow):
+class MacWindow(WrappedObject, UIWindow):
     """
         Wrapper for a window object. This represents a window as a UI element,
         distinct from the application process that owns it.
@@ -31,7 +31,7 @@ class UiaWindow(WrappedObject, UIWindow):
         except NotImplementedError:
             title = "Unknown"
 
-        sval = f"UiaWindow< {title} >"
+        sval = f"MacWindow< {title} >"
         return sval
 
     def _resolve_target(self) -> Any:
@@ -284,15 +284,6 @@ class UiaWindow(WrappedObject, UIWindow):
         """
         if hasattr(self._native_obj, "find_by_title"):
             return self._native_obj.find_by_title(title=title, include_self=include_self, expression=expression)
-
-        return []
-
-    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False):
-        """
-            Alias for find_by_title (spelling preserved for compatibility).
-        """
-        if hasattr(self._native_obj, "find_by_tytle"):
-            return self._native_obj.find_by_tytle(title=title, include_self=include_self, expression=expression)
 
         return []
 
