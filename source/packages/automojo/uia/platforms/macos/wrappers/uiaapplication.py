@@ -5,6 +5,7 @@ import AppKit
 
 from automojo.uia.platforms.base import UIApplication, UIWindow
 from automojo.uia.platforms.macos.wrappers.sbwindow import SbWindow
+from automojo.errors.exceptions import ConfigurationError
 from automojo.uia.platforms.macos.wrappers.uiaaccessibility import (
     UiaAccessibilityApplication,
     is_accessibility_trusted,
@@ -40,7 +41,65 @@ class UiaApplication(WrappedObject, UIApplication):
 
         self._sb_process = None
         self._ax_app = None
+        self._declarative_model = None
         return
+
+    @property
+    def declarative_model(self):
+        """
+        The declarative model class associated with this application instance.
+        """
+        return self._declarative_model
+
+    @declarative_model.setter
+    def declarative_model(self, value):
+        self._declarative_model = value
+
+    def get_focus_window(self) -> 'UiaWindow':
+        """
+        Returns the currently focused window of the application.
+        """
+        try:
+            # Try to get the focused window via accessibility
+            focused_window = self.accessibility.get_focus_window()
+            if focused_window:
+                win = UiaWindow(self.controller, focused_window)
+                return win
+        except Exception:
+            pass
+            
+        # Fallback: check all windows if focused (less reliable/performant)
+        windows = self.get_windows()
+        for window in windows:
+            try:
+                if window.is_focused():
+                    return window
+            except Exception:
+                # If window doesn't support focus check or other error, skip it
+                continue
+        
+        return None
+
+    def resolve_to_hint(self, window: 'UiaWindow'):
+        """
+        Resolves a window instance to its corresponding ElementHint in the declarative model.
+        """
+        if not self.declarative_model:
+            return None
+        
+        if not window:
+            return None
+
+        # Iterate through the model's attributes to find matching hints
+        # We look for WindowHint or DialogHint
+        from automojo.uia.model.declarative import WindowHint, DialogHint
+
+        for name, value in vars(self.declarative_model).items():
+            if isinstance(value, (WindowHint, DialogHint)):
+                if value.matches(window):
+                    return value
+        
+        return None
 
     @property
     def name(self) -> str:
@@ -55,6 +114,51 @@ class UiaApplication(WrappedObject, UIApplication):
     def identifier(self) -> str:
         rtnval = self.bundle_identifier
         return rtnval
+
+    @property
+    def bounds(self):
+        """
+            The bounding rectangle (x, y, width, height) for the application.
+        """
+        try:
+            windows = self.get_windows()
+        except Exception:
+            windows = []
+
+        if windows is not None:
+            if len(windows) > 0:
+                window = windows[0]
+                return window.bounds
+
+        rtnval = (0, 0, 0, 0)
+        return rtnval
+
+    @property
+    def position(self):
+        bounds = self.bounds
+        rtnval = (bounds[0], bounds[1])
+        return rtnval
+
+    @property
+    def size(self):
+        bounds = self.bounds
+        rtnval = (bounds[2], bounds[3])
+        return rtnval
+
+    @property
+    def is_visible(self) -> bool:
+        if self._native_obj.isHidden():
+            return False
+
+        return True
+
+    def bring_to_front(self) -> None:
+        self.activate()
+        return
+
+    def send_to_back(self) -> None:
+        self.hide()
+        return
     
     @property
     def bundle_identifier(self) -> str:
@@ -221,6 +325,14 @@ class UiaApplication(WrappedObject, UIApplication):
 
         return
 
+    def click(self) -> None:
+        self.activate()
+        return
+
+    def type_keys(self, keys: str) -> None:
+        self.send_keys(keys)
+        return
+
     def get_windows(self) -> List[UIWindow]:
         """
             Returns window wrappers that represent the application's windows.
@@ -231,6 +343,8 @@ class UiaApplication(WrappedObject, UIApplication):
             ax_windows = self.accessibility.windows()
             for ax_window in ax_windows:
                 window_list.append(UiaWindow(self.controller, ax_window))
+        except ConfigurationError:
+            raise
         except Exception:
             # Accessibility may be unavailable or denied. Fall back to scripting windows.
             ax_windows = []
@@ -255,7 +369,15 @@ class UiaApplication(WrappedObject, UIApplication):
             Finds the first element matching a role using Accessibility when available.
         """
         try:
-            return self.accessibility.find_first_by_role(role=role, include_self=include_self)
+            found = self.accessibility.find_first_by_role(role=role, include_self=include_self)
+            if found is None and role == "AXWindow":
+                windows = self.get_windows()
+                if len(windows) > 0:
+                    return windows[0]
+
+            return found
+        except ConfigurationError:
+            raise
         except Exception:
             return None
 
@@ -265,6 +387,8 @@ class UiaApplication(WrappedObject, UIApplication):
         """
         try:
             return self.accessibility.find_by_title(title=title, include_self=include_self, expression=expression)
+        except ConfigurationError:
+            raise
         except Exception:
             return []
 
@@ -274,6 +398,8 @@ class UiaApplication(WrappedObject, UIApplication):
         """
         try:
             return self.accessibility.find_by_tytle(title=title, include_self=include_self, expression=expression)
+        except ConfigurationError:
+            raise
         except Exception:
             return []
 
@@ -283,6 +409,8 @@ class UiaApplication(WrappedObject, UIApplication):
         """
         try:
             return self.accessibility.find_by_contents(contents=contents, include_self=include_self, expression=expression)
+        except ConfigurationError:
+            raise
         except Exception:
             return []
 

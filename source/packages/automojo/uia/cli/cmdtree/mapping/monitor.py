@@ -19,8 +19,9 @@ class MonitorCommand(Command):
         self.add_argument(ArgField("app_command", ptype=StringParameter, help="The application command to run and monitor"))
         self.add_option(OptionField("--hint", alias="hint", ptype=StringParameter, required=True, help="Processing hint to find the application (e.g. name)"))
         self.add_option(OptionField("--format", alias="format", ptype=StringParameter, default="json", help="Output format: json or yaml"))
+        self.add_option(OptionField("--output", alias="output", ptype=StringParameter, required=False, help="Optional file path to write results to"))
 
-    def execute(self, context, app_command, hint, format):
+    def execute(self, context, app_command, hint, format, output):
         automation = AutomationFactory.get_automation_engine()
         app = None
         we_launched_it = False
@@ -60,7 +61,8 @@ class MonitorCommand(Command):
             
             tree_data = {
                 "application": app.name,
-                "windows": []
+                "windows": [],
+                "menu_bar": None
             }
             
             # Wait for windows
@@ -73,12 +75,30 @@ class MonitorCommand(Command):
             for window in windows:
                 win_data = self._walk_element(window)
                 tree_data["windows"].append(win_data)
+
+            try:
+                menu_bar = app.find_first_by_role("AXMenuBar")
+            except Exception:
+                menu_bar = None
+
+            if menu_bar is not None:
+                tree_data["menu_bar"] = self._walk_element(menu_bar)
             
             # 4. Dump Output
             if format.lower() == "yaml":
-                print(yaml.dump(tree_data, sort_keys=False))
+                output_text = yaml.dump(tree_data, sort_keys=False)
             else:
-                print(json.dumps(tree_data, indent=2))
+                output_text = json.dumps(tree_data, indent=2)
+
+            if output:
+                output_dir = os.path.dirname(output)
+                if output_dir:
+                    os.makedirs(output_dir, exist_ok=True)
+                with open(output, "w", encoding="utf-8") as outfile:
+                    outfile.write(output_text)
+                print(f"Wrote mapping output to: {output}", file=sys.stderr)
+            else:
+                print(output_text)
                 
         finally:
             # 5. Cleanup
@@ -104,13 +124,73 @@ class MonitorCommand(Command):
             if isinstance(native_obj, UiaAccessibilityElement):
                 element = native_obj
 
+        title = ""
+        value = None
+        role = ""
+        description = ""
+        bounds = (0, 0, 0, 0)
+
+        try:
+            title = getattr(element, "title", "") or ""
+        except Exception:
+            title = ""
+
+        try:
+            role = getattr(element, "role_name", getattr(element, "role", "")) or ""
+        except Exception:
+            role = ""
+
+        try:
+            description = getattr(element, "description", "") or ""
+        except Exception:
+            description = ""
+
+        try:
+            bounds = getattr(element, "bounds", (0, 0, 0, 0)) or (0, 0, 0, 0)
+        except Exception:
+            bounds = (0, 0, 0, 0)
+
+        try:
+            if isinstance(element, UiaAccessibilityElement):
+                value = element._get_value_text()
+        except Exception:
+            value = None
+
+        if value is None:
+            try:
+                value = getattr(element, "text", None)
+            except Exception:
+                value = None
+
+        if value is None:
+            try:
+                value = getattr(element, "value", None)
+            except Exception:
+                value = None
+
         # Basic attributes
+        identifier = ""
+        help_text = ""
+        try:
+            identifier = getattr(element, "identifier", "") or ""
+        except Exception:
+            identifier = ""
+
+        try:
+            help_text = getattr(element, "help", "") or ""
+        except Exception:
+            help_text = ""
+
         data = {
-            "name": getattr(element, "name", ""),
-            "role": getattr(element, "role_name", getattr(element, "role", "")),
-            "description": getattr(element, 'description', ''),
+            "name": getattr(element, "name", "") if hasattr(element, "name") else title,
+            "title": title,
+            "identifier": identifier,
+            "help": help_text,
+            "value": value,
+            "role": role,
+            "description": description,
             "states": [],
-            "bounds": getattr(element, "bounds", (0, 0, 0, 0)),
+            "bounds": list(bounds) if isinstance(bounds, tuple) else bounds,
             "interfaces": [],
             "children": []
         }

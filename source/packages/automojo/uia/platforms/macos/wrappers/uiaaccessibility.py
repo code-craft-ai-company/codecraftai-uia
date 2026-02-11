@@ -1,8 +1,12 @@
 from typing import Any, List, Optional, Tuple, TYPE_CHECKING
 
+import time
+
 import weakref
 
 import re
+
+from automojo.errors.exceptions import ConfigurationError
 from automojo.uia.platforms.base import UIElement
 from automojo.uia.exceptions import (
     UIAException,
@@ -30,13 +34,28 @@ try:
         kAXRoleAttribute,
         kAXSizeAttribute,
         kAXTitleAttribute,
+        kAXIdentifierAttribute,
+        kAXHelpAttribute,
         kAXValueAttribute,
-        kAXVisibleAttribute,
-        kAXWindowsAttribute,
-        kAXValueCGPointType,
-        kAXValueCGSizeType
     )
-except Exception:
+    try:
+        from HIServices import (
+            kAXVisibleAttribute,
+            kAXWindowsAttribute,
+            kAXValueCGPointType,
+            kAXValueCGSizeType
+        )
+    except:
+        # Accessibility Attribute Strings
+        kAXVisibleAttribute = "AXVisible"
+        kAXWindowsAttribute = "AXWindows"
+
+        # Accessibility Value Type Enums
+        kAXValueCGPointType = 1
+        kAXValueCGSizeType = 2
+except Exception as err:
+    import traceback
+    print(traceback.format_exc())
     AXIsProcessTrusted = None
     AXIsProcessTrustedWithOptions = None
     AXUIElementCreateApplication = None
@@ -55,6 +74,8 @@ except Exception:
     kAXRoleAttribute = None
     kAXSizeAttribute = None
     kAXTitleAttribute = None
+    kAXIdentifierAttribute = None
+    kAXHelpAttribute = None
     kAXValueAttribute = None
     kAXVisibleAttribute = None
     kAXWindowsAttribute = None
@@ -138,7 +159,7 @@ def require_accessibility_trusted(prompt: bool = False) -> None:
             "Then restart the automation process."
         ]
         errmsg = " ".join(errmsg_lines)
-        raise PermissionError(errmsg)
+        raise ConfigurationError(errmsg)
 
     return
 
@@ -271,11 +292,9 @@ class UiaAccessibilityElement(UIElement):
         if CGPointMake is None or CGSizeMake is None:
             return None
 
-        position = CGPointMake(0.0, 0.0)
-        size = CGSizeMake(0.0, 0.0)
-
-        ok_pos = AXValueGetValue(position_value, kAXValueCGPointType, position)
-        ok_size = AXValueGetValue(size_value, kAXValueCGSizeType, size)
+        # valid output pointers found through inspection: None needed
+        ok_pos, position = AXValueGetValue(position_value, kAXValueCGPointType, None)
+        ok_size, size = AXValueGetValue(size_value, kAXValueCGSizeType, None)
 
         if ok_pos is False or ok_size is False:
             return None
@@ -307,11 +326,9 @@ class UiaAccessibilityElement(UIElement):
         if CGPointMake is None or CGSizeMake is None:
             return None
 
-        position = CGPointMake(0.0, 0.0)
-        size = CGSizeMake(0.0, 0.0)
-
-        ok_pos = AXValueGetValue(position_value, kAXValueCGPointType, position)
-        ok_size = AXValueGetValue(size_value, kAXValueCGSizeType, size)
+        # valid output pointers found through inspection: None needed
+        ok_pos, position = AXValueGetValue(position_value, kAXValueCGPointType, None)
+        ok_size, size = AXValueGetValue(size_value, kAXValueCGSizeType, None)
 
         if ok_pos is False or ok_size is False:
             return None
@@ -327,12 +344,20 @@ class UiaAccessibilityElement(UIElement):
 
     @property
     def name(self) -> str:
-        found, value = self._copy_attribute(kAXTitleAttribute)
-        if found is False:
-            rtnval = ""
-            return rtnval
+        value = ""
 
-        return value
+        found, title_value = self._copy_attribute(kAXTitleAttribute)
+        if found is True and isinstance(title_value, str):
+            value = title_value
+
+        if value:
+            return value
+
+        found, identifier_value = self._copy_attribute(kAXIdentifierAttribute)
+        if found is True and isinstance(identifier_value, str):
+            return identifier_value
+
+        return ""
 
     @property
     def role(self) -> str:
@@ -354,11 +379,42 @@ class UiaAccessibilityElement(UIElement):
         return rtnval
 
     @property
+    def identifier(self) -> str:
+        """
+            Returns the AXIdentifier attribute when available.
+        """
+        found, value = self._copy_attribute(kAXIdentifierAttribute)
+        if found is False or isinstance(value, str) is False:
+            return ""
+
+        return value
+
+    @property
+    def help(self) -> str:
+        """
+            Returns the AXHelp attribute when available.
+        """
+        found, value = self._copy_attribute(kAXHelpAttribute)
+        if found is False or isinstance(value, str) is False:
+            return ""
+
+        return value
+
+    @property
     def is_visible(self) -> bool:
         found, value = self._copy_attribute(kAXVisibleAttribute)
         if found is False:
             errmsg = "The accessibility element does not expose visibility."
             raise NotImplementedError(errmsg)
+
+        rtnval = bool(value)
+        return rtnval
+
+    @property
+    def is_focused(self) -> bool:
+        found, value = self._copy_attribute(kAXFocusedAttribute)
+        if found is False:
+             return False
 
         rtnval = bool(value)
         return rtnval
@@ -374,6 +430,16 @@ class UiaAccessibilityElement(UIElement):
         return rtnval
 
     @property
+    def is_focused(self) -> bool:
+        found, value = self._copy_attribute(kAXFocusedAttribute)
+        if found is False:
+             # Fallback? No, just return False if not found/supported
+             return False
+
+        rtnval = bool(value)
+        return rtnval
+
+    @property
     def bounds(self) -> Tuple[float, float, float, float]:
         """
             Returns (x, y, width, height) bounding rectangle when available.
@@ -384,6 +450,24 @@ class UiaAccessibilityElement(UIElement):
             return rtnval
 
         return bounds
+
+    @property
+    def position(self) -> Tuple[float, float]:
+        """
+            Returns (x, y) position from the bounds.
+        """
+        bounds = self.bounds
+        rtnval = (bounds[0], bounds[1])
+        return rtnval
+
+    @property
+    def size(self) -> Tuple[float, float]:
+        """
+            Returns (width, height) size from the bounds.
+        """
+        bounds = self.bounds
+        rtnval = (bounds[2], bounds[3])
+        return rtnval
 
     def children(self) -> List["UiaAccessibilityElement"]:
         """
@@ -649,7 +733,13 @@ class UiaAccessibilityApplication:
             Finds the first element that matches the given role.
         """
         root = self.root_element()
-        return root.find_first_by_role(role=role, include_self=include_self)
+        found = root.find_first_by_role(role=role, include_self=include_self)
+        if found is None and role == "AXWindow":
+            windows = self.windows()
+            if len(windows) > 0:
+                return windows[0]
+
+        return found
 
     def find_by_title(self, title: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
         """
@@ -672,20 +762,46 @@ class UiaAccessibilityApplication:
         root = self.root_element()
         return root.find_by_contents(contents=contents, include_self=include_self, expression=expression)
 
+    def get_focus_window(self) -> Optional[UiaAccessibilityElement]:
+        """
+            Returns the focused window of the application.
+        """
+        found, value = self._copy_attribute(self.ax_app, "AXFocusedWindow")
+        if found is True and value is not None:
+             return UiaAccessibilityElement(self.controller, value)
+        
+        return None
+
     def windows(self) -> List[UiaAccessibilityElement]:
         """
             Returns accessibility window elements for the application.
 
             :returns: A list of accessibility window elements.
         """
-        found, value = self._copy_attribute(self.ax_app, kAXWindowsAttribute)
-        if found is False:
-            rtn_list = []
-            return rtn_list
-
         window_list = []
-        for wobj in value:
-            window_list.append(UiaAccessibilityElement(self.controller, wobj))
+        max_attempts = 6
+        for attempt in range(max_attempts):
+            window_list = []
+            found, value = self._copy_attribute(self.ax_app, kAXWindowsAttribute)
+            if found is True and value is not None:
+                for wobj in value:
+                    window_list.append(UiaAccessibilityElement(self.controller, wobj))
+
+            focused_found, focused_value = self._copy_attribute(self.ax_app, "AXFocusedWindow")
+            if focused_found is True and focused_value is not None:
+                already_listed = False
+                for window in window_list:
+                    if window.native_obj is focused_value or window.native_obj == focused_value:
+                        already_listed = True
+                        break
+                if already_listed is False:
+                    window_list.append(UiaAccessibilityElement(self.controller, focused_value))
+
+            if len(window_list) > 0:
+                return window_list
+
+            if attempt < max_attempts - 1:
+                time.sleep(0.25)
 
         return window_list
 
@@ -706,104 +822,3 @@ class UiaAccessibilityApplication:
 
         return True, value
 
-
-class UiaAccessibilityApplication:
-    """
-        Accessibility wrapper for an application process.
-    """
-
-    def __init__(self, controller: "MacOSAutomation", process_identifier: int):
-        self._controller_ref = weakref.ref(controller)
-        self._process_identifier = process_identifier
-        self._ax_app = None
-        return
-
-    @property
-    def controller(self) -> "MacOSAutomation":
-        return self._controller_ref()
-
-    @property
-    def process_identifier(self) -> int:
-        return self._process_identifier
-
-    @property
-    def ax_app(self) -> Any:
-        if self._ax_app is None:
-            require_accessibility_trusted(prompt=False)
-
-            if AXUIElementCreateApplication is None:
-                errmsg = "Accessibility APIs are not available."
-                raise RuntimeError(errmsg)
-
-            self._ax_app = AXUIElementCreateApplication(self._process_identifier)
-
-        return self._ax_app
-
-    def root_element(self) -> UiaAccessibilityElement:
-        """
-            Returns the root accessibility element for the application.
-        """
-        element = UiaAccessibilityElement(self.controller, self.ax_app)
-        return element
-
-    def find_first_by_role(self, role: str, include_self: bool = False) -> Optional[UiaAccessibilityElement]:
-        """
-            Finds the first element that matches the given role.
-        """
-        root = self.root_element()
-        return root.find_first_by_role(role=role, include_self=include_self)
-
-    def find_by_title(self, title: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
-        """
-            Finds all elements whose title matches the given string.
-        """
-        root = self.root_element()
-        return root.find_by_title(title=title, include_self=include_self, expression=expression)
-
-    def find_by_tytle(self, title: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
-        """
-            Alias for find_by_title (spelling preserved for compatibility).
-        """
-        root = self.root_element()
-        return root.find_by_tytle(title=title, include_self=include_self, expression=expression)
-
-    def find_by_contents(self, contents: str, include_self: bool = False, expression: bool = False) -> List[UiaAccessibilityElement]:
-        """
-            Finds all elements whose title or value contains the given string.
-        """
-        root = self.root_element()
-        return root.find_by_contents(contents=contents, include_self=include_self, expression=expression)
-
-    def windows(self) -> List[UiaAccessibilityElement]:
-        """
-            Returns accessibility window elements for the application.
-
-            :returns: A list of accessibility window elements.
-        """
-        found, value = self._copy_attribute(self.ax_app, kAXWindowsAttribute)
-        if found is False:
-            rtn_list = []
-            return rtn_list
-
-        window_list = []
-        for wobj in value:
-            window_list.append(UiaAccessibilityElement(self.controller, wobj))
-
-        return window_list
-
-    def _copy_attribute(self, obj: Any, attribute_name: str) -> Tuple[bool, Any]:
-        if AXUIElementCopyAttributeValue is None:
-            return False, None
-
-        result = AXUIElementCopyAttributeValue(obj, attribute_name, None)
-
-        if isinstance(result, tuple) and len(result) == 2:
-            err, value = result
-        else:
-            err = AX_SUCCESS
-            value = result
-
-        if err != AX_SUCCESS:
-            return False, None
-
-        return True, value

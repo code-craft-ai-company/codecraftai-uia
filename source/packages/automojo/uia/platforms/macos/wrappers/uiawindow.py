@@ -82,6 +82,33 @@ class UiaWindow(WrappedObject, UIWindow):
         return False
 
     @property
+    def bounds(self):
+        found, value = self._try_get_native_value("bounds")
+        if found:
+            return value
+
+        found, position = self._try_get_native_value("position")
+        found_size, size = self._try_get_native_value("size")
+        if found and found_size:
+            rtnval = (position[0], position[1], size[0], size[1])
+            return rtnval
+
+        errmsg = "The native window does not expose bounds."
+        raise NotImplementedError(errmsg)
+
+    @property
+    def position(self):
+        bounds = self.bounds
+        rtnval = (bounds[0], bounds[1])
+        return rtnval
+
+    @property
+    def size(self):
+        bounds = self.bounds
+        rtnval = (bounds[2], bounds[3])
+        return rtnval
+
+    @property
     def name(self) -> str:
         rtnval = self.title
         return rtnval
@@ -97,6 +124,20 @@ class UiaWindow(WrappedObject, UIWindow):
             raise PlatformNotSupportedError(errmsg)
 
         return value
+
+    @property
+    def identifier(self) -> str:
+        found, value = self._try_get_native_value("identifier")
+        if found:
+            return value
+        return ""
+
+    @property
+    def role(self) -> str:
+        found, value = self._try_get_native_value("role")
+        if found:
+            return value
+        return ""
 
     @property
     def is_visible(self) -> bool:
@@ -154,6 +195,14 @@ class UiaWindow(WrappedObject, UIWindow):
 
         errmsg = "Focus is not supported for this window object."
         raise NotImplementedError(errmsg)
+
+    def bring_to_front(self) -> None:
+        self.focus()
+        return
+
+    def send_to_back(self) -> None:
+        self.minimize()
+        return
 
     def close(self) -> None:
         method_names = ["close", "performClose", "performClose_"]

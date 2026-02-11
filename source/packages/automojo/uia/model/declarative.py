@@ -19,12 +19,13 @@ class ElementHint(Generic[T]):
     :param role: The role of the element to match.
     :param access_name: Alternate accessibility name.
     """
-    def __init__(self, type_class: Type[T] = UIElement, name: str = None, role: str = None, access_name: str = None, path: str = None):
+    def __init__(self, type_class: Type[T] = UIElement, name: str = None, role: str = None, access_name: str = None, path: str = None, identifier: str = None):
         self.type_class = type_class
         self.name = name
         self.role = role
         self.access_name = access_name
         self.path = path
+        self.identifier = identifier
 
     def resolve(self, parent: UIElement) -> Optional[T]:
         """
@@ -38,24 +39,63 @@ class ElementHint(Generic[T]):
 
         # Strategy: Use parent's find capability
         found = None
+        search_name = self.name or self.access_name
         
         # Check if parent supports find_descendant (Linux style)
         if hasattr(parent, 'find_descendant'):
-            found = parent.find_descendant(name=self.name, role=self.role)
-            
-        # Check if parent supports find_first_by_role (MacOS style)
-        elif hasattr(parent, 'find_first_by_role') and self.role:
-            found = parent.find_first_by_role(role=self.role)
-            
-        elif hasattr(parent, 'find_by_title') and self.name:
-            matches = parent.find_by_title(title=self.name)
+            found = parent.find_descendant(name=search_name, role=self.role)
+
+        if found is None and hasattr(parent, 'find_by_title') and search_name:
+            matches = parent.find_by_title(title=search_name)
+            if self.role:
+                matches = [m for m in matches if getattr(m, "role", None) == self.role]
             if matches:
                 found = matches[0]
+        
+        # Check if parent supports find_first_by_role (MacOS style)
+        if found is None and hasattr(parent, 'find_first_by_role') and self.role:
+            found = parent.find_first_by_role(role=self.role)
                 
         if found:
             return found # type: ignore
             
         return None
+
+    def matches(self, element: UIElement) -> bool:
+        """
+        Checks if the given element matches this hint's criteria.
+        """
+        if element is None:
+            return False
+
+        # Match Role
+        if self.role:
+            # Try to get role from element
+            el_role = getattr(element, "role", None)
+            if el_role != self.role:
+                # Some platforms might return role as enum or string
+                if str(el_role) != self.role:
+                    return False
+
+        # Match Name
+        search_name = self.name or self.access_name
+        if search_name:
+            # Try name and title
+            el_name = getattr(element, "name", "")
+            el_title = getattr(element, "title", "")
+            
+            if el_name != search_name and el_title != search_name:
+                return False
+
+        # Match Identifier
+        if self.identifier:
+            el_id = getattr(element, "identifier", "")
+            if el_id != self.identifier:
+                return False
+
+        return True
+
+
 
     def _resolve_path(self, parent: UIElement, path: str) -> Optional[T]:
         """
@@ -332,13 +372,13 @@ class ElementHint(Generic[T]):
 # Specialized Hints for common controls
 class WindowHint(ElementHint[UIWindow]):
     """Hint for locating a Window."""
-    def __init__(self, name: str = None, role: str = "window", access_name: str = None, path: str = None):
-        super().__init__(UIWindow, name, role, access_name, path)
+    def __init__(self, name: str = None, role: str = "window", access_name: str = None, path: str = None, identifier: str = None):
+        super().__init__(UIWindow, name, role, access_name, path, identifier)
 
 class DialogHint(ElementHint[UIDialog]):
     """Hint for locating a Dialog."""
-    def __init__(self, name: str = None, role: str = "dialog", access_name: str = None, path: str = None):
-        super().__init__(UIDialog, name, role, access_name, path)
+    def __init__(self, name: str = None, role: str = "dialog", access_name: str = None, path: str = None, identifier: str = None):
+        super().__init__(UIDialog, name, role, access_name, path, identifier)
 
 class ButtonHint(ElementHint[UIButton]):
     """Hint for locating a Button."""
@@ -389,7 +429,11 @@ class DeclarativeApplication:
              automation_engine = AutomationFactory.get_automation_engine()
              
         if cls.APPLICATION_NAME:
-            return automation_engine.get_application_by_name(cls.APPLICATION_NAME)
+            app = automation_engine.get_application_by_name(cls.APPLICATION_NAME)
+            if app:
+                # Inject the declarative model into the runtime object
+                app.declarative_model = cls
+            return app
         
         # Future: Implement more complex matching logic using APPLICATION_HINT
         return None

@@ -32,11 +32,44 @@
                 "testing",
                 "run",
                 "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.linux",
+                "--includes=automojo.tests.singlehost.uia.linux",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",
             "justMyCode": false
-        }
+        },
+        {
+            "name": "Python: Internal MacOS Tests - Run",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/testbase",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "testing",
+                "run",
+                "--root=${workspaceFolder}/source/testroots/automojo",
+                "--includes=automojo.tests.singlehost.uia.macos.test_macos_excel_launch",
+                "--breakpoint=testrun-start"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Python: Internal Windows Tests - Run",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/testbase",
+            "envFile": "${workspaceFolder}/.env",
+            "args": [
+                "testing",
+                "run",
+                "--root=${workspaceFolder}/source/testroots/automojo",
+                "--includes=automojo.tests.singlehost.uia.windows",
+                "--breakpoint=testrun-start"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        
     ]
 }

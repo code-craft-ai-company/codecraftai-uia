@@ -14,28 +14,27 @@ def test_accessibility_window_search(uia_controller):
     if uia_controller is None:
         return
 
-    from automojo.uia.platforms.macos.wrappers.uiaaccessibility import is_accessibility_trusted
-
-    if is_accessibility_trusted(prompt=False) is False:
-        return
-
     app = uia_controller.get_application_by_name("Calculator")
-    app.activate()
+    testbase.assert_equal(app is not None, True)
 
-    windows = app.get_windows()
-    testbase.assert_equal(isinstance(windows, list), True)
-    testbase.assert_equal(len(windows) > 0, True)
+    try:
+        app.activate()
 
-    first_window = windows[0]
-    role_match = first_window.find_first_by_role("AXWindow", include_self=True)
-    testbase.assert_equal(role_match is not None, True)
+        windows = app.get_windows()
+        testbase.assert_equal(isinstance(windows, list), True)
+        testbase.assert_equal(len(windows) > 0, True)
 
-    title_matches = first_window.find_by_title(".*", include_self=True, expression=True)
-    testbase.assert_equal(isinstance(title_matches, list), True)
+        first_window = windows[0]
+        role_match = first_window.find_first_by_role("AXWindow", include_self=True)
+        testbase.assert_equal(role_match is not None, True)
 
-    contents_matches = first_window.find_by_contents(".*", include_self=True, expression=True)
-    testbase.assert_equal(isinstance(contents_matches, list), True)
+        title_matches = first_window.find_by_title(".*", include_self=True, expression=True)
+        testbase.assert_equal(isinstance(title_matches, list), True)
 
-    app.terminate()
+        contents_matches = first_window.find_by_contents(".*", include_self=True, expression=True)
+        testbase.assert_equal(isinstance(contents_matches, list), True)
+    finally:
+        if app is not None:
+            app.terminate()
 
     return

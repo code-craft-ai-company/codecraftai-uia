@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 import AppKit
 
-from mojo.errors.exceptions import SemanticError
+from automojo.errors.exceptions import SemanticError
 
 from automojo.uia.platforms.macos.wrappers.uiametadataitem import UiaMetadataItem
 
