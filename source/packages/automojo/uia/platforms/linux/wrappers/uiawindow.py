@@ -35,6 +35,20 @@ class LinuxWindow(LinuxElement, UIWindow):
         return None
 
     def get_position(self) -> Tuple[int, int]:
+        if self.native_window:
+            # Check if it's a Broker dict (Wayland Gnome)
+            if isinstance(self.native_window, dict):
+                 rect = self.native_window.get('rect_logical')
+                 if rect:
+                     return (rect['x'], rect['y'])
+            # Check if it's an X11 window object (has get_geometry)
+            elif hasattr(self.native_window, 'get_geometry'):
+                 try:
+                     geo = self.native_window.get_geometry()
+                     return (geo.x, geo.y)
+                 except:
+                     pass
+                     
         return self.native_obj.get_coordinates()
 
     def close(self) -> None:

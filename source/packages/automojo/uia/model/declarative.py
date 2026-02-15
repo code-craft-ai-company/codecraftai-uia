@@ -3,7 +3,9 @@ from typing import Optional, Type, Any, List, TypeVar, Generic
 from automojo.uia.platforms.base import (
     UIElement, UIApplication, UIWindow, AutomationEngine,
     UIButton, UIText, UIList, UIMenu, UIMenuItem, UIMenuBar, UITable,
-    UIDialog, UIModalDialog, UISaveDialog, UIModalDialogFileAlreadyExists
+    UIDialog, UIModalDialog, UISaveDialog, UIModalDialogFileAlreadyExists,
+    UICheckBox, UIRadioButton, UIComboBox, UIHyperlink, UITab, UITree,
+    UIProgressBar, UISlider
 )
 from automojo.uia.factory import AutomationFactory
 
@@ -11,13 +13,13 @@ T = TypeVar('T', bound=UIElement)
 
 class ElementHint(Generic[T]):
     """
-    Declarative hint to locate a UI element of type T.
-    
-    :param type_class: The expected class of the element (e.g. UIButton). 
-                       Used for return type inference and optional runtime validation.
-    :param name: The name of the element to match.
-    :param role: The role of the element to match.
-    :param access_name: Alternate accessibility name.
+        Declarative hint to locate a UI element of type T.
+        
+        :param type_class: The expected class of the element (e.g. UIButton). 
+                           Used for return type inference and optional runtime validation.
+        :param name: The name of the element to match.
+        :param role: The role of the element to match.
+        :param access_name: Alternate accessibility name.
     """
     def __init__(self, type_class: Type[T] = UIElement, name: str = None, role: str = None, access_name: str = None, path: str = None, identifier: str = None):
         self.type_class = type_class
@@ -29,10 +31,10 @@ class ElementHint(Generic[T]):
 
     def resolve(self, parent: UIElement) -> Optional[T]:
         """
-        Resolves the hint to a concrete UI element within the parent context.
-        
-        :param parent: The parent UI element to search within.
-        :return: The found element as type T, or None.
+            Resolves the hint to a concrete UI element within the parent context.
+            
+            :param parent: The parent UI element to search within.
+            :returns: The found element as type T, or None.
         """
         if self.path:
             return self._resolve_path(parent, self.path)
@@ -63,7 +65,7 @@ class ElementHint(Generic[T]):
 
     def matches(self, element: UIElement) -> bool:
         """
-        Checks if the given element matches this hint's criteria.
+            Checks if the given element matches this hint's criteria.
         """
         if element is None:
             return False
@@ -99,15 +101,15 @@ class ElementHint(Generic[T]):
 
     def _resolve_path(self, parent: UIElement, path: str) -> Optional[T]:
         """
-        Resolves an XPath-style path.
-        Syntax:
-          // : recursive descendant
-          /  : direct child
-          .  : current element (start)
-          *  : wildcard node (any)
-          {key:value} : filter properties
-             value can contain * (wildcard) or ~ (contains)
-        Example: //{name:Calc*}/*/{role:~OK}
+            Resolves an XPath-style path.
+            Syntax:
+              // : recursive descendant
+              /  : direct child
+              .  : current element (start)
+              *  : wildcard node (any)
+              {key:value} : filter properties
+                 value can contain * (wildcard) or ~ (contains)
+            Example: //{name:Calc*}/*/{role:~OK}
         """
         # Parsing tokens
         # Simple parser: split by / but keep empty strings to detect // 
@@ -193,8 +195,8 @@ class ElementHint(Generic[T]):
 
     def _parse_path(self, path: str) -> List[tuple]:
         """
-        Parses path into list of (operation, filters).
-        Operations: 'descendant' (//), 'child' (/), 'self' (.)
+            Parses path into list of (operation, filters).
+            Operations: 'descendant' (//), 'child' (/), 'self' (.)
         """
         segments = []
         # Normalize: replace // with /descendant/ ? 
@@ -272,7 +274,7 @@ class ElementHint(Generic[T]):
 
     def _parse_filters(self, token: str) -> dict:
         """
-        Parses string like {name:Cal*, role:button} or *
+            Parses string like {name:Cal*, role:button} or *
         """
         if token == '*':
             return {}
@@ -295,7 +297,7 @@ class ElementHint(Generic[T]):
 
     def _match_filters(self, element: UIElement, filters: dict) -> bool:
         """
-        Checks if element matches filters.
+            Checks if element matches filters.
         """
         for k, v in filters.items():
             # map keys to attributes
@@ -345,7 +347,7 @@ class ElementHint(Generic[T]):
 
     def _find_descendants_generic(self, parent: UIElement, filters: dict) -> List[UIElement]:
         """
-        Recursive walk to find descendants matching filters.
+            Recursive walk to find descendants matching filters.
         """
         results = []
         # BFS or DFS? DFS easier
@@ -371,51 +373,123 @@ class ElementHint(Generic[T]):
 
 # Specialized Hints for common controls
 class WindowHint(ElementHint[UIWindow]):
-    """Hint for locating a Window."""
+    """
+        Hint for locating a Window.
+    """
     def __init__(self, name: str = None, role: str = "window", access_name: str = None, path: str = None, identifier: str = None):
         super().__init__(UIWindow, name, role, access_name, path, identifier)
 
 class DialogHint(ElementHint[UIDialog]):
-    """Hint for locating a Dialog."""
+    """
+        Hint for locating a Dialog.
+    """
     def __init__(self, name: str = None, role: str = "dialog", access_name: str = None, path: str = None, identifier: str = None):
         super().__init__(UIDialog, name, role, access_name, path, identifier)
 
 class ButtonHint(ElementHint[UIButton]):
-    """Hint for locating a Button."""
+    """
+        Hint for locating a Button.
+    """
     def __init__(self, name: str = None, role: str = "push button", access_name: str = None, path: str = None):
         super().__init__(UIButton, name, role, access_name, path)
 
 class TextHint(ElementHint[UIText]):
-    """Hint for locating a Text control."""
+    """
+        Hint for locating a Text control.
+    """
     def __init__(self, name: str = None, role: str = "text", access_name: str = None, path: str = None):
         super().__init__(UIText, name, role, access_name, path)
 
 class MenuBarHint(ElementHint[UIMenuBar]):
-    """Hint for locating a Menu Bar."""
+    """
+        Hint for locating a Menu Bar.
+    """
     def __init__(self, name: str = None, role: str = "menu bar", access_name: str = None, path: str = None):
         super().__init__(UIMenuBar, name, role, access_name, path)
 
 class MenuHint(ElementHint[UIMenu]):
-    """Hint for locating a Menu."""
+    """
+        Hint for locating a Menu.
+    """
     def __init__(self, name: str = None, role: str = "menu", access_name: str = None, path: str = None):
         super().__init__(UIMenu, name, role, access_name, path)
 
 class MenuItemHint(ElementHint[UIMenuItem]):
-    """Hint for locating a Menu Item."""
+    """
+        Hint for locating a Menu Item.
+    """
     def __init__(self, name: str = None, role: str = "menu item", access_name: str = None, path: str = None):
         super().__init__(UIMenuItem, name, role, access_name, path)
 
 class TableHint(ElementHint[UITable]):
-    """Hint for locating a Table control."""
+    """
+        Hint for locating a Table control.
+    """
     def __init__(self, name: str = None, role: str = "table", access_name: str = None, path: str = None):
         super().__init__(UITable, name, role, access_name, path)
+
+class CheckBoxHint(ElementHint[UICheckBox]):
+    """
+        Hint for locating a CheckBox.
+    """
+    def __init__(self, name: str = None, role: str = "check box", access_name: str = None, path: str = None):
+        super().__init__(UICheckBox, name, role, access_name, path)
+
+class RadioButtonHint(ElementHint[UIRadioButton]):
+    """
+        Hint for locating a RadioButton.
+    """
+    def __init__(self, name: str = None, role: str = "radio button", access_name: str = None, path: str = None):
+        super().__init__(UIRadioButton, name, role, access_name, path)
+
+class ComboBoxHint(ElementHint[UIComboBox]):
+    """
+        Hint for locating a ComboBox.
+    """
+    def __init__(self, name: str = None, role: str = "combo box", access_name: str = None, path: str = None):
+        super().__init__(UIComboBox, name, role, access_name, path)
+
+class HyperlinkHint(ElementHint[UIHyperlink]):
+    """
+        Hint for locating a Hyperlink.
+    """
+    def __init__(self, name: str = None, role: str = "link", access_name: str = None, path: str = None):
+        super().__init__(UIHyperlink, name, role, access_name, path)
+
+class TabHint(ElementHint[UITab]):
+    """
+        Hint for locating a Tab container (usually role 'page tab list').
+    """
+    def __init__(self, name: str = None, role: str = "page tab list", access_name: str = None, path: str = None):
+        super().__init__(UITab, name, role, access_name, path)
+
+class TreeHint(ElementHint[UITree]):
+    """
+        Hint for locating a Tree control.
+    """
+    def __init__(self, name: str = None, role: str = "tree", access_name: str = None, path: str = None):
+        super().__init__(UITree, name, role, access_name, path)
+
+class ProgressBarHint(ElementHint[UIProgressBar]):
+    """
+        Hint for locating a ProgressBar.
+    """
+    def __init__(self, name: str = None, role: str = "progress bar", access_name: str = None, path: str = None):
+        super().__init__(UIProgressBar, name, role, access_name, path)
+
+class SliderHint(ElementHint[UISlider]):
+    """
+        Hint for locating a Slider.
+    """
+    def __init__(self, name: str = None, role: str = "slider", access_name: str = None, path: str = None):
+        super().__init__(UISlider, name, role, access_name, path)
 
 
 class DeclarativeApplication:
     """
-    Base class for declarative application models.
-    Note: This is a factory/proxy, not the actual application instance.
-    It returns a concrete UIApplication when valid.
+        Base class for declarative application models.
+        Note: This is a factory/proxy, not the actual application instance.
+        It returns a concrete UIApplication when valid.
     """
     
     APPLICATION_COMMAND: str = None
@@ -423,7 +497,7 @@ class DeclarativeApplication:
     @classmethod
     def attach(cls, automation_engine: Optional[AutomationEngine] = None) -> Optional[UIApplication]:
         """
-        Attaches to the running application matching the hint.
+            Attaches to the running application matching the hint.
         """
         if not automation_engine:
              automation_engine = AutomationFactory.get_automation_engine()
@@ -441,7 +515,7 @@ class DeclarativeApplication:
     @classmethod
     def launch_or_attach(cls, automation_engine: Optional[AutomationEngine] = None) -> Optional[UIApplication]:
         """
-        Launches the application if not running, or attaches to it.
+            Launches the application if not running, or attaches to it.
         """
         app = cls.attach(automation_engine)
         if app:

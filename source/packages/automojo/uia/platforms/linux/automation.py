@@ -3,9 +3,8 @@ from typing import Optional
 from automojo.uia.platforms.base import AutomationEngine, UIApplication
 from automojo.uia.platforms.linux.wrappers.uiaapplication import LinuxApplication
 from automojo.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
-from automojo.uia.platforms.linux.agents.accessibility.pyatspi_agent import PyAtspiAccessibilityAgent
-from automojo.uia.platforms.linux.agents.wm.x11windowmanageragent import X11WindowManagerAgent
-from automojo.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
+from automojo.uia.platforms.linux.agents.common.pyatspi_agent import PyAtspiAccessibilityAgent
+from automojo.uia.platforms.linux.agents.x11.x11windowmanageragent import X11WindowManagerAgent
 from automojo.uia.platforms.linux.platformdetect import PlatformDetector
 
 class LinuxAutomation(AutomationEngine):
@@ -21,9 +20,6 @@ class LinuxAutomation(AutomationEngine):
     def _initialize_agents(self):
         """
         Initialize accessibility and window manager agents based on platform.
-        
-        On Wayland session: Uses WaylandWindowManagerAgent (supports both Wayland and XWayland apps)
-        On X11 session: Uses X11WindowManagerAgent
         """
         # Always initialize accessibility agent (works on all platforms)
         try:
@@ -37,20 +33,26 @@ class LinuxAutomation(AutomationEngine):
         # Detect platform and initialize appropriate window manager agent
         platform_info = PlatformDetector.get_summary()
         session_type = platform_info['session_type']
+        compositor = platform_info['compositor']
         
-        print(f"Platform Detection: {session_type}")
+        print(f"Platform Detection: Type={session_type}, Compositor={compositor}")
         
         if session_type == 'wayland':
-            # Use Wayland agent (inherits X11, handles both Wayland and XWayland apps)
-            try:
-                self._wm_agent = WaylandWindowManagerAgent()
-                if hasattr(self._wm_agent, '_has_xwayland') and self._wm_agent._has_xwayland:
-                    print(f"✓ Wayland Agent initialized with XWayland support")
-                else:
-                    print(f"✓ Wayland Agent initialized (AT-SPI only mode)")
-            except Exception as e:
-                print(f"Warning: Wayland Agent initialization failed: {e}")
-                
+            if compositor == 'mutter' or compositor == 'gnome':
+                try:
+                    from automojo.uia.platforms.linux.agents.wayland.gnome.waylandgnomewindowmanageragent import WaylandGnomeWindowManagerAgent
+                    self._wm_agent = WaylandGnomeWindowManagerAgent()
+                    print(f"✓ Wayland Gnome Agent initialized")
+                except Exception as e:
+                    print(f"Warning: Wayland Gnome Agent initialization failed: {e}")
+            else:
+                 try:
+                    from automojo.uia.platforms.linux.agents.wayland.other.waylandotherwindowmanageragent import WaylandOtherWindowManagerAgent
+                    self._wm_agent = WaylandOtherWindowManagerAgent()
+                    print(f"✓ Wayland Other Agent initialized ({compositor})")
+                 except Exception as e:
+                    print(f"Warning: Wayland Other Agent initialization failed: {e}")
+
         elif session_type == 'x11':
             # Use X11 agent for pure X11 sessions
             try:
@@ -111,6 +113,22 @@ class LinuxAutomation(AutomationEngine):
         if self._wm_agent and hasattr(self._wm_agent, 'find_native_window'):
              native_window = self._wm_agent.find_native_window(name_pattern)
              
-        # 3. Create Wrapper
+    # 3. Create Wrapper
         return LinuxWindow(found_node, self._access_agent, self._wm_agent, native_window=native_window)
+
+    def get_displays(self) -> list:
+        """
+        Returns a list of connected displays.
+        """
+        if self._wm_agent:
+            return self._wm_agent.get_displays()
+        return []
+
+    def get_desktops(self) -> list:
+        """
+        Returns a list of desktops/workspaces.
+        """
+        if self._wm_agent:
+            return self._wm_agent.get_desktops()
+        return []
 

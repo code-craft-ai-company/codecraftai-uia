@@ -109,6 +109,26 @@ def stop():
         sock_path.unlink()
         print(f"Removed {sock_path}")
 
+def uninstall():
+    dest = get_extension_install_path()
+    
+    # Stop the service first
+    stop()
+
+    if dest.exists():
+        if dest.is_symlink():
+            print(f"Removing symlink at {dest}")
+            dest.unlink()
+        elif dest.is_dir():
+            print(f"Removing directory at {dest}")
+            shutil.rmtree(dest)
+        else:
+            print(f"Removing file at {dest}")
+            dest.unlink()
+        print("Extension uninstalled.")
+    else:
+        print(f"Extension not found at {dest}")
+
 def status():
     runtime_dir = get_xdg_runtime_dir()
     token_path = runtime_dir / TOKEN_FILE
@@ -140,6 +160,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("install", help="Install the GNOME extension")
+    subparsers.add_parser("uninstall", help="Uninstall the GNOME extension")
     subparsers.add_parser("start", help="Start the broker service (enable ext + token)")
     subparsers.add_parser("stop", help="Stop the broker service")
     subparsers.add_parser("status", help="Check status")
@@ -148,6 +169,8 @@ def main():
 
     if args.command == "install":
         install()
+    elif args.command == "uninstall":
+        uninstall()
     elif args.command == "start":
         start()
     elif args.command == "stop":

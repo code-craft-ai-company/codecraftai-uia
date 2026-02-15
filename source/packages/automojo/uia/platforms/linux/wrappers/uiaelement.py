@@ -12,7 +12,7 @@ from automojo.uia.exceptions import (
 
 class LinuxElement(UIElement):
     """
-    Base wrapper for Linux UI elements using Agent Architecture.
+        Base wrapper for Linux UI elements using Agent Architecture.
     """
     def __init__(self, native_obj: Any, access_agent: AccessibilityAgent, wm_agent: WindowManagerAgent, parent: Optional[UIElement] = None):
         super().__init__(parent)
@@ -46,10 +46,49 @@ class LinuxElement(UIElement):
     @property
     def bounds(self) -> tuple:
         """Returns (x, y, width, height) bounding rectangle."""
+        # 1. Get raw AT-SPI coordinates
         coords = self.access_agent.get_coordinates(self._native_obj)
-        if coords:
-            return coords
-        return (0, 0, 0, 0)
+        if not coords:
+            return (0, 0, 0, 0)
+            
+        # 2. Check if we need to apply Wayland/Broker offset
+        # This is required if we are on Gnome Wayland where AT-SPI returns window-relative(0,0) coords
+        try:
+            # We check if we are inside a LinuxWindow that has a different position than AT-SPI reports
+            from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+            
+            # Find parent window
+            parent = self.parent
+            root_window = None
+            while parent:
+                if isinstance(parent, LinuxWindow):
+                    root_window = parent
+                    break
+                parent = getattr(parent, 'parent', None)
+            
+            if root_window:
+                # Get Window's "True" Position (Broker-based if available)
+                win_true_pos = root_window.get_position() # (x, y)
+                
+                # Get Window's "Raw" AT-SPI Position
+                # We access the raw agent method directly to avoid recursion/overrides
+                win_atspi_coords = self.access_agent.get_coordinates(root_window.native_obj)
+                if win_atspi_coords:
+                    win_atspi_x, win_atspi_y = win_atspi_coords[0], win_atspi_coords[1]
+                    
+                    # Calculate Offset
+                    delta_x = win_true_pos[0] - win_atspi_x
+                    delta_y = win_true_pos[1] - win_atspi_y
+                    
+                    # Apply offset if significant (avoid minor jitter)
+                    if abs(delta_x) > 1 or abs(delta_y) > 1:
+                        return (coords[0] + delta_x, coords[1] + delta_y, coords[2], coords[3])
+
+        except Exception as e:
+            # print(f"Warning: Coordinate offset calculation failed: {e}")
+            pass
+
+        return coords
 
     @property
     def position(self) -> tuple:
@@ -134,32 +173,25 @@ class LinuxElement(UIElement):
             self.wm_agent.send_keys(None, keys)
         except Exception as e:
             raise InteractionError(f"Failed to type keys: {e}")
+        return
 
     def set_text(self, text: str) -> None:
         self.type_keys(text)
+        return
 
     def _create_child_wrapper(self, native_child: Any) -> 'LinuxElement':
         """
-        Creates a wrapper for a native child element, using specialized classes if available.
+            Creates a wrapper for a native child element using the Factory.
         """
-        role = self.access_agent.get_role_name(native_child)
-        if role == 'table':
-            try:
-                from automojo.uia.platforms.linux.wrappers.tableelement import TableElement
-                # TableElement inherits UITable but effectively wraps LinuxElement logic manually?
-                # Based on file read, TableElement(native_obj, access_agent, wm_agent, parent)
-                return TableElement(native_child, self.access_agent, self.wm_agent, parent=self)
-            except ImportError:
-                pass
+        # late import to avoid circular dependency if factory imports LinuxElement at top level
+        from automojo.uia.platforms.linux.wrappers.factory import LinuxWrapperFactory
         
-        elif role in ['frame', 'window']:
-            try:
-                from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
-                return LinuxWindow(native_child, self.access_agent, self.wm_agent, parent=self)
-            except ImportError:
-                pass
-        
-        return LinuxElement(native_child, self.access_agent, self.wm_agent, parent=self)
+        return LinuxWrapperFactory.create_wrapper(
+            native_child, 
+            self.access_agent, 
+            self.wm_agent, 
+            parent=self
+        )
 
     def find_descendant(self, name: str = None, role:str = None, max_depth: int = 10) -> 'LinuxElement':
         # Alias specifically for internal/legacy use, delegates to find_element logic but recursive
@@ -168,13 +200,13 @@ class LinuxElement(UIElement):
 
     def find_element(self, **kwargs) -> Optional['UIElement']:
         """
-        Finds the first child element matching criteria.
-        Args:
-            name (str): The name/label of the element
-            role (str): The role name of the element
-            role_type (Any): The raw role object
-            recursive (bool): Whether to search recursively (default: True)
-            max_depth (int): Maximum depth for recursive search (default: 10)
+            Finds the first child element matching criteria.
+
+            :param name: The name/label of the element
+            :param role: The role name of the element
+            :param role_type: The raw role object
+            :param recursive: Whether to search recursively (default: True)
+            :param max_depth: Maximum depth for recursive search (default: 10)
         """
         name = kwargs.get('name')
         role = kwargs.get('role')
@@ -194,7 +226,7 @@ class LinuxElement(UIElement):
 
     def find_elements(self, **kwargs) -> List['UIElement']:
         """
-        Finds all child elements matching criteria.
+            Finds all child elements matching criteria.
         """
         name = kwargs.get('name')
         role = kwargs.get('role')
@@ -267,19 +299,23 @@ class LinuxElement(UIElement):
                 results.append(child_wrapper)
             
             child_wrapper._find_recursive_all(name, role, depth - 1, results)
+        return
 
     def set_value(self, value: float) -> None:
-        """Sets a numeric value on an element using the Value interface."""
+        """
+            Sets a numeric value on an element using the Value interface.
+        """
         try:
             value_iface = self._native_obj.queryValue()
             if value_iface:
                 value_iface.currentValue = value
         except Exception as e:
             print(f"Error setting value: {e}")
+        return
 
     def drag_to(self, end_x: int, end_y: int, duration: float = 0.5) -> None:
         """
-        Drags from the center of this element to the specified coordinates.
+            Drags from the center of this element to the specified coordinates.
         """
         if not self.wm_agent:
             raise NotImplementedError("Drag/drop requires Window Manager Agent")
@@ -290,6 +326,7 @@ class LinuxElement(UIElement):
         start_y = rect[1] + rect[3] // 2
         
         self.wm_agent.drag_and_drop(start_x, start_y, end_x, end_y, duration)
+        return
     
     def __repr__(self) -> str:
         return f"LinuxElement<{self.name}>"

@@ -83,6 +83,22 @@ class WindowManagerAgent(ABC):
     def move_mouse(self, x: int, y: int) -> None:
          pass
 
+    @abstractmethod
+    def get_displays(self) -> List[dict]:
+        """
+        Returns a list of dictionaries describing connected displays.
+        Each dict should contain: id, x, y, width, height, primary (bool).
+        """
+        pass
+
+    @abstractmethod
+    def get_desktops(self) -> List[dict]:
+        """
+        Returns a list of dictionaries describing desktops/workspaces.
+        Each dict should contain: id, name, is_active (bool).
+        """
+        pass
+
 class DesktopAgent(ABC):
     """
     Abstract base class for interacting with the Desktop Environment (e.g., GNOME, KDE).

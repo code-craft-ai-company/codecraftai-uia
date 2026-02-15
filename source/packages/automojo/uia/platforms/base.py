@@ -99,6 +99,7 @@ class UIElement(DisplayElement):
     
     def __init__(self, parent: Optional['UIElement'] = None):
         self._parent = weakref.ref(parent) if parent else None
+        return
 
     @property
     def parent(self) -> Optional['UIElement']:
@@ -550,6 +551,7 @@ class UIApplication(ScreenElement):
     def __init__(self, parent: Optional['UIElement'] = None):
         super().__init__(parent)
         self._declarative_model = None
+        return
 
     @property
     def declarative_model(self):
@@ -742,3 +744,251 @@ class UIDropDownMenu(UIMenu):
     """
     pass
 
+
+class UICheckBox(UIElement):
+    """
+    Abstract base class for checkbox controls.
+    """
+
+    @property
+    @abstractmethod
+    def is_checked(self) -> bool:
+        """
+        True if the checkbox is checked, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def toggle(self) -> None:
+        """
+        Toggles the checkbox state.
+        """
+        pass
+    
+    @abstractmethod
+    def check(self) -> None:
+        """
+        Ensures the checkbox is checked.
+        """
+        pass
+
+    @abstractmethod
+    def uncheck(self) -> None:
+        """
+        Ensures the checkbox is unchecked.
+        """
+        pass
+
+
+class UIRadioButton(UIElement):
+    """
+    Abstract base class for radio button controls.
+    """
+
+    @property
+    @abstractmethod
+    def is_selected(self) -> bool:
+        """
+        True if the radio button is selected, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def select(self) -> None:
+        """
+        Selects the radio button.
+        """
+        pass
+
+
+class UIComboBox(UIElement):
+    """
+    Abstract base class for combo box controls.
+    """
+
+    @property
+    @abstractmethod
+    def is_expanded(self) -> bool:
+        """
+        True if the combo box is expanded (dropdown visible), False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def expand(self) -> None:
+        """
+        Expands the combo box.
+        """
+        pass
+
+    @abstractmethod
+    def collapse(self) -> None:
+        """
+        Collapses the combo box.
+        """
+        pass
+    
+    @abstractmethod
+    def select(self, item_name: str) -> None:
+        """
+        Selects an item by name/text.
+        """
+        pass
+        
+    @property
+    @abstractmethod
+    def selected_item(self) -> Optional[UIElement]:
+        """
+        Returns the currently selected item.
+        """
+        pass
+
+
+class UIHyperlink(UIButton):
+    """
+    Abstract base class for hyperlink controls.
+    Behaves like a button but usually has a URL or target.
+    """
+    
+    @property
+    @abstractmethod
+    def url(self) -> str:
+        """
+        The URL or target of the hyperlink.
+        """
+        pass
+
+
+class UITab(UIElement):
+    """
+    Abstract base class for tab container controls.
+    """
+    
+    @property
+    @abstractmethod
+    def selected_tab(self) -> Optional['UITabItem']:
+        """
+        Returns the currently selected tab item.
+        """
+        pass
+    
+    @abstractmethod
+    def select_tab(self, name: str) -> None:
+        """
+        Selects a tab by name.
+        """
+        pass
+
+
+class UITabItem(UIElement):
+    """
+    Abstract base class for individual tab items.
+    """
+    
+    @property
+    @abstractmethod
+    def is_selected(self) -> bool:
+        """
+        True if the tab item is selected.
+        """
+        pass
+        
+    @abstractmethod
+    def select(self) -> None:
+        """
+        Selects this tab item.
+        """
+        pass
+
+
+class UITree(UIElement):
+    """
+    Abstract base class for tree controls.
+    """
+    pass
+
+
+class UITreeItem(UIElement):
+    """
+    Abstract base class for tree items.
+    """
+    
+    @property
+    @abstractmethod
+    def is_expanded(self) -> bool:
+        """
+        True if the tree item is expanded.
+        """
+        pass
+    
+    @abstractmethod
+    def expand(self) -> None:
+        """
+        Expands the tree item.
+        """
+        pass
+        
+    @abstractmethod
+    def collapse(self) -> None:
+        """
+        Collapses the tree item.
+        """
+        pass
+        
+    @property
+    @abstractmethod
+    def is_selected(self) -> bool:
+        """
+        True if the tree item is selected.
+        """
+        pass
+        
+    @abstractmethod
+    def select(self) -> None:
+        """
+        Selects the tree item.
+        """
+        pass
+
+
+class UIProgressBar(UIElement):
+    """
+    Abstract base class for progress bars.
+    """
+    
+    @property
+    @abstractmethod
+    def value(self) -> float:
+        """
+        The current value of the progress bar.
+        """
+        pass
+        
+    @property
+    @abstractmethod
+    def min_value(self) -> float:
+        """
+        The specific minimum value.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def max_value(self) -> float:
+        """
+        The specific maximum value.
+        """
+        pass
+
+
+class UISlider(UIProgressBar):
+    """
+    Abstract base class for sliders.
+    """
+    
+    @abstractmethod
+    def set_value(self, value: float) -> None:
+        """
+        Sets the value of the slider.
+        """
+        pass

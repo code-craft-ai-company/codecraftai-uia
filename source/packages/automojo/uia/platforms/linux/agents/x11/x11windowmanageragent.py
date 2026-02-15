@@ -5,7 +5,7 @@ import time
 
 try:
     from Xlib import X, display, XK
-    from Xlib.ext import xtest
+    from Xlib.ext import xtest, randr
     from Xlib.protocol import event
 except ImportError:
     pass
@@ -109,7 +109,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
             pass
     
     def get_default_display(self) -> Any:
-        """Returns the X11 display object."""
+        """Returns the display object."""
         return self._display
 
     def get_active_window(self) -> Any:
@@ -515,3 +515,111 @@ class X11WindowManagerAgent(WindowManagerAgent):
             self._display.flush()
         except Exception as e:
             print(f"XTest move_mouse failed: {e}")
+
+    def get_displays(self) -> List[dict]:
+        """
+        Returns a list of connected displays using XRandR.
+        """
+        displays = []
+        try:
+            root = self._display.screen().root
+            res = randr.get_screen_resources(root)
+            
+            # Helper to get primary output
+            primary_output = None
+            try:
+                primary_output = randr.get_output_primary(root).output
+            except:
+                pass
+
+            for output_id in res.outputs:
+                try:
+                    out_info = randr.get_output_info(self._display, output_id, res.config_timestamp)
+                    if out_info.crtc == 0 or out_info.connection != 0: # 0=Connected
+                        continue
+                        
+                    crtc_info = randr.get_crtc_info(self._display, out_info.crtc, res.config_timestamp)
+                    
+                    is_primary = (output_id == primary_output)
+                    
+                    displays.append({
+                        'id': output_id,
+                        'name': out_info.name,
+                        'x': crtc_info.x,
+                        'y': crtc_info.y,
+                        'width': crtc_info.width,
+                        'height': crtc_info.height,
+                        'primary': is_primary
+                    })
+                except Exception as e:
+                    # print(f"Error getting output info: {e}")
+                    pass
+        except Exception as e:
+            print(f"XRandR get_displays failed: {e}")
+            # Fallback to single screen
+            screen = self._display.screen()
+            displays.append({
+                'id': 0,
+                'name': 'Default',
+                'x': 0,
+                'y': 0,
+                'width': screen.width_in_pixels,
+                'height': screen.height_in_pixels,
+                'primary': True
+            })
+            
+        return displays
+
+    def get_desktops(self) -> List[dict]:
+        """
+        Returns a list of desktops using EWMH (_NET_WM properties).
+        """
+        desktops = []
+        try:
+            root = self._display.screen().root
+            
+            # Helper to get property
+            def get_prop(atom_name):
+                atom = self._display.intern_atom(atom_name)
+                prop = root.get_full_property(atom, X.AnyPropertyType)
+                if prop:
+                    return prop.value
+                return None
+                
+            # 1. Number of Desktops
+            num_desktops_val = get_prop('_NET_NUMBER_OF_DESKTOPS')
+            num_desktops = num_desktops_val[0] if num_desktops_val else 1
+            
+            # 2. Current Desktop
+            current_desktop_val = get_prop('_NET_CURRENT_DESKTOP')
+            current_desktop_idx = current_desktop_val[0] if current_desktop_val else 0
+            
+            # 3. Desktop Names
+            names_val = get_prop('_NET_DESKTOP_NAMES')
+            # Xlib returns generic string or bytes, sometimes null-separated
+            desktop_names = []
+            if names_val:
+                # Often null terminated string
+                if isinstance(names_val, bytes):
+                    names_val = names_val.decode('utf-8', 'ignore')
+                desktop_names = names_val.split('\x00')
+                # Remove empty strings from split
+                desktop_names = [n for n in desktop_names if n]
+
+            for i in range(num_desktops):
+                name = str(i + 1)
+                if i < len(desktop_names):
+                    name = desktop_names[i]
+                
+                desktops.append({
+                    'id': i,
+                    'name': name,
+                    'is_active': (i == current_desktop_idx)
+                })
+                
+        except Exception as e:
+            print(f"EWMH get_desktops failed: {e}")
+            # Fallback
+            desktops.append({'id': 0, 'name': 'Desktop 1', 'is_active': True})
+            
+        return desktops
