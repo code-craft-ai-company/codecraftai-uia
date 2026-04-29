@@ -1,60 +1,71 @@
-==================================================
-Automaton Mojo - User Interface Automation Package
-==================================================
-Automation Mojo UIA is a MacOS-first UI automation package that exposes a stable, test-friendly
-API for applications, windows, and UI elements. It is designed to be consumed by higher-level
-testing frameworks with a focus on debuggability and clarity.
-
-===================
-Supported Platforms
-===================
-* MacOS (Darwin) only
-* Windows and Linux are not implemented yet
-
-============
-Quick Start
-============
-Example usage:
-
-.. code-block:: python
-
-    from automojo.uia.factory import AutomationFactory
-
-    controller = AutomationFactory.get_automation_engine()
-    app = controller.get_application_by_name("Calculator")
-    app.activate()
-
-    windows = app.get_windows()
-    if len(windows) > 0:
-        windows[0].focus()
-
-    app.terminate()
-
-```
-python3-pyatspi
-sudo apt install libgirepository-2.0-dev
-sudo apt install python3-gi
-```
-
 =======================
-Permissions and Access
+Automation Mojo UIA
 =======================
-MacOS UI automation requires Accessibility permissions. Ensure your automation process has
-permission to control the computer. Without this, accessibility operations will fail and the
-system will fall back to higher-level scripting APIs where possible.
 
-=================
-Code Organization
-=================
-* development - Runtime environment scripts.
-* repository-setup - Scripts to home the repository and prepare the machine.
-* userguide - Standards and conventions for the project.
-* source/packages - Python packages (source code).
-* source/testroots - TestBase test suites and shared resources.
-* source/examples - Example scripts and debug helpers.
+The ``automojo-uia`` package provides cross-platform (Linux, Windows, macOS) user-interface automation capabilities. The code attempts to consolidate the UI patterns of multiple operating systems into a common object model that scripts can use to automate application user interfaces.
 
+Highlights
 ==========
-References
-==========
-- `User Guide <userguide/userguide.rst>`
-- `Coding Standards <userguide/10-00-coding-standards.rst>`
+
+- Platform backends under ``uia/platforms/`` for macOS, Linux, and Windows.
+- Common object model under ``uia/model/`` for applications, windows, and UI elements.
+- Support utilities under ``uia/support/`` including Linux-specific helpers.
+- CLI command tree under ``uia/cli/cmdtree/`` for operator-style interaction.
+- Designed for consumption by higher-level testing frameworks with a focus on debuggability and clarity.
+
+Repository Structure
+====================
+
+- ``development/`` - Runtime environment scripts.
+- ``repository-setup/`` - Repository homing and setup scripts.
+- ``source/packages/`` - Package source code.
+- ``source/testroots/automojo/`` - TestBase test roots, factories, and shared fixtures.
+- ``source/examples/`` - Example usage scripts.
+- ``specs/`` - Scope, API, and design documentation.
+- ``userguide/`` - Standards, conventions, and documentation.
+
+Environment Setup
+=================
+
+When working in a Codex container:
+
+.. code-block:: bash
+
+   ./development/setup-agent-container
+
+For local development:
+
+.. code-block:: bash
+
+   ./repository-setup/rehome-repository
+   ./development/setup-envrionment
+
+Running Tests
+=============
+
+Activate the virtual environment:
+
+.. code-block:: bash
+
+   source .venv/bin/activate
+
+Run the single-host test suite:
+
+.. code-block:: bash
+
+   testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.uia --output=./.output
+
+Standards and Conventions
+=========================
+
+- Naming conventions: ``userguide/10-02-naming-conventions.rst``
+- Code organization: ``userguide/10-01-code-organization.rst``
+- Coding standards: ``userguide/10-00-coding-standards.rst``
+
+Additional Resources
+====================
+
+- User guide entry point: ``userguide/userguide.rst``
+- Scope: ``specs/01-scope.md``
+- API: ``specs/02-api.md``
+- Test matrix: ``specs/03-test-matrix.md``
