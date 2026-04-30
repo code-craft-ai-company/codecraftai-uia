@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppNotes(MacApplication):
     """
-        Represents and instance of the 'Notes' application.
+        Represents an instance of the 'Notes' application.
     """
 
     APPLICATION_NAME = "Notes"

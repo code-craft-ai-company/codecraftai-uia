@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppTextEdit(MacApplication):
     """
-        Represents and instance of the 'TextEdit' application.
+        Represents an instance of the 'TextEdit' application.
     """
 
     APPLICATION_NAME = "TextEdit"

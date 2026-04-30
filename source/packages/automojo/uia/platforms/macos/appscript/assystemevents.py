@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class AsSystemEvents(MacApplication):
     """
-        Represents and instance of the 'System Events' application.
+        Represents an instance of the 'System Events' application.
     """
 
     APPLICATION_NAME = "System Events"

@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppReminders(MacApplication):
     """
-        Represents and instance of the 'Reminders' application.
+        Represents an instance of the 'Reminders' application.
     """
 
     APPLICATION_NAME = "Reminders"

@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppStocks(MacApplication):
     """
-        Represents and instance of the 'Stocks' application.
+        Represents an instance of the 'Stocks' application.
     """
 
     APPLICATION_NAME = "Stocks"

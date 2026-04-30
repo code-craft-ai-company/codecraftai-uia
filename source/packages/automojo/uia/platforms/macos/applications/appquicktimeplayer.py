@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppQuickTimePlayer(MacApplication):
     """
-        Represents and instance of the 'Quick Time Player' application.
+        Represents an instance of the 'Quick Time Player' application.
     """
 
     APPLICATION_NAME = "QuickTime Player"

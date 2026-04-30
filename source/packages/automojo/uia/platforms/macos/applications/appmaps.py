@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppMaps(MacApplication):
     """
-        Represents and instance of the 'Maps' application.
+        Represents an instance of the 'Maps' application.
     """
 
     APPLICATION_NAME = "Maps"

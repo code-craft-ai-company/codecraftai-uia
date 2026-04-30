@@ -3,7 +3,7 @@ from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
 class AppNumbers(MacApplication):
     """
-        Represents and instance of the 'Numbers' application.
+        Represents an instance of the 'Numbers' application.
     """
 
     APPLICATION_NAME = "Numbers"
