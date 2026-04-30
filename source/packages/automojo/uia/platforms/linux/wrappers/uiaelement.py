@@ -204,7 +204,6 @@ class LinuxElement(UIElement):
 
             :param name: The name/label of the element
             :param role: The role name of the element
-            :param role_type: The raw role object
             :param recursive: Whether to search recursively (default: True)
             :param max_depth: Maximum depth for recursive search (default: 10)
         """

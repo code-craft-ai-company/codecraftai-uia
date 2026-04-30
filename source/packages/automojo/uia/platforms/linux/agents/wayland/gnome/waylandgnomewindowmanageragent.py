@@ -339,7 +339,15 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
         try:
             if self._uinput_fd is not None:
                 import fcntl
-                fcntl.ioctl(self._uinput_fd, 0x5502) # UI_DEV_DESTROY
-                os.close(self._uinput_fd)
-        except:
+                try:
+                    fcntl.ioctl(self._uinput_fd, 0x5502) # UI_DEV_DESTROY
+                except OSError:
+                    pass
+                try:
+                    os.close(self._uinput_fd)
+                except OSError:
+                    pass
+                self._uinput_fd = None
+        except Exception:
             pass
+        return

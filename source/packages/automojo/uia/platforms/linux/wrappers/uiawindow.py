@@ -35,21 +35,28 @@ class LinuxWindow(LinuxElement, UIWindow):
         return None
 
     def get_position(self) -> Tuple[int, int]:
-        if self.native_window:
+        if self.native_window is not None:
             # Check if it's a Broker dict (Wayland Gnome)
             if isinstance(self.native_window, dict):
                  rect = self.native_window.get('rect_logical')
-                 if rect:
+                 if rect is not None:
                      return (rect['x'], rect['y'])
             # Check if it's an X11 window object (has get_geometry)
             elif hasattr(self.native_window, 'get_geometry'):
                  try:
                      geo = self.native_window.get_geometry()
                      return (geo.x, geo.y)
-                 except:
+                 except Exception:
                      pass
-                     
-        return self.native_obj.get_coordinates()
+
+        # Fall back to the AT-SPI element's coordinates via the access agent.
+        # native_obj is an AT-SPI element which has no get_coordinates method
+        # of its own; that lives on the AccessibilityAgent.
+        coords = self.access_agent.get_coordinates(self.native_obj)
+        if coords is not None:
+            x, y, _w, _h = coords
+            return (x, y)
+        return (0, 0)
 
     def close(self) -> None:
         raise NotImplementedError("Close is not yet implemented for Linux windows.")
