@@ -42,7 +42,20 @@ class AccessibilityAgent(ABC):
     def do_action(self, element: Any, action_index: int) -> bool:
         pass
 
-    # ... add other methods as needed (find descendant etc)
+    @abstractmethod
+    def get_value(self, element: Any) -> float:
+        """
+            Returns the numeric value of a value-bearing element such as a
+            slider or progress bar.
+        """
+        pass
+
+    @abstractmethod
+    def set_value(self, element: Any, value: float) -> None:
+        """
+            Sets the numeric value of a value-bearing element such as a slider.
+        """
+        pass
 
 class WindowManagerAgent(ABC):
     """

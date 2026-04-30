@@ -4,7 +4,7 @@ import time
 import math
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
+from automojo.uia.platforms.linux.agents.wayland.gnome.waylandgnomewindowmanageragent import WaylandGnomeWindowManagerAgent as WaylandWindowManagerAgent
 
 def test_wayland_mouse_circle():
     """

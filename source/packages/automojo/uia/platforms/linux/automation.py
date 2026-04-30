@@ -110,10 +110,10 @@ class LinuxAutomation(AutomationEngine):
             
         # 2. Find Native Window Object
         native_window = None
-        if self._wm_agent and hasattr(self._wm_agent, 'find_native_window'):
-             native_window = self._wm_agent.find_native_window(name_pattern)
-             
-    # 3. Create Wrapper
+        if self._wm_agent is not None and hasattr(self._wm_agent, 'find_native_window'):
+            native_window = self._wm_agent.find_native_window(name_pattern)
+
+        # 3. Create Wrapper
         return LinuxWindow(found_node, self._access_agent, self._wm_agent, native_window=native_window)
 
     def get_displays(self) -> list:

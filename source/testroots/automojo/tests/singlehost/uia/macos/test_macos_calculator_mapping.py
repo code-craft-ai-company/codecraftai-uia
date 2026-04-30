@@ -4,7 +4,7 @@ import time
 from automojo import testbase
 
 
-def test_macos_calculator_mapping(uia_controller):
+def test_macos_calculator_mapping(uia_controller=None):
     """
         Validates the MacOS Calculator declarative mapping resolves key elements.
     """

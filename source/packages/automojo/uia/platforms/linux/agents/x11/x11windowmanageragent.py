@@ -397,8 +397,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
         Example: "{+}" -> types +
         """
         self._setup_keymap()
-        print(f"X11 Agent typing: {keys}")
-        
+
         i = 0
         n = len(keys)
         while i < n:

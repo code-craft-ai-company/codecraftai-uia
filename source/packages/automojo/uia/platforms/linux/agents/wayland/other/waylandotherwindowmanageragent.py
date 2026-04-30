@@ -1,5 +1,5 @@
 
-from automojo.uia.platforms.linux.agents.wm.x11windowmanageragent import X11WindowManagerAgent
+from automojo.uia.platforms.linux.agents.x11.x11windowmanageragent import X11WindowManagerAgent
 
 class WaylandOtherWindowManagerAgent(X11WindowManagerAgent):
     """

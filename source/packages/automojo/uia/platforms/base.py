@@ -77,6 +77,20 @@ class ScreenElement(DisplayElement):
         Provides properties and methods for managing screen positioning and layering.
     """
 
+    def __init__(self, parent: Optional['UIElement'] = None):
+        self._parent = weakref.ref(parent) if parent is not None else None
+        return
+
+    @property
+    def parent(self) -> Optional['UIElement']:
+        """
+            Returns the parent UI element, if any.
+        """
+        if self._parent is not None:
+            parent_ref = self._parent()
+            return parent_ref
+        return None
+
     @abstractmethod
     def bring_to_front(self) -> None:
         """

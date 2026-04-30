@@ -3,7 +3,7 @@ import platform
 from automojo import testbase
 
 
-def test_accessibility_window_search(uia_controller):
+def test_accessibility_window_search(uia_controller=None):
     """
         Validates accessibility-based window discovery and search helpers.
     """

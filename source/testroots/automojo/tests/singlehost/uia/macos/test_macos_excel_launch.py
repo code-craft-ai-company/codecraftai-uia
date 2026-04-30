@@ -5,7 +5,7 @@ from automojo import testbase
 
 
 
-def test_macos_excel_launch_creates_workbook(uia_controller):
+def test_macos_excel_launch_creates_workbook(uia_controller=None):
     """
         Launches Microsoft Excel, creates a workbook if needed, and then closes.
     """

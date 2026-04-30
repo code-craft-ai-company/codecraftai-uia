@@ -16,8 +16,4 @@ class SbWindow(WrappedObject):
     def groups(self) -> list:
         objlist = [obj for obj in self.native_obj.groups()]
 
-        for obj in objlist:
-            name = obj.name
-            print(name)
-
         return objlist

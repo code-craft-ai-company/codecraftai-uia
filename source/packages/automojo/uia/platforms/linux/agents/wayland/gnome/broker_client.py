@@ -17,6 +17,8 @@ class BrokerClient:
         self._sock_path = self._runtime_dir / self.SOCK_FILE
         self._token_path = self._runtime_dir / self.TOKEN_FILE
         self._token = self._read_token()
+        self._next_req_id = 1
+        return
 
     def _read_token(self):
         try:
@@ -35,7 +37,8 @@ class BrokerClient:
         if not self._sock_path.exists():
             raise RuntimeError(f"Automation Broker socket not found at {self._sock_path}")
 
-        req_id = 1 # TODO: increment
+        req_id = self._next_req_id
+        self._next_req_id += 1
         payload = {
             "jsonrpc": "2.0",
             "method": method,
@@ -65,10 +68,10 @@ class BrokerClient:
             client.close()
             
             resp = json.loads(response_data.decode('utf-8'))
-            if not resp.get("ok"):
-                error = resp.get("error", {})
+            if "error" in resp and resp["error"] is not None:
+                error = resp["error"]
                 raise RuntimeError(f"Broker error: {error.get('code')} - {error.get('message')}")
-            
+
             return resp.get("result")
             
         except Exception as e:

@@ -150,7 +150,7 @@ class ElementHint(Generic[T]):
                                  # We assume find_elements is direct children usually.
                                  # So we need deep walk.
                                  pass
-                             except:
+                             except Exception:
                                  pass
                         
                         # Doing a manual walk for generic support
@@ -165,18 +165,19 @@ class ElementHint(Generic[T]):
                          children = []
                          try:
                              children = el.find_elements()
-                         except:
+                         except Exception:
                              # Try get_children internal
                              access = getattr(el, 'access_agent', None)
                              native = getattr(el, 'native_obj', None) # Linux
-                             if access and native:
+                             if access is not None and native is not None:
                                  # Linux specific bypass
                                  try:
                                     child_natives = access.get_children(native)
                                     # Convert back? Complexity high.
                                     # Let's rely on standard find_elements returning list of wrappers
                                     pass
-                                 except: pass
+                                 except Exception:
+                                    pass
                          
                          # Filter manually
                          for child in children:
@@ -492,6 +493,7 @@ class DeclarativeApplication:
         It returns a concrete UIApplication when valid.
     """
     
+    APPLICATION_NAME: str = None
     APPLICATION_COMMAND: str = None
 
     @classmethod

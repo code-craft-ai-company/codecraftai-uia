@@ -12,15 +12,15 @@ def test_catalog_bundle_mapping():
         return
 
     from automojo.uia.platforms.macos.applications.appcalculator import AppCalculator
-    from automojo.uia.platforms.macos.uiacatalog import UiaCatalog
-    from automojo.uia.platforms.macos.wrappers.uiaapplication import UiaApplication
+    from automojo.uia.platforms.macos.uiacatalog import MacCatalog
+    from automojo.uia.platforms.macos.wrappers.uiaapplication import MacApplication
 
-    catalog = UiaCatalog()
+    catalog = MacCatalog()
 
     app_type = catalog.lookup_application_type_by_bundle_id(AppCalculator.BUNDLE_IDENTIFIER)
     testbase.assert_equal(app_type is AppCalculator, True)
 
     unknown_type = catalog.lookup_application_type_by_bundle_id("com.example.unknown")
-    testbase.assert_equal(unknown_type is UiaApplication, True)
+    testbase.assert_equal(unknown_type is MacApplication, True)
 
     return

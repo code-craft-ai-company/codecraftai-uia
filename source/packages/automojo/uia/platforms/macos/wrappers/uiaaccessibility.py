@@ -45,7 +45,7 @@ try:
             kAXValueCGPointType,
             kAXValueCGSizeType
         )
-    except:
+    except ImportError:
         # Accessibility Attribute Strings
         kAXVisibleAttribute = "AXVisible"
         kAXWindowsAttribute = "AXWindows"
@@ -53,9 +53,7 @@ try:
         # Accessibility Value Type Enums
         kAXValueCGPointType = 1
         kAXValueCGSizeType = 2
-except Exception as err:
-    import traceback
-    print(traceback.format_exc())
+except ImportError:
     AXIsProcessTrusted = None
     AXIsProcessTrustedWithOptions = None
     AXUIElementCreateApplication = None

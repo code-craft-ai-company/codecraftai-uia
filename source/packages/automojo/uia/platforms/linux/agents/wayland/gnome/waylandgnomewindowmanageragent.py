@@ -41,6 +41,8 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             
         # Initialize UInput for mouse/keyboard injection
         self._uinput_fd = None
+        self._last_x = 0
+        self._last_y = 0
         self._setup_uinput()
 
         # Initialize Broker Client

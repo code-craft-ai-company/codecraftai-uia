@@ -1,3 +1,5 @@
+import platform
+
 from automojo import testbase
 from automojo.uia.factory import AutomationFactory
 from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
@@ -141,6 +143,9 @@ def test_libreoffice_calc_menus_refactored():
     Tests the "File -> Save As" menu flow using declarative mappings.
     Ensures the file is deleted beforehand to avoid "File Already Exists" dialog in this test.
     """
+    if platform.system() != "Linux":
+        return
+
     automation = AutomationFactory.get_automation_engine()
     
     # 1. Launch/Attach
@@ -232,7 +237,8 @@ def test_libreoffice_calc_menus_refactored():
              # Try Alt+F4 or similar?
              # Or rely on next test finding existing window.
              pass
-        except: pass
+        except Exception:
+            pass
 
 
 def test_libreoffice_calc_save_overwrite():
@@ -240,6 +246,9 @@ def test_libreoffice_calc_save_overwrite():
     Tests the "File -> Save As" menu flow where the file ALREADY EXISTS.
     Verifies that the "Confirm Overwrite" dialog appears and is handled correctly.
     """
+    if platform.system() != "Linux":
+        return
+
     automation = AutomationFactory.get_automation_engine()
     # 1. Launch/Attach
     app = LibreOfficeCalc.launch_or_attach(automation)

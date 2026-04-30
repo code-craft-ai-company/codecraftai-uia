@@ -1,4 +1,5 @@
 
+import platform
 import time
 import subprocess
 import shutil
@@ -16,6 +17,9 @@ def test_linux_libreoffice_draw():
     """
     Verifies that we can launch LibreOffice Draw and draw a circle.
     """
+    if platform.system() != "Linux":
+        return
+
     automation = AutomationFactory.get_automation_engine()
     
     # 1. Launch LibreOffice Draw

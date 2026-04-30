@@ -26,26 +26,26 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
                 child = desktop.getChildAtIndex(i)
                 if child.name == name:
                     return child
-            except:
+            except Exception:
                 pass
         return None
 
     def get_role(self, element: Any) -> Any:
         try:
              return element.getRole()
-        except:
+        except Exception:
              return None
 
     def get_role_name(self, element: Any) -> str:
         try:
              return element.getRoleName()
-        except:
+        except Exception:
              return "Unknown"
 
     def get_name(self, element: Any) -> str:
         try:
             return element.name
-        except:
+        except Exception:
             return ""
 
     def get_text(self, element: Any) -> str:
@@ -82,7 +82,7 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
     def get_states(self, element: Any) -> List[Any]:
         try:
              return element.getState().getStates()
-        except:
+        except Exception:
              return []
 
     def do_action(self, element: Any, action_index: int) -> bool:
@@ -95,11 +95,26 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
             pass
         return False
     
+    def get_value(self, element: Any) -> float:
+        try:
+            value_iface = element.queryValue()
+            return float(value_iface.currentValue)
+        except Exception:
+            return 0.0
+
+    def set_value(self, element: Any, value: float) -> None:
+        try:
+            value_iface = element.queryValue()
+            value_iface.currentValue = float(value)
+        except Exception:
+            pass
+        return
+
     def get_coordinates(self, element: Any) -> tuple:
         try:
              component = element.queryComponent()
              # 0 is DESKTOP_COORDS
              extents = component.getExtents(0)
              return (extents.x, extents.y, extents.width, extents.height)
-        except:
+        except Exception:
              return None

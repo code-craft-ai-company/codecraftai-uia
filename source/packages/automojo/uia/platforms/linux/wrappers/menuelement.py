@@ -91,9 +91,9 @@ class LinuxMenu(LinuxElement, UIMenu):
         super().click()
 
     def close(self) -> None:
-        # Click again to close? Or Escape?
-        # TODO: Implement robust close (maybe press Escape via WM agent)
-        self.type_keys("<Esc>")
+        # Send Escape via the {ESC} token recognized by the X11 keymap
+        # (the X11 send_keys parser uses {TOKEN} syntax, not <TOKEN>).
+        self.type_keys("{ESC}")
 
     def get_item(self, name: str) -> Optional[UIMenuItem]:
         children = self.access_agent.get_children(self._native_obj)

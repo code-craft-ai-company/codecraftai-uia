@@ -200,7 +200,7 @@ class MonitorCommand(Command):
             if isinstance(element, LinuxElement):
                  states_enum = element.access_agent.get_states(element.native_obj)
                  data["states"] = [str(s).split('.')[-1] for s in states_enum]
-        except:
+        except Exception:
             pass
 
         # Get interfaces/attributes
@@ -208,12 +208,16 @@ class MonitorCommand(Command):
             if isinstance(element, LinuxElement):
                 native = getattr(element, '_native_obj', element) if hasattr(element, '_native_obj') else element.native_obj
                 # PyAtspi specific: list interfaces
-                start_interfaces = pyatspi.listInterfaces(native) if 'pyatspi' in sys.modules else []
+                if 'pyatspi' in sys.modules:
+                    pyatspi_module = sys.modules['pyatspi']
+                    start_interfaces = pyatspi_module.listInterfaces(native)
+                else:
+                    start_interfaces = []
                 # If we can't get them easily via wrapper, maybe just try to query common ones or skip
                 # Actually, capturing interfaces is hard without direct pyatspi access in this context if not imported
                 # Let's try to get description via access_agent if possible
                 pass
-        except:
+        except Exception:
             pass
             
         # Helper to recurse
@@ -233,7 +237,7 @@ class MonitorCommand(Command):
                     children = element.children()
                     for child in children:
                         data["children"].append(self._walk_element(child, depth + 1))
-        except:
+        except Exception:
             pass
              
         return data
