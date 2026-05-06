@@ -133,3 +133,6 @@ dmypy.json
 
 # Project Specific Exclusion
 *.code-workspace
+
+# Claude Code worktree metadata
+.claude/
