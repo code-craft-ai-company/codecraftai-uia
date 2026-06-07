@@ -26,7 +26,7 @@ Run the installation command from the repository root:
 
 .. code-block:: bash
 
-    ./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py install
+    ./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py install
 
 After installation, you may need to log out and log back in for GNOME Shell to recognize the new extension.
 
@@ -42,7 +42,7 @@ To enable the broker:
 
 .. code-block:: bash
 
-    ./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py start
+    ./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py start
 
 **What happens:**
 
@@ -57,7 +57,7 @@ To see if the broker is currently running and ready:
 
 .. code-block:: bash
 
-    ./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py status
+    ./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py status
 
 Stopping the Broker
 -------------------
@@ -66,7 +66,7 @@ When automation is finished, you should stop the broker to disable the extension
 
 .. code-block:: bash
 
-    ./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py stop
+    ./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py stop
 
 Security
 ========

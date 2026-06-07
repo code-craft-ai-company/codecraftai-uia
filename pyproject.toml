@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "automojo-uia"
-description = "The Automation Mojo - User Interface Automation Package"
+name = "codecraftai-uia"
+description = "The Code Craft AI - User Interface Automation Package"
 version = "0.0.1"
 authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
@@ -13,15 +13,15 @@ classifiers = [
 keywords = [
     "python"
 ]
-packages = [{include="automojo", from="source/packages"}]
+packages = [{include="ccai", from="source/packages"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-automojo-this-app = { git = "https://github.com/automationmojo/automojo-this-app.git", branch = "main" }
-automojo-arcli = { git = 'https://github.com/automationmojo/automojo-arcli.git', branch = "main" }
-automojo-errors = { git = "https://github.com/automationmojo/automojo-errors.git", branch = "main" }
-automojo-credentials = { git = "https://github.com/automationmojo/automojo-credentials.git", branch = "main" }
-automojo-testbase = { git = "https://github.com/automationmojo/automojo-testbase.git", branch = "main" }
+codecraftai-this-app = { git = "https://github.com/automationmojo/codecraftai-this-app.git", branch = "main" }
+codecraftai-arcli = { git = 'https://github.com/automationmojo/codecraftai-arcli.git', branch = "main" }
+codecraftai-errors = { git = "https://github.com/automationmojo/codecraftai-errors.git", branch = "main" }
+codecraftai-credentials = { git = "https://github.com/automationmojo/codecraftai-credentials.git", branch = "main" }
+codecraftai-testbase = { git = "https://github.com/automationmojo/codecraftai-testbase.git", branch = "main" }
 pyobjc-core = { version="^11.1", platform="darwin" }
 pyobjc-framework-scriptingbridge = { version="^11.1", platform="darwin" }
 pyobjc-framework-cocoa = { version="^11.1", platform="darwin" }

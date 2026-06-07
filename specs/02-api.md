@@ -1,18 +1,18 @@
-# Automojo UIA API Contract
+# CodeCraftAI UIA API Contract
 
 ## Factory And Singleton
-- `automojo.uia.factory.AutomationFactory.get_automation_engine() -> AutomationEngine`
+- `ccai.uia.factory.AutomationFactory.get_automation_engine() -> AutomationEngine`
   - Returns a platform-specific automation engine.
   - MacOS: returns `MacOSAutomation`.
   - Linux: returns `LinuxAutomation`.
   - Windows: raises `NotImplementedError`.
-- `automojo.uia.wellknown.UiaControllerSingleton() -> Any`
+- `ccai.uia.wellknown.UiaControllerSingleton() -> Any`
   - Returns a singleton instance of the platform-specific engine.
 
 ---
 
 ## Declarative Automation (✅ Implemented)
-Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/model/declarative.py`.
+Defined in `/home/myron/repos/codecraftai-uia/source/packages/ccai/uia/model/declarative.py`.
 
 ### Principles
 Declarative automation allows defining the UI structure using "Hints" rather than procedural search logic.
@@ -60,7 +60,7 @@ Linux implementation uses an agent-based architecture:
 - Platform wrappers delegate to agents for platform-specific operations
 
 ### Linux Elements
-Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/linux/wrappers/`.
+Defined in `/home/myron/repos/codecraftai-uia/source/packages/ccai/uia/platforms/linux/wrappers/`.
 
 - `LinuxElement(UIElement)`
   - Implements all DisplayElement and UIElement abstract methods.
@@ -83,12 +83,12 @@ Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/platform
   - Uses AT-SPI registry to find running applications.
 
 ### X11 Window Manager Agent
-Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/linux/agents/wm/x11_agent.py`.
+Defined in `/home/myron/repos/codecraftai-uia/source/packages/ccai/uia/platforms/linux/agents/wm/x11_agent.py`.
 
 ---
 
 ## Base Interfaces
-Defined in `/home/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/base.py`.
+Defined in `/home/myron/repos/codecraftai-uia/source/packages/ccai/uia/platforms/base.py`.
 
 ### Foundation Classes
 
@@ -122,13 +122,13 @@ All inherit from `UIElement`:
 ---
 
 ## MacOS Automation
-Defined in `/Users/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/macos/automation.py`.
+Defined in `/Users/myron/repos/codecraftai-uia/source/packages/ccai/uia/platforms/macos/automation.py`.
 
 - `MacOSAutomation(AutomationEngine)`
   - `get_application_by_name(...)`
 
 ## MacOS Application Wrappers
-Defined under `/Users/myron/repos/automojo-uia/source/packages/automojo/uia/platforms/macos/`.
+Defined under `/Users/myron/repos/codecraftai-uia/source/packages/ccai/uia/platforms/macos/`.
 
 - `MacApplication(UIApplication)`
   - Represents a running application.

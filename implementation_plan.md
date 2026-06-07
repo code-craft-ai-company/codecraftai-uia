@@ -12,7 +12,7 @@ The goal is to fix the `test_linux_calc_type_keys` test which fails to find the 
 ## Proposed Changes
 
 ### 1. Investigation
-- [x] Inspect `source/packages/automojo/uia/platforms/linux/wrappers/uiaelement.py` to understand how `text` property is implemented.
+- [x] Inspect `source/packages/ccai/uia/platforms/linux/wrappers/uiaelement.py` to understand how `text` property is implemented.
 - [x] Update `source/examples/debug_linux_calc.py` to explicitly try `queryText()` interface on elements.
 - [x] **FINDING**: `type_keys` fails to inject keystrokes in this environment.
 - [x] **FINDING**: Clicking calculator buttons works AND the result "46" is readable in the `Role: text` element.

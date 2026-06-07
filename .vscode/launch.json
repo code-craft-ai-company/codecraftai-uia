@@ -31,8 +31,8 @@
             "args": [
                 "testing",
                 "run",
-                "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.uia.linux",
+                "--root=${workspaceFolder}/source/testroots/ccai",
+                "--includes=ccai.tests.singlehost.uia.linux",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",
@@ -47,8 +47,8 @@
             "args": [
                 "testing",
                 "run",
-                "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.uia.macos.test_macos_excel_launch",
+                "--root=${workspaceFolder}/source/testroots/ccai",
+                "--includes=ccai.tests.singlehost.uia.macos.test_macos_excel_launch",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",
@@ -63,8 +63,8 @@
             "args": [
                 "testing",
                 "run",
-                "--root=${workspaceFolder}/source/testroots/automojo",
-                "--includes=automojo.tests.singlehost.uia.windows",
+                "--root=${workspaceFolder}/source/testroots/ccai",
+                "--includes=ccai.tests.singlehost.uia.windows",
                 "--breakpoint=testrun-start"
             ],
             "console": "integratedTerminal",

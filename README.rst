@@ -1,8 +1,8 @@
 =======================
-Automation Mojo UIA
+Code Craft AI UIA
 =======================
 
-The ``automojo-uia`` package provides cross-platform (Linux, Windows, macOS) user-interface automation capabilities. The code attempts to consolidate the UI patterns of multiple operating systems into a common object model that scripts can use to automate application user interfaces.
+The ``codecraftai-uia`` package provides cross-platform (Linux, Windows, macOS) user-interface automation capabilities. The code attempts to consolidate the UI patterns of multiple operating systems into a common object model that scripts can use to automate application user interfaces.
 
 Highlights
 ==========
@@ -19,7 +19,7 @@ Repository Structure
 - ``development/`` - Runtime environment scripts.
 - ``repository-setup/`` - Repository homing and setup scripts.
 - ``source/packages/`` - Package source code.
-- ``source/testroots/automojo/`` - TestBase test roots, factories, and shared fixtures.
+- ``source/testroots/ccai/`` - TestBase test roots, factories, and shared fixtures.
 - ``source/examples/`` - Example usage scripts.
 - ``specs/`` - Scope, API, and design documentation.
 - ``userguide/`` - Standards, conventions, and documentation.
@@ -53,7 +53,7 @@ Run the single-host test suite:
 
 .. code-block:: bash
 
-   testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost.uia --output=./.output
+   testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost.uia --output=./.output
 
 Standards and Conventions
 =========================

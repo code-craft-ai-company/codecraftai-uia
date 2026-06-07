@@ -40,31 +40,31 @@
         {
             "label": "Broker - Install",
             "type": "shell",
-            "command": "./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py install",
+            "command": "./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py install",
             "problemMatcher": []
         },
         {
             "label": "Broker - Start",
             "type": "shell",
-            "command": "./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py start",
+            "command": "./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py start",
             "problemMatcher": []
         },
         {
             "label": "Broker - Status",
             "type": "shell",
-            "command": "./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py status",
+            "command": "./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py status",
             "problemMatcher": []
         },
         {
             "label": "Broker - Stop",
             "type": "shell",
-            "command": "./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py stop",
+            "command": "./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py stop",
             "problemMatcher": []
         },
         {
             "label": "Broker - Uninstall",
             "type": "shell",
-            "command": "./source/packages/automojo/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py uninstall",
+            "command": "./source/packages/ccai/uia/support/linux/wayland-gnome/automation-broker/automation-broker-server/broker_service.py uninstall",
             "problemMatcher": []
         }
     ]

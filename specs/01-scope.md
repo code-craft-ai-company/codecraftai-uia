@@ -1,4 +1,4 @@
-# Automojo UIA Scope
+# CodeCraftAI UIA Scope
 
 ## Goals
 Provide a MacOS-first UI automation layer with a stable base interface for applications, windows, and elements. Offer a simple factory that selects the correct platform engine and a catalog that maps known MacOS bundle identifiers to specialized wrappers.
