@@ -5,15 +5,15 @@ import time
 import sys
 import os
 
-# Add source to path for automojo import
+# Add source to path for ccai import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
 
 def run_tkinter_app():
     root = tk.Tk()
-    root.title("Automojo Click Verify")
+    root.title("CodeCraftAI Click Verify")
     # Position at 200, 200 with size 200x200
     root.geometry("200x200+200+200")
     
@@ -39,7 +39,7 @@ def test_click():
     
     print("Finding application...")
     # Tkinter generic name is usually 'tk' or the title
-    app = automation.get_application_by_name("Automojo Click Verify")
+    app = automation.get_application_by_name("CodeCraftAI Click Verify")
     if not app:
         # Fallback to searching all (Tkinter sometimes tricky with names)
         # Try generic python/tk name?

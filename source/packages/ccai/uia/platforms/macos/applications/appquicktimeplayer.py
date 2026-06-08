@@ -1,0 +1,10 @@
+
+from ccai.uia.platforms.macos.wrappers.uiaapplication import MacApplication
+
+class AppQuickTimePlayer(MacApplication):
+    """
+        Represents an instance of the 'Quick Time Player' application.
+    """
+
+    APPLICATION_NAME = "QuickTime Player"
+    BUNDLE_IDENTIFIER = "com.apple.QuickTimePlayerX"

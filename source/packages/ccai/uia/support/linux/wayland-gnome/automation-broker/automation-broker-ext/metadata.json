@@ -1,0 +1,10 @@
+{
+    "uuid": "com.ccai.automationbroker@ccai",
+    "name": "Automation Broker",
+    "description": "Exposes window + display geometry via a gated local socket for automation.",
+    "shell-version": [
+        "46",
+        "47"
+    ],
+    "version": 1
+}

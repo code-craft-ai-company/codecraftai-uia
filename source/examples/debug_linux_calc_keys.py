@@ -5,11 +5,11 @@ import time
 import sys
 import os
 
-# Add source to path so we can import automojo
+# Add source to path so we can import ccai
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../source/packages')))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 def dump_value(main_window):
     try:

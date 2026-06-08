@@ -4,12 +4,12 @@ import subprocess
 import sys
 import os
 
-# Add source/packages to path to find automojo
+# Add source/packages to path to find ccai
 sys.path.append(os.path.abspath("source/packages"))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 def recursive_print(element, depth=0, max_depth=3):
     if depth > max_depth:

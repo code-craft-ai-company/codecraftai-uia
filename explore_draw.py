@@ -7,8 +7,8 @@ import os
 # Add source to path
 sys.path.append(os.path.abspath("source"))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 def dump_tree(element, depth=0, max_depth=5):
     if depth > max_depth:

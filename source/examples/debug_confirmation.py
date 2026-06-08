@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import time
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 import os
 
 def dump_tree(element, depth=0, max_depth=5):

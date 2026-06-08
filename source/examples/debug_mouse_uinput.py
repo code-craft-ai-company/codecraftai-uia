@@ -16,7 +16,7 @@ def debug_mouse_uinput():
 
     try:
         # Create virtual device
-        ui = UInput(capabilities, name='automojo-virtual-mouse', version=0x3)
+        ui = UInput(capabilities, name='codecraftai-virtual-mouse', version=0x3)
         print(f"Device created: {ui.name}")
         
         # Give system time to register device

@@ -1,17 +1,17 @@
-# Automojo UIA Test Matrix
+# CodeCraftAI UIA Test Matrix
 
 ## Test Framework
 - `testbase` is the required framework.
 - Only singlehost tests should be run by automation.
 
 ## Test Roots
-- Root: `/Users/myron/repos/automojo-uia/source/testroots/automojo`
-- Singlehost package: `automojo.tests.singlehost`
+- Root: `/Users/myron/repos/codecraftai-uia/source/testroots/ccai`
+- Singlehost package: `ccai.tests.singlehost`
 
 ## Test Command
 ```sh
 source .venv/bin/activate
-testbase testing run --root source/testroots/automojo --includes=automojo.tests.singlehost --output=./.output
+testbase testing run --root source/testroots/ccai --includes=ccai.tests.singlehost --output=./.output
 ```
 
 ## Output Artifacts
@@ -28,5 +28,5 @@ testbase testing run --root source/testroots/automojo --includes=automojo.tests.
 | Windows | `MacApplication.windows()` | Validate window list access and basic properties. |
 
 ## Planned Additions
-- Factory and catalog unit tests under `source/testroots/automojo/tests/singlehost/uia/`.
+- Factory and catalog unit tests under `source/testroots/ccai/tests/singlehost/uia/`.
 - Integration tests that launch a safe system app (Calculator or TextEdit) and validate window enumeration.

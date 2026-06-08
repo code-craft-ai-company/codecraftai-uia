@@ -101,7 +101,7 @@ def debug_mouse_uinput_abs():
         # Setup Device ID/Name
         BUS_USB = 0x03
         input_id = struct.pack('HHHH', BUS_USB, 0x1, 0x1, 1)
-        name = b"Automojo Virtual Tablet"
+        name = b"CodeCraftAI Virtual Tablet"
         name_pad = name + b'\0' * (80 - len(name))
         ff_effects_max = struct.pack('I', 0)
         setup_payload = input_id + name_pad + ff_effects_max

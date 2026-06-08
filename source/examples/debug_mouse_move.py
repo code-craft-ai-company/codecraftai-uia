@@ -6,8 +6,8 @@ import os
 # Add source to path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from automojo.uia.platforms.linux.agents.wm.x11windowmanageragent import X11WindowManagerAgent
-from automojo.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
+from ccai.uia.platforms.linux.agents.wm.x11windowmanageragent import X11WindowManagerAgent
+from ccai.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
 
 def debug_mouse_move():
     print("Initializing X11 Window Manager Agent...")

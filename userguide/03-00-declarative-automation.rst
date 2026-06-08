@@ -4,7 +4,7 @@
 Declarative Automation
 **********************
 
-The `automojo-uia` framework supports declarative automation, allowing you to define the structure of your application's UI using hints and models. This approach separates the definition of UI elements from the test logic, leading to more maintainable and readable tests with better IDE support.
+The `codecraftai-uia` framework supports declarative automation, allowing you to define the structure of your application's UI using hints and models. This approach separates the definition of UI elements from the test logic, leading to more maintainable and readable tests with better IDE support.
 
 Hints and Models
 ================
@@ -17,7 +17,7 @@ You define an application by inheriting from ``DeclarativeApplication`` and defi
 
 .. code-block:: python
 
-    from automojo.uia.model.declarative import DeclarativeApplication, WindowHint, ButtonHint, TextHint
+    from ccai.uia.model.declarative import DeclarativeApplication, WindowHint, ButtonHint, TextHint
 
     class Calculator(DeclarativeApplication):
         APPLICATION_NAME = "gnome-calculator"

@@ -6,9 +6,9 @@ import os
 # Add source to path for direct execution if needed
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
-from automojo.uia.platforms.linux.wrappers.menuelement import LinuxDropDownMenu, LinuxMenu
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
+from ccai.uia.platforms.linux.wrappers.menuelement import LinuxDropDownMenu, LinuxMenu
 
 def debug_menu_click():
     print("Initializing Automation Engine...")

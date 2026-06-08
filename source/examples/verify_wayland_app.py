@@ -7,11 +7,11 @@ import time
 import sys
 import os
 
-# Add source to path for automojo import
+# Add source to path for ccai import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
-from automojo.uia.factory import AutomationFactory
-from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+from ccai.uia.factory import AutomationFactory
+from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
 
 def run_test_logic():
     print("Test Logic: Waiting for app to launch...")
@@ -38,7 +38,7 @@ def run_test_logic():
                 for j in range(child.childCount):
                     try:
                         win = child.getChildAtIndex(j)
-                        if win.name == "Automojo Wayland Click Verify":
+                        if win.name == "CodeCraftAI Wayland Click Verify":
                             target_window = win
                             target_app_name = child.name
                             print(f"Test Logic: Found window '{win.name}' in app '{child.name}'")
@@ -104,7 +104,7 @@ def on_button_clicked(widget):
     print("BUTTON CLICKED!")
 
 def main():
-    win = Gtk.Window(title="Automojo Wayland Click Verify")
+    win = Gtk.Window(title="CodeCraftAI Wayland Click Verify")
     win.set_default_size(200, 200)
     
     display = Gdk.Display.get_default()

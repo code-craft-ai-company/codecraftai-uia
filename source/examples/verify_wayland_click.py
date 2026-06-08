@@ -5,7 +5,7 @@ import time
 import subprocess
 import signal
 
-# Add source to path for automojo import
+# Add source to path for ccai import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 # Imports for the App side
@@ -20,7 +20,7 @@ def run_app():
     """Runs the target GTK Application."""
     print("APP_PROCESS: Starting GTK App...")
     
-    win = Gtk.Window(title="Automojo Target App")
+    win = Gtk.Window(title="CodeCraftAI Target App")
     win.set_default_size(200, 200)
     
     # Check backend
@@ -102,15 +102,15 @@ def run_test():
         time.sleep(2.0) # Grace period for AT-SPI registration
         
         print("TEST_PROCESS: Initializing Automation...")
-        from automojo.uia.factory import AutomationFactory
-        from automojo.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
+        from ccai.uia.factory import AutomationFactory
+        from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
         
         automation = AutomationFactory.get_automation_engine()
         agent = automation._wm_agent
         
         # Find Window using new Automation method
-        print("TEST_PROCESS: Finding 'Automojo Target App' using automation.find_window()...")
-        window = automation.find_window("Automojo Target App")
+        print("TEST_PROCESS: Finding 'CodeCraftAI Target App' using automation.find_window()...")
+        window = automation.find_window("CodeCraftAI Target App")
         
         if not window:
             print("TEST_PROCESS: ERROR - Window not found via automation.find_window.")

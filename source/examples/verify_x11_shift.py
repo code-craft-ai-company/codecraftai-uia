@@ -1,9 +1,9 @@
 import sys
 import time
 # Mocking sys.path to ensure we can import the agent
-sys.path.append('/home/myron/repos/automojo-uia/source/packages')
+sys.path.append('/home/myron/repos/codecraftai-uia/source/packages')
 
-from automojo.uia.platforms.linux.agents.wm.x11_agent import X11WindowManagerAgent
+from ccai.uia.platforms.linux.agents.wm.x11_agent import X11WindowManagerAgent
 
 def test_needs_shift():
     try:

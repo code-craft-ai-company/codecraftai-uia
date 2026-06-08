@@ -5,9 +5,9 @@ Run with LibreOffice Calc already open
 """
 import sys
 import time
-sys.path.insert(0, '/home/myron/repos/automojo-uia/source/packages')
+sys.path.insert(0, '/home/myron/repos/codecraftai-uia/source/packages')
 
-from automojo.uia.factory import AutomationFactory
+from ccai.uia.factory import AutomationFactory
 
 def find_first_cell(element, depth=0):
     """Recursively find the first table cell"""
@@ -22,7 +22,7 @@ def find_first_cell(element, depth=0):
         count = element._native_obj.childCount
         for i in range(min(count, 50)):
             child = element._native_obj.getChildAtIndex(i)
-            from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+            from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
             child_element = LinuxElement(child, element._access_agent, element._wm_agent)
             result = find_first_cell(child_element, depth + 1)
             if result:

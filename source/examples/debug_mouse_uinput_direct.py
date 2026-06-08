@@ -75,7 +75,7 @@ def debug_mouse_uinput_direct():
         
         # input_id
         input_id = struct.pack('HHHH', BUS_USB, 0x1, 0x1, 1)
-        name = b"Automojo Direct Mouse"
+        name = b"CodeCraftAI Direct Mouse"
         name_pad = name + b'\0' * (80 - len(name))
         ff_effects_max = struct.pack('I', 0)
         

@@ -1,6 +1,6 @@
 
 
-from automojo.uia.factory import AutomationFactory
+from ccai.uia.factory import AutomationFactory
 
 
 def uiaplay_main():

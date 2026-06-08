@@ -4,10 +4,10 @@ import subprocess
 import sys
 import os
 
-# Add source/packages to path to find automojo
+# Add source/packages to path to find ccai
 sys.path.append(os.path.abspath("source/packages"))
 
-from automojo.uia.factory import AutomationFactory
+from ccai.uia.factory import AutomationFactory
 
 def recursive_print(element, depth=0, max_depth=20):
     if depth > max_depth:
@@ -130,7 +130,7 @@ def verify_calculator():
                             count = native.childCount
                             for i in range(min(count, 50)):
                                 child = native.getChildAtIndex(i)
-                                from automojo.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+                                from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
                                 if find_result_deep(LinuxElement(child), target, depth + 1):
                                     return True
                     except:
