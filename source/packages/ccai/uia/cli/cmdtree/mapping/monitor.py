@@ -3,14 +3,33 @@ from ccai.arcli.model.fields.argfield import ArgField
 from ccai.arcli.model.fields.optionfield import OptionField
 from ccai.arcli.model.parameters.stringparameter import StringParameter
 from ccai.uia.factory import AutomationFactory
-from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
-from ccai.uia.platforms.macos.wrappers.uiaaccessibility import UiaAccessibilityElement
 import subprocess
 import time
 import os
 import json
 import yaml
 import sys
+
+
+# The platform wrapper modules import OS-specific accessibility libraries
+# (pyatspi on Linux, AppKit/ScriptingBridge on macOS) at module top level, so
+# importing both unconditionally made this CLI command fail to load on any host
+# missing the other platform's libraries (e.g. `import AppKit` on Linux). Import
+# each lazily and fall back to an inert stand-in class when its platform library
+# is absent: nothing is ever an instance of the stand-in, so the isinstance
+# branches below are simply skipped on the wrong platform (matching the lazy
+# per-platform imports already used by AutomationFactory).
+try:
+    from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
+except ImportError:
+    class LinuxElement:
+        pass
+
+try:
+    from ccai.uia.platforms.macos.wrappers.uiaaccessibility import UiaAccessibilityElement
+except ImportError:
+    class UiaAccessibilityElement:
+        pass
 
 class MonitorCommand(Command):
 
