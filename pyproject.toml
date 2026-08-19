@@ -17,10 +17,10 @@ packages = [{include="ccai", from="source/packages"}]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-codecraftai-this-app = { git = "https://github.com/automationmojo/codecraftai-this-app.git", branch = "main" }
-codecraftai-arcli = { git = 'https://github.com/automationmojo/codecraftai-arcli.git', branch = "main" }
-codecraftai-errors = { git = "https://github.com/automationmojo/codecraftai-errors.git", branch = "main" }
-codecraftai-credentials = { git = "https://github.com/automationmojo/codecraftai-credentials.git", branch = "main" }
+codecraftai-this-app = { git = "https://github.com/code-craft-ai-company/codecraftai-this-app.git", branch = "main" }
+codecraftai-arcli = { git = 'https://github.com/code-craft-ai-company/codecraftai-arcli.git', branch = "main" }
+codecraftai-errors = { git = "https://github.com/code-craft-ai-company/codecraftai-errors.git", branch = "main" }
+codecraftai-credentials = { git = "https://github.com/code-craft-ai-company/codecraftai-credentials.git", branch = "main" }
 pyyaml = "^6.0.1"
 pyobjc-core = { version="^11.1", platform="darwin" }
 pyobjc-framework-scriptingbridge = { version="^11.1", platform="darwin" }
@@ -36,7 +36,7 @@ uia = "ccai.uia.cli.uia_command:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
-codecraftai-testbase = { git = "https://github.com/automationmojo/codecraftai-testbase.git", branch = "main" }
+codecraftai-testbase = { git = "https://github.com/code-craft-ai-company/codecraftai-testbase.git", branch = "main" }
 myst-parser = "^0.18.1"
 sphinx = ">=1.6,<6"
 sphinx-rtd-theme = "^1.1.1"
