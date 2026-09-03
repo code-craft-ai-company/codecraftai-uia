@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "codecraftai-uia"
 description = "The Code Craft AI - User Interface Automation Package"
-version = "1.0.4"
+version = "1.0.5"
 authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
 license = "LicenseRef-CodeCraftAI-Dual-License"

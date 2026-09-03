@@ -88,12 +88,19 @@ def test_linux_calc_send_keys():
         # logic in DeclarativeApplication.attach is:
         # return automation_engine.get_application_by_name(cls.APPLICATION_NAME)
         
-        app = Calculator.attach(automation)
-        if not app: 
-            # Fallback if name mismatch or timing
-            app = automation.get_application_by_name("Calculator")
-            
-        testbase.assert_equal(app is not None, True)
+        # On a freshly started display the accessibility registry can take several
+        # seconds to expose the application, so poll for it rather than looking once.
+        app = None
+        for _ in range(30):
+            app = Calculator.attach(automation)
+            if not app:
+                # Fallback if name mismatch or timing
+                app = automation.get_application_by_name("Calculator")
+            if app:
+                break
+            time.sleep(1.0)
+
+        testbase.assert_equal(app is not None, True, "Could not attach to the calculator application")
 
         # The window can lag the application registration by a few seconds on a
         # freshly started display, so poll for it before falling back to the mapping.
