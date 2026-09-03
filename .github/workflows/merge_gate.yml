@@ -70,3 +70,10 @@ jobs:
         # The accessibility agent needs a display and an AT-SPI bus; xvfb and a private D-Bus session provide them.
         run: |
           xvfb-run -a dbus-run-session -- bash -c '(openbox &) ; sleep 1; source ./.venv/bin/activate && testbase testing run --root ./source/testroots/ccai --includes=ccai.tests.singlehost'
+
+      - name: Show UI test diagnostics
+        if: failure() && runner.os == 'Linux'
+        run: |
+          echo "### calculator debug log"; cat /tmp/calc_debug.log 2>/dev/null || echo "(none)"
+          echo "### captured test output"
+          find ~/ccai/results/testresults -type f \( -name "*.log" -o -name "*.txt" -o -name "stdout*" -o -name "stderr*" \) -size +0 2>/dev/null | head -40 | while read f; do echo "--- $f"; head -c 4000 "$f"; echo; done
