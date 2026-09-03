@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "codecraftai-uia"
 description = "The Code Craft AI - User Interface Automation Package"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Myron Walker <myron.walker@gmail.com>"]
 readme = "README.rst"
 license = "LicenseRef-CodeCraftAI-Dual-License"
@@ -30,6 +30,7 @@ pyobjc-framework-applescriptkit = { version="^11.1", platform="darwin" }
 pywin32 = { version="310", platform="win32" }
 uiautomation = { version="2.0.28", platform="win32" }
 pygobject = { version="^3.42.0", platform="linux" }
+python-xlib = { version="^0.33", platform="linux" }
 
 [tool.poetry.scripts]
 uia = "ccai.uia.cli.uia_command:main"
