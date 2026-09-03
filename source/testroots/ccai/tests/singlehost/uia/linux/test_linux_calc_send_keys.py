@@ -114,6 +114,14 @@ def test_linux_calc_send_keys():
         if main_window is None:
             main_window = Calculator.MainWindow.resolve(app)
         testbase.assert_equal(main_window is not None, True, "Could not find the calculator window")
+
+        # On a cold desktop session the accessibility tree under a freshly launched
+        # window can stay empty for a while, so wait for it to populate before typing.
+        for _ in range(30):
+            native = getattr(main_window, "_native_obj", None)
+            if native is not None and getattr(native, "childCount", 0) > 0:
+                break
+            time.sleep(1.0)
         
         # Ensure focus
         try:
