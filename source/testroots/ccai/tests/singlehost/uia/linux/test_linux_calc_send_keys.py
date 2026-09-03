@@ -95,10 +95,18 @@ def test_linux_calc_send_keys():
             
         testbase.assert_equal(app is not None, True)
 
-        windows = app.get_windows()
-        testbase.assert_equal(len(windows) > 0, True)
-
-        main_window = windows[0]
+        # The window can lag the application registration by a few seconds on a
+        # freshly started display, so poll for it before falling back to the mapping.
+        main_window = None
+        for _ in range(20):
+            windows = app.get_windows()
+            if windows:
+                main_window = windows[0]
+                break
+            time.sleep(0.5)
+        if main_window is None:
+            main_window = Calculator.MainWindow.resolve(app)
+        testbase.assert_equal(main_window is not None, True, "Could not find the calculator window")
         
         # Ensure focus
         try:

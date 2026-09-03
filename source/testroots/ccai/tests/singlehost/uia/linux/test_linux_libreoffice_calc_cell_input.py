@@ -1,8 +1,10 @@
 import platform
+import shutil
 import subprocess
 import time
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
 from ccai.uia.platforms.linux.wrappers.tableelement import TableElement
@@ -105,6 +107,9 @@ def test_linux_libreoffice_calc_cell_input():
     """
     if platform.system() != "Linux":
         return
+
+    if shutil.which("libreoffice") is None:
+        raise SkipError("libreoffice is not installed on this host")
 
     testbase.assert_equal(_try_import_pyatspi(), True)
 

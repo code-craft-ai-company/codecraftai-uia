@@ -39,10 +39,17 @@ def test_linux_type_keys_generates_events():
 
     try:
         # Create mock agents
-        mock_access_agent = types.SimpleNamespace()
-        mock_wm_agent = types.SimpleNamespace(
-            send_keys=lambda window, keys: None  # No-op for this test
-        )
+        # LinuxElement keeps weak references to its agents, and SimpleNamespace
+        # instances cannot be weakly referenced, so the fakes are plain classes.
+        class FakeAccessAgent:
+            pass
+
+        class FakeWindowManagerAgent:
+            def send_keys(self, window, keys) -> None:
+                return None
+
+        mock_access_agent = FakeAccessAgent()
+        mock_wm_agent = FakeWindowManagerAgent()
         
         # Note: This test was designed for the old pyatspi-based implementation.
         # With the new agent architecture, type_keys uses the WM agent directly,

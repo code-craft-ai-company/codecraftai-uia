@@ -1,6 +1,8 @@
 import platform
+import shutil
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
 from ccai.uia.platforms.linux.wrappers.dialogelement import LinuxSaveAsDialog, LinuxModalDialogFileAlreadyExists
@@ -146,6 +148,9 @@ def test_libreoffice_calc_menus_refactored():
     if platform.system() != "Linux":
         return
 
+    if shutil.which("libreoffice") is None:
+        raise SkipError("libreoffice is not installed on this host")
+
     automation = AutomationFactory.get_automation_engine()
     
     # 1. Launch/Attach
@@ -248,6 +253,9 @@ def test_libreoffice_calc_save_overwrite():
     """
     if platform.system() != "Linux":
         return
+
+    if shutil.which("libreoffice") is None:
+        raise SkipError("libreoffice is not installed on this host")
 
     automation = AutomationFactory.get_automation_engine()
     # 1. Launch/Attach

@@ -10,6 +10,7 @@ import os
 sys.path.append(os.path.abspath("source"))
 sys.path.append(os.path.abspath("source/testroots"))
 
+from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
@@ -19,6 +20,9 @@ def test_linux_libreoffice_draw():
     """
     if platform.system() != "Linux":
         return
+
+    if shutil.which("libreoffice") is None:
+        raise SkipError("libreoffice is not installed on this host")
 
     automation = AutomationFactory.get_automation_engine()
     
