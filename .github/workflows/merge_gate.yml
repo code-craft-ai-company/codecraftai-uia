@@ -19,6 +19,7 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     strategy:
       matrix:
@@ -44,6 +45,14 @@ jobs:
         run: |
           ./repository-setup/rehome-repository
           cat ./.env
+
+      - name: Install native build dependencies (cairo)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libcairo2-dev pkg-config
+
+      - name: Install native build dependencies (cairo)
+        if: runner.os == 'macOS'
+        run: brew install cairo pkg-config
 
       - name: Configure the package index credential
         run: poetry config http-basic.codecraftai deployment "${{ secrets.CCAI_ORG_READ_TOKEN }}"
