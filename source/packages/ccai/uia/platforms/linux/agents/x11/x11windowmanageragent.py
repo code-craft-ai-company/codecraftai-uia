@@ -19,10 +19,14 @@ class X11WindowManagerAgent(WindowManagerAgent):
     def __init__(self):
         try:
              import os
-             # Wayland adds a "fake" display (typically ":1") that freezes when trying to get a connection
-             # Force use of :0 which is the XWayland display that actually works
-             # Thanks to SamuMazzi - https://github.com/SamuMazzi for pointing out this issue
-             display_str = ':0'
+             # Under Wayland the advertised DISPLAY (typically ":1") is a stand-in that freezes on connect, so the
+             # XWayland display ":0" is used there. Thanks to SamuMazzi - https://github.com/SamuMazzi for pointing
+             # out this issue. On a plain X11 session, including a virtual display such as xvfb, DISPLAY is authoritative.
+             session_type = os.environ.get("XDG_SESSION_TYPE", "").lower()
+             if session_type == "wayland" or os.environ.get("WAYLAND_DISPLAY"):
+                 display_str = ':0'
+             else:
+                 display_str = os.environ.get("DISPLAY") or ':0'
              self._display = display.Display(display_str)
         except Exception as e:
              import traceback
