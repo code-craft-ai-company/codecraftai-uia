@@ -21,7 +21,7 @@ def dump_tree(element, depth=0, max_depth=5):
             try:
                 child_el = LinuxElement(child, element.access_agent, element.wm_agent)
                 dump_tree(child_el, depth + 1, max_depth)
-            except:
+            except Exception:
                 pass
     except Exception as e:
         print(f"{indent}Error: {e}")
@@ -55,7 +55,7 @@ def main():
     for child in children:
         try:
             dump_tree(LinuxElement(child, app.access_agent, app.wm_agent), 0, 3)
-        except:
+        except Exception:
              pass
 
 if __name__ == "__main__":

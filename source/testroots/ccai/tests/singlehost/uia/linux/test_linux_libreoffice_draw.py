@@ -89,7 +89,7 @@ def test_linux_libreoffice_draw():
             print(f"Ellipse tool actions: {n_actions}")
             for i in range(n_actions):
                 print(f" - Action {i}: {component.getName(i)} description: {component.getDescription(i)}")
-        except:
+        except Exception:
              print("Ellipse tool has no Action interface")
 
         # Try clicking

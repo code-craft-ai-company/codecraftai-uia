@@ -110,7 +110,7 @@ class LinuxWindow(LinuxElement, UIWindow):
                  app_name = self._native_obj.get_application().name
                  if app_name and app_name != name:
                      self.wm_agent.focus_window(app_name)
-             except:
+             except Exception:
                  pass
     
     def bring_to_front(self) -> None:

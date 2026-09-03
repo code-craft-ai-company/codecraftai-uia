@@ -8,7 +8,7 @@ def dump(el, indent=""):
         if el.childCount > 0:
             for i in range(el.childCount):
                 dump(el.getChildAtIndex(i), indent + "  ")
-    except:
+    except Exception:
         pass
 
 def main():

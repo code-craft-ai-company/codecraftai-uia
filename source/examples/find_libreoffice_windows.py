@@ -94,7 +94,7 @@ def main():
         try:
             states = win.getState()
             print(f"   States: {states}")
-        except:
+        except Exception:
             print("   States: (unable to get)")
         
         try:
@@ -102,7 +102,7 @@ def main():
             x, y, width, height = component.getExtents(pyatspi.DESKTOP_COORDS)
             print(f"   Position: ({x}, {y})")
             print(f"   Size: {width}x{height}")
-        except:
+        except Exception:
             print("   Position/Size: (unable to get)")
     
     # Step 6: Test focus

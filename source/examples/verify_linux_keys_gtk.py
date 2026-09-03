@@ -59,7 +59,7 @@ def run_automation():
         try:
             child = desktop.getChildAtIndex(i)
             print(f"App {i}: {child.name}")
-        except: pass
+        except Exception: pass
 
     target_name = "verify_linux_keys_gtk.py"
     app = automation.get_application_by_name(target_name)
@@ -94,14 +94,14 @@ def run_automation():
                         role_name = el.role_name
                         if role_name in ["text", "entry", "text entry"]: 
                             return el
-                    except: pass
+                    except Exception: pass
                     
                     if hasattr(native, 'childCount'):
                         for i in range(native.childCount):
                             try:
                                 found = find_entry(LinuxElement(native.getChildAtIndex(i)), depth+1)
                                 if found: return found
-                            except: pass
+                            except Exception: pass
                     return None
                     
                 entry = find_entry(main_window)

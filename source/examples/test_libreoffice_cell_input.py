@@ -27,7 +27,7 @@ def find_first_cell(element, depth=0):
             result = find_first_cell(child_element, depth + 1)
             if result:
                 return result
-    except:
+    except Exception:
         pass
     
     return None

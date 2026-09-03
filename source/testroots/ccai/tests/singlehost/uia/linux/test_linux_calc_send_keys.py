@@ -213,13 +213,13 @@ def test_linux_calc_send_keys():
                     if hasattr(native, 'queryText'):
                         try:
                             line += f" queryText: '{native.queryText().getText(0, -1)}'"
-                        except: pass
+                        except Exception: pass
                     f.write(line + "\n")
                     
                     if hasattr(native, 'childCount'):
                         for i in range(native.childCount):
                             dump(LinuxElement(native.getChildAtIndex(i), el.access_agent, el.wm_agent), indent + "  ")
-                except: pass
+                except Exception: pass
             
             if 'main_window' in locals():
                 dump(main_window)

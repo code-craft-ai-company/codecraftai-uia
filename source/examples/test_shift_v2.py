@@ -27,7 +27,7 @@ class MockAgent:
                 keycode = self._display.keysym_to_keycode(keysym)
                 if keycode != 0:
                     self._keymap[char_key] = keycode
-            except:
+            except Exception:
                 pass
 
         for key, sym in symbol_map.items():

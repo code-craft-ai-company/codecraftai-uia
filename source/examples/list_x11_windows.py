@@ -7,7 +7,7 @@ from Xlib import X, display
 try:
     proc = subprocess.Popen(["libreoffice", "--calc"])
     time.sleep(5)
-except:
+except Exception:
     proc = None
 
 # Connect to X11
@@ -17,14 +17,14 @@ root = d.screen().root
 def get_window_name(window):
     try:
         return window.get_wm_name()
-    except:
+    except Exception:
         return None
 
 def get_window_class(window):
     try:
         wm_class = window.get_wm_class()
         return wm_class if wm_class else None
-    except:
+    except Exception:
         return None
 
 def list_windows(win, depth=0):
@@ -44,7 +44,7 @@ def list_windows(win, depth=0):
         children = win.query_tree().children
         for child in children:
             list_windows(child, depth + 1)
-    except:
+    except Exception:
         pass
 
 print("Listing all X11 windows:\n")

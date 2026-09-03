@@ -27,7 +27,7 @@ def find_window(disp, name):
                 for cls in wm_class:
                     if name.lower() in cls.lower():
                         return win
-        except:
+        except Exception:
             pass
     return None
 

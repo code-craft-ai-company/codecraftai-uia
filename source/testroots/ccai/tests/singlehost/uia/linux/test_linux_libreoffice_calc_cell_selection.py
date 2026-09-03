@@ -94,7 +94,7 @@ def test_libreoffice_selection():
 
         try:
             main_window.activate()
-        except:
+        except Exception:
             pass
         time.sleep(1.0)
 

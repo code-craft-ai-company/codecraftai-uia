@@ -110,7 +110,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             rect = window_obj.get('rect_logical')
             if rect:
                 return (rect['x'], rect['y'], rect['w'], rect['h'])
-        except:
+        except Exception:
             pass
         return None
 
@@ -127,7 +127,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
                 if outputs:
                     r = outputs[0].get('logical_rect')
                     return (r['w'], r['h'])
-            except:
+            except Exception:
                 pass
 
         # Fallback to GDK
@@ -137,7 +137,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
                 if monitor:
                     geo = monitor.get_geometry()
                     return (geo.width, geo.height)
-            except:
+            except Exception:
                 pass
                 
         return (1920, 1080)

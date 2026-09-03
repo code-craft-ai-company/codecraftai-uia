@@ -26,7 +26,7 @@ def debug_calc_name():
             try:
                 child = desktop.getChildAtIndex(i)
                 print(f"App {i}: '{child.name}' (Role: {child.getRoleName()})")
-            except: pass
+            except Exception: pass
         print("----------------------------")
 
     finally:

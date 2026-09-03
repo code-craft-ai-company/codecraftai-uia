@@ -63,7 +63,7 @@ def run_app():
         try:
             origin = gdk_win.get_root_origin()
             print(f"APP_PROCESS: Window Root Origin (GDK): {origin}")
-        except:
+        except Exception:
              pass
         
     print("APP_PROCESS: App Ready.")

@@ -130,7 +130,7 @@ class LinuxElement(UIElement):
         try:
              component = self._native_obj.queryComponent()
              return component.grabFocus()
-        except:
+        except Exception:
              pass
         return False
 

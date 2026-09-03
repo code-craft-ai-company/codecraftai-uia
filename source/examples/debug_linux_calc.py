@@ -45,7 +45,7 @@ def dump_tree(element, depth=0):
         try:
             s = native.getState()
             states = [str(st) for st in s.getStates()]
-        except:
+        except Exception:
             pass
 
         extra_str = ", ".join(extra_debug)
@@ -97,7 +97,7 @@ def find_button(element, name):
                 found = find_button(LinuxElement(child, element._access_agent, element._wm_agent), name)
                 if found:
                     return found
-    except:
+    except Exception:
         pass
     return None
 

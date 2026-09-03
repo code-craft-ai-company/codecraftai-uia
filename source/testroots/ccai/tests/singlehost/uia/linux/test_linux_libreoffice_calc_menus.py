@@ -327,7 +327,7 @@ def test_libreoffice_calc_save_overwrite():
                                  from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
                                  confirm_dialog = LinuxWindow(child, app.access_agent, app.wm_agent)
                                  break
-                     except: pass
+                     except Exception: pass
 
                 if confirm_dialog: break
                 time.sleep(1)
@@ -366,7 +366,7 @@ def test_libreoffice_calc_save_overwrite():
         # Be careful not to kill user's real open docs if they have any (but we asked them to close).
         try:
              subprocess.run(["pkill", "soffice"])
-        except: pass
+        except Exception: pass
 
 if __name__ == "__main__":
     test_libreoffice_calc_menus_refactored()

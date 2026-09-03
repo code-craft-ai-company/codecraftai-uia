@@ -9,8 +9,8 @@ def dump(obj, indent=""):
             for i in range(obj.childCount):
                 try:
                     dump(obj.getChildAtIndex(i), indent + "  ")
-                except: pass
-    except: pass
+                except Exception: pass
+    except Exception: pass
 
 if __name__ == "__main__":
     reg = pyatspi.Registry

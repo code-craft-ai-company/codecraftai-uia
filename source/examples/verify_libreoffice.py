@@ -105,7 +105,7 @@ def verify_libreoffice():
                 print("Activating main window...")
                 try:
                     main_window.activate()
-                except:
+                except Exception:
                     pass
                 time.sleep(1.0) # Wait for focus
                 
@@ -127,7 +127,7 @@ def verify_libreoffice():
                             child = element._native_obj.getChildAtIndex(i)
                             wrapper = LinuxElement(child)
                             find_all_tables(wrapper, depth + 1)
-                    except:
+                    except Exception:
                         pass
                 
                 find_all_tables(main_window)
@@ -161,7 +161,7 @@ def verify_libreoffice():
                             
                             try:
                                 cell.click()
-                            except:
+                            except Exception:
                                 pass
                             cell.grab_focus()
                             time.sleep(0.2)

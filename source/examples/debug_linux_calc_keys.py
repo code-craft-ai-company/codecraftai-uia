@@ -36,7 +36,7 @@ def dump_value(main_window):
             try:
                 text = native.queryText().getText(0, -1)
                 print(f"Current Display Text: '{text}'")
-            except:
+            except Exception:
                 print("Could not get text from display")
     except Exception as e:
         print(f"Error dumping value: {e}")
@@ -99,7 +99,7 @@ def debug_keys():
              print(f"Clicking display element (Assume it grabs focus)...")
              try:
                  display.click() # Using our wrapper click which tries Action interface
-             except:
+             except Exception:
                  # Try raw component click if wrapper fails
                  try:
                      native = getattr(display, '_native_obj', display)
@@ -143,7 +143,7 @@ def debug_keys():
                     # Query tree can fail on some windows
                     try:
                         children = win.query_tree().children
-                    except:
+                    except Exception:
                         return None
                         
                     for child in children:

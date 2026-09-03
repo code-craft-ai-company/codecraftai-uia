@@ -43,16 +43,16 @@ def run_test_logic():
                             target_app_name = child.name
                             print(f"Test Logic: Found window '{win.name}' in app '{child.name}'")
                             break
-                    except: pass
+                    except Exception: pass
             if target_window: break
-        except: pass
+        except Exception: pass
 
     if not target_window:
         print("Test Logic: ERROR - Could not find window. Dumping top-level apps:")
         for i in range(desktop.childCount):
             try:
                 print(f"  - {desktop.getChildAtIndex(i).name}")
-            except: pass
+            except Exception: pass
         # Exit app
         GLib.idle_add(Gtk.main_quit)
         return

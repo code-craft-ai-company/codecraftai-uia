@@ -27,7 +27,7 @@ class LinuxApplication(LinuxElement, UIApplication):
         # Using ID if available, otherwise name as fallback
         try:
              return str(self._native_obj.id)
-        except:
+        except Exception:
              return self.name
 
     def launch(self) -> None:

@@ -81,7 +81,7 @@ class TableElement(LinuxElement, UITable):
             table = self._native_obj.queryTable()
             if table:
                 return table.nRows
-        except:
+        except Exception:
             pass
         return 0
     
@@ -92,7 +92,7 @@ class TableElement(LinuxElement, UITable):
             table = self._native_obj.queryTable()
             if table:
                 return table.nColumns
-        except:
+        except Exception:
             pass
         return 0
     

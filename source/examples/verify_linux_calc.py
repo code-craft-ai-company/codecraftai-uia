@@ -22,7 +22,7 @@ def recursive_print(element, depth=0, max_depth=20):
         name = native.name
         try:
             role = native.getRoleName()
-        except:
+        except Exception:
             role = str(native.getRole())
             
         # Try to get text if possible
@@ -34,7 +34,7 @@ def recursive_print(element, depth=0, max_depth=20):
                  content = t.getText(0, -1)
                  if content.strip():
                     text = f" Text='{content}'"
-        except:
+        except Exception:
             pass
 
         print(f"{indent}- {name} (Role: {role}){text}")
@@ -78,7 +78,7 @@ def verify_calculator():
                 # Activate window
                 try:
                     main_window.activate()
-                except:
+                except Exception:
                     pass
                 time.sleep(1.0)
                 
@@ -122,7 +122,7 @@ def verify_calculator():
                                  if target in content:
                                      print(f"    Found in Text: '{content}' ({native.getRoleName()})")
                                      return True
-                             except:
+                             except Exception:
                                  pass
                         
                         # Recurse
@@ -133,7 +133,7 @@ def verify_calculator():
                                 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
                                 if find_result_deep(LinuxElement(child), target, depth + 1):
                                     return True
-                    except:
+                    except Exception:
                         pass
                     return False
 

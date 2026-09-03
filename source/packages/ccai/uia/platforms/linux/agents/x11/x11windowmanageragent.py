@@ -45,7 +45,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
                         attrs = child.get_attributes()
                         if attrs.map_state != X.IsViewable:
                             continue
-                    except:
+                    except Exception:
                         pass
 
                     wm_name = child.get_wm_name()
@@ -78,9 +78,9 @@ class X11WindowManagerAgent(WindowManagerAgent):
                     found = self._find_window_recursive(child, name, debug=False)  # Only debug top level
                     if found:
                         return found
-                except:
+                except Exception:
                     continue
-        except:
+        except Exception:
             pass
         
         return None
@@ -91,7 +91,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
         try:
             root = self._display.screen().root
             self._collect_windows_recursive(root, windows)
-        except:
+        except Exception:
             pass
         return windows
     
@@ -107,9 +107,9 @@ class X11WindowManagerAgent(WindowManagerAgent):
                         if wm_name:  # Only include windows with names
                             windows.append(child)
                     self._collect_windows_recursive(child, windows)
-                except:
+                except Exception:
                     continue
-        except:
+        except Exception:
             pass
     
     def get_default_display(self) -> Any:
@@ -119,7 +119,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
     def get_active_window(self) -> Any:
         try:
             return self._display.get_input_focus().focus
-        except:
+        except Exception:
             return None
 
     def focus_window(self, window_name: str, max_attempts: int = 3, retry_delay: float = 0.5) -> bool:
@@ -264,7 +264,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
                 keycode = self._display.keysym_to_keycode(keysym)
                 if keycode != 0:
                     self._keymap[char_key] = keycode
-            except:
+            except Exception:
                 pass
 
         # Apply Control Map
@@ -367,7 +367,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
              try:
                  keysym = XK.string_to_keysym(char)
                  keycode = self._display.keysym_to_keycode(keysym)
-             except:
+             except Exception:
                  pass
         
         if not keycode:
@@ -422,13 +422,13 @@ class X11WindowManagerAgent(WindowManagerAgent):
             mod_keycode = 0
             if modifier == '%':
                  try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Alt_L"))
-                 except: pass
+                 except Exception: pass
             elif modifier == '^':
                  try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Control_L"))
-                 except: pass
+                 except Exception: pass
             elif modifier == '+':
                  try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Shift_L"))
-                 except: pass
+                 except Exception: pass
 
             # Press modifier
             if mod_keycode:
@@ -532,7 +532,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
             primary_output = None
             try:
                 primary_output = randr.get_output_primary(root).output
-            except:
+            except Exception:
                 pass
 
             for output_id in res.outputs:

@@ -131,7 +131,7 @@ class MonitorCommand(Command):
                     proc.terminate()
                     # Also try to close the app via UI automation if possible
                     # app.close() # Not standard API yet?
-                except:
+                except Exception:
                     pass
             else:
                 print("Detaching from application (leaving it running).", file=sys.stderr)
