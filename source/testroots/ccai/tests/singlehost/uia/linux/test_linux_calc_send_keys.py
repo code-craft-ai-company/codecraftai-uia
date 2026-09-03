@@ -183,6 +183,11 @@ def test_linux_calc_send_keys():
         if not found_result:
              # Debugging: check if we see "12" or "3" or anything
              print("Did not find 36. Checking what IS there...")
+             if display:
+                 try:
+                     print(f"Display text after typing: {display.text!r}")
+                 except Exception as e:
+                     print(f"Display text unavailable: {e}")
              _find_result_deep(main_window, "NON_EXISTENT_JUST_TO_RECURSE", depth=0) # Logic doesn't print, but we rely on failure dump below
 
         testbase.assert_equal(found_result, True)
@@ -205,7 +210,7 @@ def test_linux_calc_send_keys():
                     
                     if hasattr(native, 'childCount'):
                         for i in range(native.childCount):
-                            dump(LinuxElement(native.getChildAtIndex(i), el._access_agent, el._wm_agent), indent + "  ")
+                            dump(LinuxElement(native.getChildAtIndex(i), el.access_agent, el.wm_agent), indent + "  ")
                 except: pass
             
             if 'main_window' in locals():
