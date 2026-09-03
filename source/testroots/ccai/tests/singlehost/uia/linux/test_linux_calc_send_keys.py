@@ -174,7 +174,15 @@ def test_linux_calc_send_keys():
         found_result = False
         # Increased check time slightly as typing takes time
         for _ in range(10):
-            # Check for "36"
+            # The display exposes its value through the element text property; the
+            # deep search over names and text interfaces is kept as a fallback.
+            if display:
+                try:
+                    if "36" in str(display.text):
+                        found_result = True
+                        break
+                except Exception:
+                    pass
             if _find_result_deep(main_window, "36", depth=0):
                 found_result = True
                 break
