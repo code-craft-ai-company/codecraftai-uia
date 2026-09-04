@@ -5,6 +5,9 @@ import subprocess
 import time
 
 from ccai import testbase
+from ccai.tests.singlehost.uia.linux._desktop import (
+    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+)
 from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
@@ -59,13 +62,10 @@ def test_libreoffice_selection():
 
     testbase.assert_equal(_try_import_pyatspi(), True)
 
-    try:
-        import os
-        env = os.environ.copy()
-        env['GDK_BACKEND'] = 'x11'
-        proc = subprocess.Popen(["libreoffice", "--calc", "--norestore"], env=env)
-    except FileNotFoundError:
-        testbase.assert_equal(True, False, "libreoffice not found")
+    import os
+    env = os.environ.copy()
+    env['GDK_BACKEND'] = 'x11'
+    proc = launch_or_skip(["libreoffice", "--calc", "--norestore"], env=env)
 
     try:
         # Give it time to appear

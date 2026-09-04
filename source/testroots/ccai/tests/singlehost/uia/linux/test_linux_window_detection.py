@@ -5,6 +5,9 @@ import time
 import os
 
 from ccai import testbase
+from ccai.tests.singlehost.uia.linux._desktop import (
+    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+)
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.calculator import Calculator
 
@@ -26,15 +29,13 @@ def test_linux_window_detection_x11():
     if platform.system() != "Linux":
         return
 
-    testbase.assert_equal(_try_import_pyatspi(), True)
+    require_pyatspi()
+    require_display()
 
     # Launch gnome-calculator forced to X11
-    try:
-        env = os.environ.copy()
-        env['GDK_BACKEND'] = 'x11'
-        proc = subprocess.Popen(["gnome-calculator"], env=env)
-    except FileNotFoundError:
-        testbase.assert_equal(True, False, "gnome-calculator not found")
+    env = os.environ.copy()
+    env['GDK_BACKEND'] = 'x11'
+    proc = launch_or_skip(["gnome-calculator"], env=env)
 
     try:
         # Give it time to appear
@@ -88,13 +89,11 @@ def test_linux_window_detection_default():
     if platform.system() != "Linux":
         return
 
-    testbase.assert_equal(_try_import_pyatspi(), True)
+    require_pyatspi()
+    require_display()
 
     # Launch gnome-calculator with default backend
-    try:
-        proc = subprocess.Popen(["gnome-calculator"])
-    except FileNotFoundError:
-        testbase.assert_equal(True, False, "gnome-calculator not found")
+    proc = launch_or_skip(["gnome-calculator"])
 
     try:
         time.sleep(2.0)

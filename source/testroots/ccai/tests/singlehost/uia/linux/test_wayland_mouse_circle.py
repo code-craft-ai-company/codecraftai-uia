@@ -3,6 +3,10 @@ import platform
 import time
 import math
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
+from ccai.tests.singlehost.uia.linux._desktop import (
+    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+)
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.agents.wayland.gnome.waylandgnomewindowmanageragent import WaylandGnomeWindowManagerAgent as WaylandWindowManagerAgent
 
@@ -14,12 +18,11 @@ def test_wayland_mouse_circle():
     if platform.system() != "Linux":
         return
 
-    automation = AutomationFactory.get_automation_engine()
-    
-    # Check if we are using the Wayland agent
+    require_display()
+    automation = require_automation_engine()
+
     if not isinstance(automation._wm_agent, WaylandWindowManagerAgent):
-        print("Skipping Wayland mouse test: Not running with WaylandWindowManagerAgent")
-        return
+        raise SkipError("not running under the Wayland/GNOME window-manager agent")
 
     agent = automation._wm_agent
     

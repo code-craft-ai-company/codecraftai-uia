@@ -4,6 +4,9 @@ import subprocess
 import time
 
 from ccai import testbase
+from ccai.tests.singlehost.uia.linux._desktop import (
+    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+)
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
@@ -57,21 +60,19 @@ def test_linux_calc_send_keys():
     if platform.system() != "Linux":
         return
 
-    testbase.assert_equal(_try_import_pyatspi(), True)
+    require_pyatspi()
+    require_display()
 
-    try:
-        import os
-        env = os.environ.copy()
-        env['GDK_BACKEND'] = 'x11'
-        proc = subprocess.Popen(["gnome-calculator"], env=env)
-    except FileNotFoundError:
-        testbase.assert_equal(True, False)
+    import os
+    env = os.environ.copy()
+    env['GDK_BACKEND'] = 'x11'
+    proc = launch_or_skip(["gnome-calculator"], env=env)
 
     try:
         time.sleep(2.0)
         testbase.assert_equal(proc.poll() is None, True)
 
-        automation = AutomationFactory.get_automation_engine()
+        automation = require_automation_engine()
         time.sleep(2.0)
 
         # Declarative Usage

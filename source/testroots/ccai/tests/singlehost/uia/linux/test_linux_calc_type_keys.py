@@ -3,6 +3,9 @@ import subprocess
 import time
 
 from ccai import testbase
+from ccai.tests.singlehost.uia.linux._desktop import (
+    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+)
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.model.declarative import ButtonHint
 from ccai.uia.platforms.linux.mappings.calculator import Calculator
@@ -24,14 +27,12 @@ def test_linux_calc_type_keys():
     if platform.system() != "Linux":
         return
 
-    testbase.assert_equal(_try_import_pyatspi(), True)
+    require_pyatspi()
+    require_display()
 
     # Launch logic (or rely on launch_or_attach, but Calculator.launch_or_attach is a stub for now that does attach)
     # We'll launch manually to ensure clean state as per original test
-    try:
-        proc = subprocess.Popen(["gnome-calculator"])
-    except FileNotFoundError:
-        testbase.assert_equal(True, False, "gnome-calculator not found")
+    proc = launch_or_skip(["gnome-calculator"])
 
     try:
         time.sleep(2.0)
