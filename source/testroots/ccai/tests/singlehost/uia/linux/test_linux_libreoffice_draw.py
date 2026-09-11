@@ -19,7 +19,7 @@ def test_linux_libreoffice_draw():
     Verifies that we can launch LibreOffice Draw and draw a circle.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     if shutil.which("libreoffice") is None:
         raise SkipError("libreoffice is not installed on this host")

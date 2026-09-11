@@ -4,6 +4,7 @@ import subprocess
 import time
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
     launch_or_skip, require_automation_engine, require_display, require_pyatspi,
 )
@@ -58,7 +59,7 @@ def test_linux_calc_send_keys():
         Verifies keyboard input by typing "12*3=" into gnome-calculator and checking for "36".
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     require_pyatspi()
     require_display()

@@ -2,6 +2,7 @@ import platform
 import time
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 
 
 
@@ -10,10 +11,10 @@ def test_macos_excel_launch_creates_workbook(uia_controller=None):
         Launches Microsoft Excel, creates a workbook if needed, and then closes.
     """
     if platform.system() != "Darwin":
-        return
+        raise SkipError("the MacOS tests need a Darwin host")
 
     if uia_controller is None:
-        return
+        raise SkipError("no UI automation controller is available on this host")
 
     from ccai.uia.platforms.macos.mappings.excel import MicrosoftExcel
 

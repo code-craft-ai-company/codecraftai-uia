@@ -5,6 +5,7 @@ import time
 import os
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
     launch_or_skip, require_automation_engine, require_display, require_pyatspi,
 )
@@ -27,7 +28,7 @@ def test_linux_window_detection_x11():
         Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     require_pyatspi()
     require_display()
@@ -87,7 +88,7 @@ def test_linux_window_detection_default():
         Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     require_pyatspi()
     require_display()

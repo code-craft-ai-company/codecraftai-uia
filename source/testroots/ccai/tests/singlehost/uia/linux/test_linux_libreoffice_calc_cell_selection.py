@@ -55,7 +55,7 @@ def test_libreoffice_selection():
     Refactored to use Declarative Mapping.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     if shutil.which("libreoffice") is None:
         raise SkipError("libreoffice is not installed on this host")

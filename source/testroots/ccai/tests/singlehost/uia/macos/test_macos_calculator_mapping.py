@@ -2,6 +2,7 @@ import platform
 import time
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 
 
 def test_macos_calculator_mapping(uia_controller=None):
@@ -9,10 +10,10 @@ def test_macos_calculator_mapping(uia_controller=None):
         Validates the MacOS Calculator declarative mapping resolves key elements.
     """
     if platform.system() != "Darwin":
-        return
+        raise SkipError("the MacOS tests need a Darwin host")
 
     if uia_controller is None:
-        return
+        raise SkipError("no UI automation controller is available on this host")
 
     from ccai.uia.platforms.macos.mappings.calculator import Calculator
 

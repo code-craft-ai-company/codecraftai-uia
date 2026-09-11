@@ -1,6 +1,7 @@
 import platform
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 
 
 def test_accessibility_window_search(uia_controller=None):
@@ -9,10 +10,10 @@ def test_accessibility_window_search(uia_controller=None):
     """
     system = platform.system()
     if system != "Darwin":
-        return
+        raise SkipError("the MacOS tests need a Darwin host")
 
     if uia_controller is None:
-        return
+        raise SkipError("no UI automation controller is available on this host")
 
     app = uia_controller.get_application_by_name("Calculator")
     testbase.assert_equal(app is not None, True)

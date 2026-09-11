@@ -16,7 +16,7 @@ def test_wayland_mouse_circle():
     Checks if the internal position tracker remains consistent.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     require_display()
     automation = require_automation_engine()

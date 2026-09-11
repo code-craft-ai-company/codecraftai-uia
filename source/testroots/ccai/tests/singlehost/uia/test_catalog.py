@@ -1,6 +1,7 @@
 import platform
 
 from ccai import testbase
+from ccai.errors.exceptions import SkipError
 
 
 def test_catalog_bundle_mapping():
@@ -9,7 +10,7 @@ def test_catalog_bundle_mapping():
     """
     system = platform.system()
     if system != "Darwin":
-        return
+        raise SkipError("the MacOS tests need a Darwin host")
 
     from ccai.uia.platforms.macos.applications.appcalculator import AppCalculator
     from ccai.uia.platforms.macos.uiacatalog import MacCatalog

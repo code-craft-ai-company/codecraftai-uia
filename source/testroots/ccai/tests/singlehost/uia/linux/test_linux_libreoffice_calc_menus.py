@@ -146,7 +146,7 @@ def test_libreoffice_calc_menus_refactored():
     Ensures the file is deleted beforehand to avoid "File Already Exists" dialog in this test.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     if shutil.which("libreoffice") is None:
         raise SkipError("libreoffice is not installed on this host")
@@ -252,7 +252,7 @@ def test_libreoffice_calc_save_overwrite():
     Verifies that the "Confirm Overwrite" dialog appears and is handled correctly.
     """
     if platform.system() != "Linux":
-        return
+        raise SkipError("the Linux desktop tests need a Linux host")
 
     if shutil.which("libreoffice") is None:
         raise SkipError("libreoffice is not installed on this host")
