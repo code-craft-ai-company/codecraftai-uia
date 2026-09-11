@@ -19,6 +19,7 @@ try:
         AXIsProcessTrusted,
         AXIsProcessTrustedWithOptions,
         AXUIElementCreateApplication,
+        AXUIElementCreateSystemWide,
         AXUIElementCopyAttributeValue,
         AXUIElementSetAttributeValue,
         AXUIElementPerformAction,
@@ -57,6 +58,7 @@ except ImportError:
     AXIsProcessTrusted = None
     AXIsProcessTrustedWithOptions = None
     AXUIElementCreateApplication = None
+    AXUIElementCreateSystemWide = None
     AXUIElementCopyAttributeValue = None
     AXUIElementSetAttributeValue = None
     AXUIElementPerformAction = None
@@ -140,6 +142,46 @@ def is_accessibility_trusted(prompt: bool = False) -> bool:
         return bool(trusted)
 
     return False
+
+
+def is_accessibility_usable() -> bool:
+    """
+        Checks whether the Accessibility API can answer queries from this process.
+
+        Trust is necessary but not sufficient.  On a headless host, such as a CI
+        runner with no window-server session, ``AXIsProcessTrusted`` reports True
+        while every ``AXUIElement`` query fails, so an application appears to
+        have no windows.  This probe asks the system-wide element for its focused
+        application, which any session the API can serve will answer.
+
+        :returns: True if the process is trusted and the system-wide element
+                  answers, False otherwise.
+    """
+    if is_accessibility_trusted(prompt=False) is False:
+        return False
+
+    if AXUIElementCreateSystemWide is None or AXUIElementCopyAttributeValue is None:
+        return False
+
+    system_wide = AXUIElementCreateSystemWide()
+    if system_wide is None:
+        return False
+
+    result = AXUIElementCopyAttributeValue(system_wide, "AXFocusedApplication", None)
+
+    if isinstance(result, tuple) and len(result) == 2:
+        err, value = result
+    else:
+        err = AX_SUCCESS
+        value = result
+
+    if err != AX_SUCCESS:
+        return False
+
+    if value is None:
+        return False
+
+    return True
 
 
 def require_accessibility_trusted(prompt: bool = False) -> None:
