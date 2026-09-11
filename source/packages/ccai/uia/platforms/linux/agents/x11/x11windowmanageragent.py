@@ -361,6 +361,13 @@ class X11WindowManagerAgent(WindowManagerAgent):
         
         keycode = self._keymap.get(char)
         keysym = None
+
+        # Named tokens from send_keys ("{ENTER}", "{TAB}", "{F1}") arrive in the
+        # caller's casing, while the keymap registers control keys in lower case.
+        # Xlib keysym names are case-sensitive ("ENTER" is not a keysym), so the
+        # lower-cased lookup has to happen before the Xlib fallback below.
+        if not keycode and len(char) > 1:
+            keycode = self._keymap.get(char.lower())
         
         # Fallback if not in map
         if not keycode:
