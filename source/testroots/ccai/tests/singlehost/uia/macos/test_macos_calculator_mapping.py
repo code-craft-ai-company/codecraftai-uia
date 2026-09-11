@@ -3,6 +3,7 @@ import time
 
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
+from ccai.tests.singlehost.uia.macos._session import require_accessibility, require_application_installed
 
 
 def test_macos_calculator_mapping(uia_controller=None):
@@ -16,6 +17,9 @@ def test_macos_calculator_mapping(uia_controller=None):
         raise SkipError("no UI automation controller is available on this host")
 
     from ccai.uia.platforms.macos.mappings.calculator import Calculator
+
+    require_application_installed(uia_controller, Calculator.APPLICATION_NAME)
+    require_accessibility()
 
     app = Calculator.launch_or_attach(uia_controller)
     testbase.assert_equal(app is not None, True)

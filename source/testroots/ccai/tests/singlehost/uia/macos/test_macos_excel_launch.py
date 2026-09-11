@@ -3,7 +3,7 @@ import time
 
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
-
+from ccai.tests.singlehost.uia.macos._session import require_accessibility, require_application_installed
 
 
 def test_macos_excel_launch_creates_workbook(uia_controller=None):
@@ -17,6 +17,9 @@ def test_macos_excel_launch_creates_workbook(uia_controller=None):
         raise SkipError("no UI automation controller is available on this host")
 
     from ccai.uia.platforms.macos.mappings.excel import MicrosoftExcel
+
+    require_application_installed(uia_controller, MicrosoftExcel.APPLICATION_NAME)
+    require_accessibility()
 
     app = MicrosoftExcel.launch_or_attach(uia_controller)
     testbase.assert_equal(app is not None, True)
