@@ -1,6 +1,5 @@
 
 from typing import Any, List
-import sys
 import time
 
 try:
@@ -8,6 +7,8 @@ try:
     from Xlib.ext import xtest, randr
     from Xlib.protocol import event
 except ImportError:
+    # python-xlib is optional so this module can be imported on hosts without X11; the constructor
+    # raises ImportError when the X display cannot be opened.
     pass
 
 from ccai.uia.platforms.linux.agents.linuxbaseagents import WindowManagerAgent
@@ -46,6 +47,8 @@ class X11WindowManagerAgent(WindowManagerAgent):
                         if attrs.map_state != X.IsViewable:
                             continue
                     except Exception:
+                        # X errors are expected for windows that are destroyed or not queryable while the tree
+                        # is walked; the name and class checks below still decide whether the window matches.
                         pass
 
                     wm_name = child.get_wm_name()
@@ -81,6 +84,8 @@ class X11WindowManagerAgent(WindowManagerAgent):
                 except Exception:
                     continue
         except Exception:
+            # X errors (e.g. BadWindow) are expected when a window is destroyed while the tree is walked;
+            # a parent whose children cannot be queried simply has no match below it.
             pass
         
         return None
@@ -92,6 +97,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
             root = self._display.screen().root
             self._collect_windows_recursive(root, windows)
         except Exception:
+            # Best-effort enumeration; X errors while walking the tree return the windows collected so far.
             pass
         return windows
     
@@ -110,6 +116,8 @@ class X11WindowManagerAgent(WindowManagerAgent):
                 except Exception:
                     continue
         except Exception:
+            # X errors (e.g. BadWindow) are expected when a window is destroyed while the tree is walked;
+            # a parent whose children cannot be queried contributes no windows.
             pass
     
     def get_default_display(self) -> Any:
@@ -265,6 +273,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
                 if keycode != 0:
                     self._keymap[char_key] = keycode
             except Exception:
+                # Keysyms that cannot be mapped on the current keyboard layout are left out of the keymap.
                 pass
 
         # Apply Control Map
@@ -375,6 +384,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
                  keysym = XK.string_to_keysym(char)
                  keycode = self._display.keysym_to_keycode(keysym)
              except Exception:
+                 # A character that cannot be mapped leaves keycode unset and is skipped below.
                  pass
         
         if not keycode:
@@ -428,14 +438,23 @@ class X11WindowManagerAgent(WindowManagerAgent):
             # Determine modifier keycode
             mod_keycode = 0
             if modifier == '%':
-                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Alt_L"))
-                 except Exception: pass
+                 try:
+                     mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Alt_L"))
+                 except Exception:
+                     # An unmappable modifier leaves mod_keycode at 0, so the key is sent without it.
+                     pass
             elif modifier == '^':
-                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Control_L"))
-                 except Exception: pass
+                 try:
+                     mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Control_L"))
+                 except Exception:
+                     # An unmappable modifier leaves mod_keycode at 0, so the key is sent without it.
+                     pass
             elif modifier == '+':
-                 try: mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Shift_L"))
-                 except Exception: pass
+                 try:
+                     mod_keycode = self._display.keysym_to_keycode(XK.string_to_keysym("Shift_L"))
+                 except Exception:
+                     # An unmappable modifier leaves mod_keycode at 0, so the key is sent without it.
+                     pass
 
             # Press modifier
             if mod_keycode:
@@ -540,6 +559,7 @@ class X11WindowManagerAgent(WindowManagerAgent):
             try:
                 primary_output = randr.get_output_primary(root).output
             except Exception:
+                # Servers without RandR 1.3 GetOutputPrimary support report no primary output.
                 pass
 
             for output_id in res.outputs:

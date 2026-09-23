@@ -28,7 +28,6 @@ def run_test_logic():
     desktop = reg.getDesktop(0)
     
     target_window = None
-    target_app_name = None
     
     for i in range(desktop.childCount):
         try:
@@ -40,19 +39,24 @@ def run_test_logic():
                         win = child.getChildAtIndex(j)
                         if win.name == "CodeCraftAI Wayland Click Verify":
                             target_window = win
-                            target_app_name = child.name
                             print(f"Test Logic: Found window '{win.name}' in app '{child.name}'")
                             break
-                    except Exception: pass
+                    except Exception:
+                        # Best-effort search; a window that goes defunct while being listed is skipped.
+                        pass
             if target_window: break
-        except Exception: pass
+        except Exception:
+            # Best-effort search; an application that exits or is defunct while being listed is skipped.
+            pass
 
     if not target_window:
         print("Test Logic: ERROR - Could not find window. Dumping top-level apps:")
         for i in range(desktop.childCount):
             try:
                 print(f"  - {desktop.getChildAtIndex(i).name}")
-            except Exception: pass
+            except Exception:
+                # Best-effort dump; an application that exits or is defunct while being listed is skipped.
+                pass
         # Exit app
         GLib.idle_add(Gtk.main_quit)
         return

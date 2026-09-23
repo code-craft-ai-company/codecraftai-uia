@@ -1,8 +1,5 @@
 
 import time
-import sys
-import os
-import evdev
 from evdev import UInput, ecodes as e
 
 def debug_mouse_uinput():

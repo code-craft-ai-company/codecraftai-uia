@@ -4,13 +4,9 @@ import time
 
 import weakref
 
-import re
-
 from ccai.uia.platforms.base import UIElement
 from ccai.uia.exceptions import (
     ConfigurationError,
-    UIAException,
-    ElementNotFoundError,
     InteractionError,
     PlatformNotSupportedError
 )
@@ -24,19 +20,12 @@ try:
         AXUIElementSetAttributeValue,
         AXUIElementPerformAction,
         AXValueGetValue,
-        kAXChildrenAttribute,
-        kAXEnabledAttribute,
         kAXErrorSuccess,
         kAXFocusedAttribute,
         kAXTrustedCheckOptionPrompt,
         kAXPositionAttribute,
-        kAXPressAction,
         kAXRaiseAction,
-        kAXRoleAttribute,
         kAXSizeAttribute,
-        kAXTitleAttribute,
-        kAXIdentifierAttribute,
-        kAXHelpAttribute,
         kAXValueAttribute,
     )
     try:
@@ -63,19 +52,12 @@ except ImportError:
     AXUIElementSetAttributeValue = None
     AXUIElementPerformAction = None
     AXValueGetValue = None
-    kAXChildrenAttribute = None
-    kAXEnabledAttribute = None
     kAXErrorSuccess = 0
     kAXFocusedAttribute = None
     kAXTrustedCheckOptionPrompt = None
     kAXPositionAttribute = None
-    kAXPressAction = None
     kAXRaiseAction = None
-    kAXRoleAttribute = None
     kAXSizeAttribute = None
-    kAXTitleAttribute = None
-    kAXIdentifierAttribute = None
-    kAXHelpAttribute = None
     kAXValueAttribute = None
     kAXVisibleAttribute = None
     kAXWindowsAttribute = None
@@ -90,8 +72,6 @@ try:
         CGEventPost,
         CGPointMake,
         CGSizeMake,
-        kCGEventKeyDown,
-        kCGEventKeyUp,
         kCGEventLeftMouseDown,
         kCGEventLeftMouseUp,
         kCGHIDEventTap,
@@ -104,8 +84,6 @@ except Exception:
     CGEventPost = None
     CGPointMake = None
     CGSizeMake = None
-    kCGEventKeyDown = None
-    kCGEventKeyUp = None
     kCGEventLeftMouseDown = None
     kCGEventLeftMouseUp = None
     kCGHIDEventTap = None

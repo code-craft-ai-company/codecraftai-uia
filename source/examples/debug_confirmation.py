@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-import time
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
-import os
 
 def dump_tree(element, depth=0, max_depth=5):
     indent = "  " * depth
@@ -22,6 +20,7 @@ def dump_tree(element, depth=0, max_depth=5):
                 child_el = LinuxElement(child, element.access_agent, element.wm_agent)
                 dump_tree(child_el, depth + 1, max_depth)
             except Exception:
+                # Best-effort dump; a child that disappears or cannot be wrapped is skipped.
                 pass
     except Exception as e:
         print(f"{indent}Error: {e}")
@@ -56,6 +55,7 @@ def main():
         try:
             dump_tree(LinuxElement(child, app.access_agent, app.wm_agent), 0, 3)
         except Exception:
+             # Best-effort dump; an application child that disappears or cannot be wrapped is skipped.
              pass
 
 if __name__ == "__main__":

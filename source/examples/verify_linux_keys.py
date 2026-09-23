@@ -97,11 +97,11 @@ def run_automation():
         print("Automation finished.")
         # We can close the app or let user see
         # root.quit() via automation?
-        pass
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = KeyReceiverApp(root)
+    # The widgets are owned by 'root' and the key binding keeps the receiver instance alive.
+    KeyReceiverApp(root)
     
     # Run automation in separate thread
     t = threading.Thread(target=run_automation)

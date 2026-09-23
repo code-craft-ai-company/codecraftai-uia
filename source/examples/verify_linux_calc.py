@@ -35,6 +35,7 @@ def recursive_print(element, depth=0, max_depth=20):
                  if content.strip():
                     text = f" Text='{content}'"
         except Exception:
+            # Not every element implements the AT-SPI Text interface; print it without text.
             pass
 
         print(f"{indent}- {name} (Role: {role}){text}")
@@ -79,6 +80,7 @@ def verify_calculator():
                 try:
                     main_window.activate()
                 except Exception:
+                    # Activation is best-effort; type_keys() below still targets the main window.
                     pass
                 time.sleep(1.0)
                 
@@ -123,6 +125,7 @@ def verify_calculator():
                                      print(f"    Found in Text: '{content}' ({native.getRoleName()})")
                                      return True
                              except Exception:
+                                 # The Text interface can be advertised but fail to respond; fall back to the children.
                                  pass
                         
                         # Recurse
@@ -134,6 +137,7 @@ def verify_calculator():
                                 if find_result_deep(LinuxElement(child), target, depth + 1):
                                     return True
                     except Exception:
+                        # Best-effort search; an element that goes defunct while walking is treated as not matching.
                         pass
                     return False
 

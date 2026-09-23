@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 import time
-from Xlib import X, display
+from Xlib import display
 
 # Launch LibreOffice if not already running
 try:
@@ -45,6 +45,7 @@ def list_windows(win, depth=0):
         for child in children:
             list_windows(child, depth + 1)
     except Exception:
+        # X errors (e.g. BadWindow) are expected when a window is destroyed while the tree is walked; skip it.
         pass
 
 print("Listing all X11 windows:\n")

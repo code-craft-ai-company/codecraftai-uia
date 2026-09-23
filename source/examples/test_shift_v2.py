@@ -1,4 +1,4 @@
-from Xlib import X, display, XK
+from Xlib import display, XK
 
 class MockAgent:
     def __init__(self):
@@ -28,6 +28,7 @@ class MockAgent:
                 if keycode != 0:
                     self._keymap[char_key] = keycode
             except Exception:
+                # Characters with no keysym or keycode on the current keyboard layout are left unmapped.
                 pass
 
         for key, sym in symbol_map.items():
@@ -71,7 +72,6 @@ class MockAgent:
         # But we don't know the keysym for `char` easily without the map.
         
         # Re-derive keysym for char using the map logic
-        target_keysym_name = None
         
         # In a real scenario, we might iterate over the map or store it inverted.
         # But wait, `_setup_keymap` computes `self._keymap` which assumes a specific keysym was used.

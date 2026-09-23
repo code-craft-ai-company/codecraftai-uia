@@ -1,6 +1,5 @@
 from ccai.uia.platforms.base import UIDialog, UIModalDialog, UISaveDialog, UISaveAsDialog, UIOpenDialog, UIModalDialogFileAlreadyExists
 from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
-from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 import time
 import os
 

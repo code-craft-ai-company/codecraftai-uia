@@ -11,11 +11,8 @@ from ccai.uia.platforms.macos.wrappers.uiaaccessibility import (
     send_keys_to_focused
 )
 from ccai.uia.exceptions import (
-    UIAException,
-    ElementNotFoundError,
     InteractionError,
-    PlatformNotSupportedError,
-    ConfigurationError
+    ConfigurationError,
 )
 from ccai.uia.platforms.macos.wrappers.uiawindow import MacWindow
 from ccai.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
@@ -55,6 +52,7 @@ class MacApplication(WrappedObject, UIApplication):
                 win = MacWindow(self.controller, focused_window)
                 return win
         except Exception:
+            # The accessibility focus query is the fast path; any failure falls back to checking each window below.
             pass
             
         # Fallback: check all windows if focused (less reliable/performant)
@@ -315,7 +313,7 @@ class MacApplication(WrappedObject, UIApplication):
             raise
         except Exception:
             # Accessibility may be unavailable or denied. Fall back to scripting windows.
-            ax_windows = []
+            pass
 
         if len(window_list) > 0:
             return window_list
@@ -404,6 +402,8 @@ class MacApplication(WrappedObject, UIApplication):
                 try:
                     window.focus()
                 except NotImplementedError:
+                    # Window objects that cannot be focused individually still receive the keys through the
+                    # application activated above.
                     pass
             else:
                 pass

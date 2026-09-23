@@ -96,7 +96,6 @@ def debug_mouse_uinput_abs():
         except OSError:
             print("UI_ABS_SETUP failed. Trying legacy write approach (carefully packed)...")
             # If UI_ABS_SETUP fails, we might be stuck or need legacy struct correct packing.
-            pass
 
         # Setup Device ID/Name
         BUS_USB = 0x03

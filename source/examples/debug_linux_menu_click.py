@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
-from ccai.uia.platforms.linux.wrappers.menuelement import LinuxDropDownMenu, LinuxMenu
 
 def debug_menu_click():
     print("Initializing Automation Engine...")

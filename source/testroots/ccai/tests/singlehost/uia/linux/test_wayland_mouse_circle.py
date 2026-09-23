@@ -5,9 +5,9 @@ import math
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
-    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+    require_automation_engine,
+    require_display,
 )
-from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.agents.wayland.gnome.waylandgnomewindowmanageragent import WaylandGnomeWindowManagerAgent as WaylandWindowManagerAgent
 
 def test_wayland_mouse_circle():

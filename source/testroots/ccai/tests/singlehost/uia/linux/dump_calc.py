@@ -9,6 +9,7 @@ def dump(el, indent=""):
             for i in range(el.childCount):
                 dump(el.getChildAtIndex(i), indent + "  ")
     except Exception:
+        # Best-effort dump; accessible objects that go defunct while walking the tree are skipped.
         pass
 
 def main():

@@ -28,6 +28,7 @@ def find_first_cell(element, depth=0):
             if result:
                 return result
     except Exception:
+        # Best-effort search; an element that goes defunct while walking is treated as not matching.
         pass
     
     return None

@@ -1,7 +1,6 @@
 
 import sys
 import time
-import os
 
 try:
     from Xlib import X, display, XK
@@ -28,6 +27,7 @@ def find_window(disp, name):
                     if name.lower() in cls.lower():
                         return win
         except Exception:
+            # X errors (e.g. BadWindow) are expected for windows destroyed during the scan; skip them.
             pass
     return None
 

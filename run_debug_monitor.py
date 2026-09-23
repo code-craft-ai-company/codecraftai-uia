@@ -1,6 +1,5 @@
 import sys
 import os
-import time
 import json
 
 # Ensure source is in path
@@ -25,7 +24,9 @@ def walk_element(element, depth=0, max_depth=10):
         if hasattr(element, 'access_agent'):
              states_enum = element.access_agent.get_states(element.native_obj)
              data["states"] = [str(s).split('.')[-1] for s in states_enum]
-    except Exception: pass
+    except Exception:
+        # Best-effort dump; elements that disappear or refuse state queries are dumped without states.
+        pass
     
     try:
         # Get children
@@ -35,7 +36,9 @@ def walk_element(element, depth=0, max_depth=10):
             for child in children:
                 child_el = LinuxElement(child, element.access_agent, element.wm_agent)
                 data["children"].append(walk_element(child_el, depth + 1, max_depth))
-    except Exception: pass
+    except Exception:
+        # Best-effort dump; elements that disappear while walking are dumped without their children.
+        pass
     
     return data
 
@@ -81,7 +84,9 @@ def main():
                  if "Save" in name or "Confirm" in name or "Question" in name or "Exist" in name:
                       w = LinuxElement(child, app.access_agent, app.wm_agent)
                       target_windows.append(w)
-    except Exception: pass
+    except Exception:
+        # Best-effort dialog discovery; fall back to the top-level windows found above.
+        pass
 
     if not target_windows:
         print("No target dialogs found! Dumping all windows shallowly...")

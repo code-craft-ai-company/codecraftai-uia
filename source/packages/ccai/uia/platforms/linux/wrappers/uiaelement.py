@@ -1,13 +1,11 @@
 
 import weakref
-from typing import Any, Tuple, Optional, List
+from typing import Any, Optional, List
 from ccai.uia.platforms.base import UIElement
 from ccai.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
 from ccai.uia.exceptions import (
-    UIAException,
-    ElementNotFoundError,
     InteractionError,
-    PlatformNotSupportedError
+    PlatformNotSupportedError,
 )
 
 class LinuxElement(UIElement):

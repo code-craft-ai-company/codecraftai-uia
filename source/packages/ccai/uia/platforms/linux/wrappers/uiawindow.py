@@ -111,6 +111,7 @@ class LinuxWindow(LinuxElement, UIWindow):
                  if app_name and app_name != name:
                      self.wm_agent.focus_window(app_name)
              except Exception:
+                 # Last-resort focus attempt; a native object without a resolvable application leaves focus unchanged.
                  pass
     
     def bring_to_front(self) -> None:

@@ -1,6 +1,5 @@
 
 import platform
-import subprocess
 import time
 
 from ccai import testbase
@@ -8,7 +7,6 @@ from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
     launch_or_skip, require_automation_engine, require_display, require_pyatspi,
 )
-from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 
@@ -35,6 +33,7 @@ def _find_result_deep(element: LinuxElement, target: str, depth: int = 0) -> boo
                 if target in content:
                     return True
             except Exception:
+                # The Text interface can be advertised but fail to respond; fall back to the name check below.
                 pass
 
         # Check name
@@ -49,6 +48,7 @@ def _find_result_deep(element: LinuxElement, target: str, depth: int = 0) -> boo
                 if _find_result_deep(LinuxElement(child, element._access_agent, element._wm_agent), target, depth + 1):
                     return True
     except Exception:
+        # Best-effort search; an element that goes defunct while walking is treated as not matching.
         pass
 
     return False
@@ -129,6 +129,7 @@ def test_linux_calc_send_keys():
         try:
             main_window.activate()
         except Exception:
+            # Activation is best-effort; the display is clicked below to take keyboard focus.
             pass
         time.sleep(1.0)
         
@@ -184,6 +185,7 @@ def test_linux_calc_send_keys():
                         found_result = True
                         break
                 except Exception:
+                    # The display text is only the fast path; the deep search below is the fallback check.
                     pass
             if _find_result_deep(main_window, "36", depth=0):
                 found_result = True
@@ -215,13 +217,17 @@ def test_linux_calc_send_keys():
                     if hasattr(native, 'queryText'):
                         try:
                             line += f" queryText: '{native.queryText().getText(0, -1)}'"
-                        except Exception: pass
+                        except Exception:
+                            # Diagnostic dump only; omit the Text interface detail when it cannot be read.
+                            pass
                     f.write(line + "\n")
                     
                     if hasattr(native, 'childCount'):
                         for i in range(native.childCount):
                             dump(LinuxElement(native.getChildAtIndex(i), el.access_agent, el.wm_agent), indent + "  ")
-                except Exception: pass
+                except Exception:
+                    # Diagnostic dump only; it must not replace the original test failure that is re-raised below.
+                    pass
             
             if 'main_window' in locals():
                 dump(main_window)

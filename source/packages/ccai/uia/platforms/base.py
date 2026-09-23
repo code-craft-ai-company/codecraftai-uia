@@ -1,13 +1,8 @@
 
 from abc import ABC, abstractmethod
-from typing import List, Any, Tuple, Optional
+from typing import List, Tuple, Optional
 import weakref
-from ccai.uia.exceptions import (
-    UIAException,
-    ElementNotFoundError,
-    InteractionError,
-    PlatformNotSupportedError
-)
+from ccai.uia.exceptions import ElementNotFoundError
 
 
 class UIObject(ABC):

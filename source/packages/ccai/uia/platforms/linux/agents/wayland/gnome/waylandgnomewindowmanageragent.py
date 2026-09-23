@@ -111,6 +111,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             if rect:
                 return (rect['x'], rect['y'], rect['w'], rect['h'])
         except Exception:
+            # A broker window record without a well-formed 'rect_logical' has no known rect; report None.
             pass
         return None
 
@@ -128,6 +129,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
                     r = outputs[0].get('logical_rect')
                     return (r['w'], r['h'])
             except Exception:
+                # The broker is optional; when its output query fails, fall back to GDK below.
                 pass
 
         # Fallback to GDK
@@ -138,6 +140,7 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
                     geo = monitor.get_geometry()
                     return (geo.width, geo.height)
             except Exception:
+                # GDK monitor queries can fail on headless or partially initialized displays; use the default below.
                 pass
                 
         return (1920, 1080)
@@ -281,6 +284,8 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
         except Exception as e:
             print(f"Wayland move_mouse failed: {e}")
 
+        return None
+
     def click(self, x: int, y: int) -> None:
         if self._uinput_fd is None:
             return super().click(x, y)
@@ -296,6 +301,8 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             time.sleep(0.1)
         except Exception as e:
             print(f"Wayland click failed: {e}")
+
+        return None
 
     def drag_and_drop(self, start_x: int, start_y: int, end_x: int, end_y: int, duration: float = 0.5) -> None:
         # Implementation same as before
@@ -334,6 +341,8 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             
         except Exception as e:
             print(f"Wayland drag_and_drop failed: {e}")
+
+        return None
     
     def __del__(self):
         try:
@@ -342,12 +351,16 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
                 try:
                     fcntl.ioctl(self._uinput_fd, 0x5502) # UI_DEV_DESTROY
                 except OSError:
+                    # Best-effort teardown; the device may already be gone, and the fd is still closed below.
                     pass
                 try:
                     os.close(self._uinput_fd)
                 except OSError:
+                    # Best-effort teardown; the fd may already be closed.
                     pass
                 self._uinput_fd = None
         except Exception:
+            # A finalizer must never raise; it can run on a partially constructed instance or during
+            # interpreter shutdown when module globals are already torn down.
             pass
         return

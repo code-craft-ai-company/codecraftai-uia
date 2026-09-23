@@ -1,7 +1,5 @@
 
 import platform
-import sys
-from typing import Any
 
 from ccai.uia.platforms.base import AutomationEngine
 

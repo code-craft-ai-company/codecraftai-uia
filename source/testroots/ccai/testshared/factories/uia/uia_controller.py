@@ -13,7 +13,6 @@ def create_uia_controller(constraints=None) -> Generator[object, None, None]:
 
         :returns: A generator yielding the UI automation controller.
     """
-    constraints = constraints or {}
 
     if platform.system() != "Darwin":
         yield None

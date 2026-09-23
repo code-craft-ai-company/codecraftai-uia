@@ -6,7 +6,7 @@ import sys
 import os
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk
 
 # Add source to path so we can import ccai
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'source/packages')))
@@ -59,7 +59,9 @@ def run_automation():
         try:
             child = desktop.getChildAtIndex(i)
             print(f"App {i}: {child.name}")
-        except Exception: pass
+        except Exception:
+            # Best-effort dump; an application that exits or is defunct while being listed is skipped.
+            pass
 
     target_name = "verify_linux_keys_gtk.py"
     app = automation.get_application_by_name(target_name)
@@ -94,14 +96,18 @@ def run_automation():
                         role_name = el.role_name
                         if role_name in ["text", "entry", "text entry"]: 
                             return el
-                    except Exception: pass
+                    except Exception:
+                        # An element whose role cannot be read is not the entry; continue into its children.
+                        pass
                     
                     if hasattr(native, 'childCount'):
                         for i in range(native.childCount):
                             try:
                                 found = find_entry(LinuxElement(native.getChildAtIndex(i)), depth+1)
                                 if found: return found
-                            except Exception: pass
+                            except Exception:
+                                # Best-effort search; a child that goes defunct while walking is skipped.
+                                pass
                     return None
                     
                 entry = find_entry(main_window)

@@ -132,6 +132,7 @@ class MonitorCommand(Command):
                     # Also try to close the app via UI automation if possible
                     # app.close() # Not standard API yet?
                 except Exception:
+                    # Best-effort cleanup; a failed terminate must not mask the mapping result or error.
                     pass
             else:
                 print("Detaching from application (leaving it running).", file=sys.stderr)
@@ -220,6 +221,7 @@ class MonitorCommand(Command):
                  states_enum = element.access_agent.get_states(element.native_obj)
                  data["states"] = [str(s).split('.')[-1] for s in states_enum]
         except Exception:
+            # Best-effort mapping; an element whose states cannot be read keeps an empty state list.
             pass
 
         # Get interfaces/attributes
@@ -232,11 +234,9 @@ class MonitorCommand(Command):
                     start_interfaces = pyatspi_module.listInterfaces(native)
                 else:
                     start_interfaces = []
-                # If we can't get them easily via wrapper, maybe just try to query common ones or skip
-                # Actually, capturing interfaces is hard without direct pyatspi access in this context if not imported
-                # Let's try to get description via access_agent if possible
-                pass
+                data["interfaces"] = [str(iface_name) for iface_name in start_interfaces]
         except Exception:
+            # Best-effort mapping; interface discovery is optional diagnostic information.
             pass
             
         # Helper to recurse
@@ -257,6 +257,7 @@ class MonitorCommand(Command):
                     for child in children:
                         data["children"].append(self._walk_element(child, depth + 1))
         except Exception:
+            # Best-effort mapping; an element that goes defunct keeps the children found so far.
             pass
              
         return data

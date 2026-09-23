@@ -32,6 +32,7 @@ def dump_tree(element, depth=0):
                 if raw_text:
                     extra_debug.append(f"TextIface: '{raw_text}'")
             except Exception:
+                # Not every element implements the AT-SPI Text interface; omit the text detail for those.
                 pass
 
             try:
@@ -39,6 +40,7 @@ def dump_tree(element, depth=0):
                 val = val_iface.currentValue
                 extra_debug.append(f"ValueIface: {val}")
             except Exception:
+                # Not every element implements the AT-SPI Value interface; omit the value detail for those.
                 pass
         
         states = []
@@ -46,6 +48,7 @@ def dump_tree(element, depth=0):
             s = native.getState()
             states = [str(st) for st in s.getStates()]
         except Exception:
+            # Best-effort dump; report an empty state set when the state query fails.
             pass
 
         extra_str = ", ".join(extra_debug)
@@ -80,6 +83,7 @@ def _find_input_element(element, depth=0):
                 if found is not None:
                     return found
     except Exception:
+        # Best-effort search; an element that goes defunct while walking is treated as not matching.
         pass
 
     return None
@@ -98,6 +102,7 @@ def find_button(element, name):
                 if found:
                     return found
     except Exception:
+        # Best-effort search; an element that goes defunct while walking is treated as not matching.
         pass
     return None
 
@@ -131,6 +136,7 @@ def debug():
         try:
             main_window.activate()
         except Exception:
+            # Activation is best-effort; the button clicks below work without window focus.
             pass
         time.sleep(1.0)
 

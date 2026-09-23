@@ -1,6 +1,6 @@
 
 from typing import Optional
-from ccai.uia.platforms.base import AutomationEngine, UIApplication
+from ccai.uia.platforms.base import AutomationEngine
 from ccai.uia.platforms.linux.wrappers.uiaapplication import LinuxApplication
 from ccai.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
 from ccai.uia.platforms.linux.agents.common.pyatspi_agent import PyAtspiAccessibilityAgent

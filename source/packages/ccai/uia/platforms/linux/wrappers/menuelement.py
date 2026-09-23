@@ -1,5 +1,5 @@
 from typing import List, Optional, Any
-from ccai.uia.platforms.base import UIMenuBar, UIMenu, UIMenuItem, UISubMenu, UIElement, UIDropDownMenu
+from ccai.uia.platforms.base import UIMenuBar, UIMenu, UIMenuItem, UIElement, UIDropDownMenu
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from ccai.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
 
@@ -41,6 +41,7 @@ class LinuxMenuItem(LinuxElement, UIMenuItem):
                     self.wm_agent.click(center_x, center_y)
                     return
         except Exception:
+            # The coordinate click is only the preferred path; any failure falls back to the accessibility action below.
             pass
             
         # Fallback to standard accessibility action
@@ -85,6 +86,7 @@ class LinuxMenu(LinuxElement, UIMenu):
                     self.wm_agent.click(center_x, center_y)
                     return
         except Exception:
+            # The coordinate click is only the preferred path; any failure falls back to the accessibility action below.
             pass
             
         # Fallback to standard accessibility action

@@ -9,7 +9,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 from ccai.uia.factory import AutomationFactory
-from ccai.uia.platforms.linux.agents.wm.waylandwindowmanageragent import WaylandWindowManagerAgent
 
 def run_tkinter_app():
     root = tk.Tk()

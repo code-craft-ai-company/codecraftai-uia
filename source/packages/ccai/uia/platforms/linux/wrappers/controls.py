@@ -8,6 +8,26 @@ from ccai.uia.platforms.base import (
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from ccai.uia.exceptions import InteractionError
 
+
+def _states_include_selected(states: List[Any]) -> bool:
+    """
+        Checks a state list returned by :meth:`AccessibilityAgent.get_states` for the selected state.
+        pyatspi reports states as ``StateType`` values whose string form is ``STATE_SELECTED``, while
+        other agents report the plain name ``selected``; both forms are accepted, the same way
+        :class:`LinuxElement` checks the visible and enabled states.
+
+        :param states: The states of an accessible element.
+
+        :returns: True when the selected state is present.
+    """
+    rtnval = False
+    for state in states:
+        state_name = str(state)
+        if state_name == "selected" or state_name.endswith("SELECTED"):
+            rtnval = True
+            break
+    return rtnval
+
 class LinuxCheckBox(LinuxElement, UICheckBox):
     """
         Linux implementation of a CheckBox.
@@ -116,18 +136,22 @@ class LinuxComboBox(LinuxElement, UIComboBox):
 
     @property
     def selected_item(self) -> Optional[UIElement]:
-        # Implementation depends on AT-SPI. 
-        # Sometimes the 'Selection' interface is on the ComboBox
-        # Or we check children for 'selected' state.
-        
-        # Try Selection Interface via agent? 
-        # Agent base doesn't expose generic selection yet.
-        # Fallback to checking children
-        children = self.get_children() # LinuxElement method? No, generic find
-        # We need generic get_children wrapper
-        # Assuming we can find 'selected' child
-        # For now, simplistic implementation
-        return None 
+        """
+            Returns the combo box item that carries the selected state, or None when no item is selected.
+
+            The accessibility agent does not expose the AT-SPI Selection interface, so the items of the
+            combo box (the 'menu item' and 'list item' descendants that :meth:`select` searches, which
+            toolkits place inside a 'menu' or 'list' child) are checked for the selected state.
+        """
+        rtnval = None
+        descendants = self.find_elements()
+        for candidate in descendants:
+            if candidate.role_name in ('menu item', 'list item'):
+                candidate_states = self.access_agent.get_states(candidate.native_obj)
+                if _states_include_selected(candidate_states):
+                    rtnval = candidate
+                    break
+        return rtnval
 
 
 class LinuxButton(LinuxElement, UIButton):
@@ -170,15 +194,23 @@ class LinuxTab(LinuxElement, UITab):
     
     @property
     def selected_tab(self) -> Optional['UITabItem']:
-        # Find child with 'selected' state
-        return self.find_element(role='page tab', states=['selected']) # Pseudo-code states filter? 
-        # We don't have states filter in find_element yet.
-        # Use fallback iteration
-        children = self.find_elements(role='page tab')
-        for child in children:
-            if isinstance(child, LinuxTabItem) and child.is_selected:
-                return child
-        return None
+        """
+            Returns the page tab that carries the selected state, or None when no tab is selected.
+
+            AT-SPI places the page tabs directly under the page tab list, so the direct children are
+            checked first; searching the whole subtree first could return a selected tab of a tab list
+            nested inside one of the tab pages.  When the list has no direct page tab children, the
+            whole subtree is searched, which is where :meth:`select_tab` looks.
+        """
+        rtnval = None
+        tabs = self.find_elements(role='page tab', recursive=False)
+        if len(tabs) == 0:
+            tabs = self.find_elements(role='page tab')
+        for tab in tabs:
+            if isinstance(tab, LinuxTabItem) and tab.is_selected:
+                rtnval = tab
+                break
+        return rtnval
 
     def select_tab(self, name: str) -> None:
         """
@@ -199,9 +231,13 @@ class LinuxTabItem(LinuxElement, UITabItem):
     
     @property
     def is_selected(self) -> bool:
+        """
+            True when the tab carries the selected state (``STATE_SELECTED`` from pyatspi).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        return any(str(s) == 'selected' for s in states)
-        
+        rtnval = _states_include_selected(states)
+        return rtnval
+
     def select(self) -> None:
         """
             Selects this tab item.

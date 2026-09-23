@@ -1,7 +1,6 @@
 
 import platform
 import time
-import subprocess
 import shutil
 import sys
 import os
@@ -12,7 +11,6 @@ sys.path.append(os.path.abspath("source/testroots"))
 
 from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
-from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 def test_linux_libreoffice_draw():
     """
@@ -53,7 +51,6 @@ def test_linux_libreoffice_draw():
         print(f"Found App: {app.name}")
         
         # 3. Find Main Window using Hint
-        main_window_hint = LibreOfficeDraw.MainWindow
         main_window = None
         for _ in range(10):
             windows = app.get_windows()

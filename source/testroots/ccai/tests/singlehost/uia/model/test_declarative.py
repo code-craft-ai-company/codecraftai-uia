@@ -9,7 +9,7 @@ import shlex
 import subprocess
 import time
 
-from typing import List, Optional
+from typing import List
 from unittest.mock import patch
 
 from ccai import testbase

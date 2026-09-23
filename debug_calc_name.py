@@ -15,8 +15,9 @@ def debug_calc_name():
         proc = subprocess.Popen(["gnome-calculator"])
         time.sleep(2.0)
         
-        automation = AutomationFactory.get_automation_engine()
-        
+        # Constructing the engine initializes the platform agents and prints the platform detection summary.
+        AutomationFactory.get_automation_engine()
+
         # Dump all apps
         import pyatspi
         reg = pyatspi.Registry
@@ -26,7 +27,9 @@ def debug_calc_name():
             try:
                 child = desktop.getChildAtIndex(i)
                 print(f"App {i}: '{child.name}' (Role: {child.getRoleName()})")
-            except Exception: pass
+            except Exception:
+                # Best-effort dump; an application that exits or is defunct while being listed is skipped.
+                pass
         print("----------------------------")
 
     finally:

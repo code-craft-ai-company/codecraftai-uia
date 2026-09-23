@@ -1,4 +1,3 @@
-import sys
 import time
 import gi
 gi.require_version('Gdk', '3.0')

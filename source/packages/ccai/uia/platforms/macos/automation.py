@@ -1,6 +1,4 @@
 
-import AppKit
-
 from ccai.uia.platforms.macos.uiacatalog import MacCatalog
 
 from ccai.uia.platforms.macos.wrappers.uiaworkspace import MacWorkspace

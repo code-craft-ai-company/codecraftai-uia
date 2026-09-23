@@ -1,13 +1,10 @@
 
 import platform
 import shutil
-import subprocess
 import time
 
 from ccai import testbase
-from ccai.tests.singlehost.uia.linux._desktop import (
-    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
-)
+from ccai.tests.singlehost.uia.linux._desktop import launch_or_skip
 from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
@@ -46,6 +43,7 @@ def _handle_tip_dialog(app) -> None:
                 ok_btn.click()
                 time.sleep(1.0)
             except Exception:
+                # Dismissing the optional Tip of the Day dialog is best-effort; the test continues without it.
                 pass
 
 
@@ -95,6 +93,7 @@ def test_libreoffice_selection():
         try:
             main_window.activate()
         except Exception:
+            # Activation is best-effort; the cell selection below goes through the AT-SPI table interface.
             pass
         time.sleep(1.0)
 

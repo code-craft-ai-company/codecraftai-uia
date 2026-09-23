@@ -23,7 +23,7 @@ GATE_INCLUDE_EXPRESSION = "ccai.tests.singlehost"
 
 # Tests collected on every operating system.  Raise this when tests are added;
 # never lower it without a reason recorded in the commit.
-FLOOR_ALL_PLATFORMS = 80
+FLOOR_ALL_PLATFORMS = 93
 
 # Tests under ``ccai/tests/singlehost/uia/linux``, whose ``__platforms__.py``
 # excludes the directory on any host that is not Linux.

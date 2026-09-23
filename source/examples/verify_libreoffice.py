@@ -8,7 +8,6 @@ import os
 sys.path.append(os.path.abspath("source/packages"))
 
 from ccai.uia.factory import AutomationFactory
-from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 def recursive_print(element, depth=0, max_depth=3):
@@ -106,6 +105,7 @@ def verify_libreoffice():
                 try:
                     main_window.activate()
                 except Exception:
+                    # Activation is best-effort; the cell operations below grab focus on the target cell.
                     pass
                 time.sleep(1.0) # Wait for focus
                 
@@ -128,6 +128,7 @@ def verify_libreoffice():
                             wrapper = LinuxElement(child)
                             find_all_tables(wrapper, depth + 1)
                     except Exception:
+                        # Best-effort search; an element that goes defunct while walking is skipped.
                         pass
                 
                 find_all_tables(main_window)
@@ -162,6 +163,7 @@ def verify_libreoffice():
                             try:
                                 cell.click()
                             except Exception:
+                                # Clicking is best-effort; grab_focus() below is the primary way the cell is focused.
                                 pass
                             cell.grab_focus()
                             time.sleep(0.2)
@@ -215,7 +217,6 @@ def verify_libreoffice():
 
                 else:
                      print("Could not find any table in the main window.")
-                     pass
 
 
 

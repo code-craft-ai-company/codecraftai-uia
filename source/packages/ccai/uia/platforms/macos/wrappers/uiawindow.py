@@ -2,12 +2,7 @@ from typing import Any, List, Tuple, TYPE_CHECKING
 
 from ccai.uia.platforms.base import UIWindow
 from ccai.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
-from ccai.uia.exceptions import (
-    UIAException,
-    ElementNotFoundError,
-    InteractionError,
-    PlatformNotSupportedError
-)
+from ccai.uia.exceptions import PlatformNotSupportedError
 
 if TYPE_CHECKING:
     from ccai.uia.platforms.macos.automation import MacOSAutomation

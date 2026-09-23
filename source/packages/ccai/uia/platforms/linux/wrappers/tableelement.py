@@ -1,5 +1,4 @@
-import weakref
-from typing import Any, Tuple, Optional, List
+from typing import Any, Optional, List
 from ccai.uia.platforms.base import UITable, UICell, UIElement
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from ccai.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent, WindowManagerAgent
@@ -33,6 +32,7 @@ class CellElement(LinuxElement, UICell):
             if text_iface:
                 return text_iface.getText(0, -1)
         except Exception:
+            # Cells that do not implement the AT-SPI Text interface fall back to the accessible name below.
             pass
         
         # Fallback to name
@@ -82,6 +82,7 @@ class TableElement(LinuxElement, UITable):
             if table:
                 return table.nRows
         except Exception:
+            # Elements that do not implement the AT-SPI Table interface report 0 rows.
             pass
         return 0
     
@@ -93,6 +94,7 @@ class TableElement(LinuxElement, UITable):
             if table:
                 return table.nColumns
         except Exception:
+            # Elements that do not implement the AT-SPI Table interface report 0 columns.
             pass
         return 0
     
@@ -134,6 +136,8 @@ class TableElement(LinuxElement, UITable):
                 for i in range(selection.nSelectedChildren):
                     selection.deselectChild(i)
         except Exception:
+            # Clearing is best-effort ahead of a new selection; tables without the AT-SPI Selection
+            # interface have no selection to clear.
             pass
 
     def select_from_table(self, row: int, col: int) -> bool:

@@ -1,15 +1,19 @@
 
-from typing import Optional, List, Any
+from typing import Optional, List
 from ccai.uia.platforms.base import (
-    UIButton, UIText, UIList, UIMenu, UIMenuItem, UIMenuBar, UITable, UICell, UIElement
+    UIButton,
+    UIText,
+    UIList,
+    UIMenu,
+    UIMenuItem,
+    UIMenuBar,
+    UIElement,
 )
 from ccai.uia.platforms.macos.wrappers.uiaaccessibility import (
-    UiaAccessibilityElement, 
-    kAXValueAttribute, 
-    kAXRoleAttribute, 
-    kAXTitleAttribute
+    UiaAccessibilityElement,
+    kAXValueAttribute,
 )
-from ccai.uia.exceptions import InteractionError, PlatformNotSupportedError
+from ccai.uia.exceptions import InteractionError
 
 class MacUIButton(UiaAccessibilityElement, UIButton):
     """

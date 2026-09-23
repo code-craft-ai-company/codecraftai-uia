@@ -1,4 +1,4 @@
-from Xlib import X, display, XK
+from Xlib import display, XK
 
 def needs_shift(disp, char):
     keysym = XK.string_to_keysym(char)

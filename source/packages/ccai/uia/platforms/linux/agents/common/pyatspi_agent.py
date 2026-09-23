@@ -1,10 +1,13 @@
 
+import os
+
 from typing import Any, List
 try:
     import pyatspi
 except ImportError:
     pyatspi = None
 
+from ccai.uia.exceptions import InteractionError
 from ccai.uia.platforms.linux.agents.linuxbaseagents import AccessibilityAgent
 
 class PyAtspiAccessibilityAgent(AccessibilityAgent):
@@ -27,6 +30,7 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
                 if child.name == name:
                     return child
             except Exception:
+                # Applications that exit while the desktop is enumerated leave defunct children; skip them.
                 pass
         return None
 
@@ -92,6 +96,8 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
                 action.doAction(action_index)
                 return True
         except Exception:
+            # Elements without a working Action interface report failure through the False return value,
+            # which lets callers such as LinuxElement.click() fall back to a coordinate click.
             pass
         return False
     
@@ -103,11 +109,33 @@ class PyAtspiAccessibilityAgent(AccessibilityAgent):
             return 0.0
 
     def set_value(self, element: Any, value: float) -> None:
+        """
+            Sets the numeric value of a value-bearing element through the AT-SPI Value interface.
+
+            :param element: The native accessible whose value is set.
+            :param value: The value to set.
+
+            :raises: InteractionError when the element does not provide the Value interface or the
+                     value cannot be assigned.
+        """
+        float_value = float(value)
         try:
             value_iface = element.queryValue()
-            value_iface.currentValue = float(value)
-        except Exception:
-            pass
+            value_iface.currentValue = float_value
+        except Exception as xcpt:
+            element_name = self.get_name(element)
+            element_role = self.get_role_name(element)
+
+            err_msg_lines = [
+                "Failed to set the value of an accessible element through the AT-SPI Value interface."
+            ]
+            err_msg_lines.append("ELEMENT:")
+            err_msg_lines.append("    name: {}".format(element_name))
+            err_msg_lines.append("    role: {}".format(element_role))
+            err_msg_lines.append("VALUE: {}".format(float_value))
+            err_msg_lines.append("CAUSE: {}: {}".format(type(xcpt).__name__, xcpt))
+            err_msg = os.linesep.join(err_msg_lines)
+            raise InteractionError(err_msg) from xcpt
         return
 
     def get_coordinates(self, element: Any) -> tuple:

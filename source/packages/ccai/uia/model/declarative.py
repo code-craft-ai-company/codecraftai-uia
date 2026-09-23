@@ -1,11 +1,25 @@
 
-from typing import Optional, Type, Any, List, TypeVar, Generic
+from typing import Optional, Type, List, TypeVar, Generic
 from ccai.uia.platforms.base import (
-    UIElement, UIApplication, UIWindow, AutomationEngine,
-    UIButton, UIText, UIList, UIMenu, UIMenuItem, UIMenuBar, UITable,
-    UIDialog, UIModalDialog, UISaveDialog, UIModalDialogFileAlreadyExists,
-    UICheckBox, UIRadioButton, UIComboBox, UIHyperlink, UITab, UITree,
-    UIProgressBar, UISlider
+    UIElement,
+    UIApplication,
+    UIWindow,
+    AutomationEngine,
+    UIButton,
+    UIText,
+    UIMenu,
+    UIMenuItem,
+    UIMenuBar,
+    UITable,
+    UIDialog,
+    UICheckBox,
+    UIRadioButton,
+    UIComboBox,
+    UIHyperlink,
+    UITab,
+    UITree,
+    UIProgressBar,
+    UISlider,
 )
 from ccai.uia.factory import AutomationFactory
 
@@ -136,24 +150,8 @@ class ElementHint(Generic[T]):
                         # usually //* means all descendants.
                         
                         # Optimization: if underlying engine supports XPath or deep search with criteria, use it.
-                        # For now, generic fallback:
-                        candidates = []
-                        if hasattr(el, 'get_sub_elements'): # internal API?
-                             # Fallback to walk
-                             candidates = self._walk_tree(el)
-                        elif hasattr(el, 'find_elements'):
-                             # Try passing criteria directly if supported
-                             # Logic: find_elements(depth=-1, **filters)
-                             try:
-                                 matches = el.find_elements(**self._convert_filters(filters))
-                                 # This might generic find direct children only on some platforms?
-                                 # We assume find_elements is direct children usually.
-                                 # So we need deep walk.
-                                 pass
-                             except Exception:
-                                 pass
-                        
-                        # Doing a manual walk for generic support
+                        # For now, generic fallback: find_elements() is not guaranteed to search deeply on
+                        # every platform, so we do a manual walk for generic support.
                         matches = self._find_descendants_generic(el, filters)
                         next_context.extend(matches)
                         
@@ -166,18 +164,9 @@ class ElementHint(Generic[T]):
                          try:
                              children = el.find_elements()
                          except Exception:
-                             # Try get_children internal
-                             access = getattr(el, 'access_agent', None)
-                             native = getattr(el, 'native_obj', None) # Linux
-                             if access is not None and native is not None:
-                                 # Linux specific bypass
-                                 try:
-                                    child_natives = access.get_children(native)
-                                    # Convert back? Complexity high.
-                                    # Let's rely on standard find_elements returning list of wrappers
-                                    pass
-                                 except Exception:
-                                    pass
+                             # An element whose children cannot be enumerated contributes no children, so the
+                             # path does not resolve through it and resolution reports the element as not found.
+                             pass
                          
                          # Filter manually
                          for child in children:
@@ -215,12 +204,10 @@ class ElementHint(Generic[T]):
         # Let's assume leading / implies direct child of parent.
         # Leading // implies any descendant.
         
-        i = 0
         if path.startswith('//'):
             # //{filter}
             parts = path[2:].split('/')
             first_op = 'descendant'
-            i = 0
         elif path.startswith('./'):
             parts = path[2:].split('/')
             first_op = 'child' # . is self, / is child. Wait. ./foo means child foo of self.
@@ -228,7 +215,6 @@ class ElementHint(Generic[T]):
             # actually . means self. 
             # if path is just "." -> self.
             # if path starts with ./ -> first segment is child
-            i = 0 
         elif path.startswith('.'):
              # just . or .{filter}
              # treated as self

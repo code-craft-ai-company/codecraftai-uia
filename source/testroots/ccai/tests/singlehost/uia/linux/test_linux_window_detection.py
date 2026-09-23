@@ -1,13 +1,14 @@
 
 import platform
-import subprocess
 import time
 import os
 
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
-    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+    launch_or_skip,
+    require_display,
+    require_pyatspi,
 )
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.platforms.linux.mappings.calculator import Calculator
@@ -75,7 +76,6 @@ def test_linux_window_detection_x11():
              testbase.assert_equal(win_type, 'x11', "Forced X11 app should be detected as 'x11'")
         else:
              print("Warning: WM Agent does not support detection (Pure X11 agent?)")
-             pass
 
     finally:
         proc.terminate()

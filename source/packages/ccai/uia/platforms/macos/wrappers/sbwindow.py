@@ -1,6 +1,4 @@
-from typing import Any, List, TYPE_CHECKING
-
-import AppleScriptKit
+from typing import Any, TYPE_CHECKING
 
 from ccai.uia.platforms.macos.wrappers.wrappedobject import WrappedObject
 

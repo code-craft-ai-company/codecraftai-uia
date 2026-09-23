@@ -135,12 +135,14 @@ class MacWorkspace:
                 if bundle_id and obj.bundleIdentifier() == bundle_id:
                     return obj
             except Exception:
+                # A running application can terminate while the list is scanned; fall through to the name check.
                 pass
 
             try:
                 if obj.localizedName() == application_name:
                     return obj
             except Exception:
+                # A running application can terminate while the list is scanned; skip it.
                 pass
 
         return None

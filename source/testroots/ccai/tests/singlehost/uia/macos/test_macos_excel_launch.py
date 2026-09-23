@@ -76,7 +76,6 @@ def test_macos_excel_launch_creates_workbook(uia_controller=None):
         
         # Final check
         window = app.get_focus_window()
-        hint = app.resolve_to_hint(window)
         # We might accept MainWindow or just that we have a window that isn't the start dialog
         # But strictly checking hint is better if our hint logic is sound.
         # For now, let's assert we have a window.

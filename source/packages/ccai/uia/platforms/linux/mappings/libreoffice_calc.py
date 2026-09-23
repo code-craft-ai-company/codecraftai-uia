@@ -1,15 +1,14 @@
 
 from ccai.uia.model.declarative import (
-    DeclarativeApplication, 
-    ElementHint, 
-    WindowHint, 
-    MenuBarHint, 
-    MenuHint, 
-    MenuItemHint, 
+    DeclarativeApplication,
+    WindowHint,
+    MenuBarHint,
+    MenuHint,
+    MenuItemHint,
     DialogHint,
     ButtonHint,
     TextHint,
-    TableHint
+    TableHint,
 )
 
 class TipOfTheDayDialog(DialogHint):

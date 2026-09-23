@@ -4,13 +4,10 @@ import shutil
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
 from ccai.uia.factory import AutomationFactory
-from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
-from ccai.uia.platforms.linux.wrappers.dialogelement import LinuxSaveAsDialog, LinuxModalDialogFileAlreadyExists
 from ccai.uia.platforms.linux.mappings.libreoffice_calc import LibreOfficeCalc
 import time
 import os
 import subprocess
-import shlex
 
 def _open_save_as_dialog(app, main_window):
     """Refactored helper to open Save As dialog robustly."""
@@ -123,7 +120,6 @@ def _open_save_as_dialog(app, main_window):
              return None
 
         # Search for dialog - check windows first to avoid deep scan
-        dlg = None
         for _ in range(5):
             for w in app.get_windows():
                 if "Save As" in w.title:
@@ -238,12 +234,8 @@ def test_libreoffice_calc_menus_refactored():
         # No app kill here, letting next test re-use or re-attach logic handle it.
         # But if we don't close, next test might get same window.
         # Let's try to close window? or just exit app.
-        try:
-             # Try Alt+F4 or similar?
-             # Or rely on next test finding existing window.
-             pass
-        except Exception:
-            pass
+        # Try Alt+F4 or similar?
+        # Or rely on next test finding existing window.
 
 
 def test_libreoffice_calc_save_overwrite():
@@ -327,7 +319,9 @@ def test_libreoffice_calc_save_overwrite():
                                  from ccai.uia.platforms.linux.wrappers.uiawindow import LinuxWindow
                                  confirm_dialog = LinuxWindow(child, app.access_agent, app.wm_agent)
                                  break
-                     except Exception: pass
+                     except Exception:
+                         # Application children can go defunct while the dialog is opening; retry on the next pass.
+                         pass
 
                 if confirm_dialog: break
                 time.sleep(1)
@@ -366,7 +360,9 @@ def test_libreoffice_calc_save_overwrite():
         # Be careful not to kill user's real open docs if they have any (but we asked them to close).
         try:
              subprocess.run(["pkill", "soffice"])
-        except Exception: pass
+        except Exception:
+            # Best-effort cleanup (e.g. pkill missing); it must not mask the test result or failure.
+            pass
 
 if __name__ == "__main__":
     test_libreoffice_calc_menus_refactored()

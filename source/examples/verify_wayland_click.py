@@ -3,7 +3,6 @@ import sys
 import os
 import time
 import subprocess
-import signal
 
 # Add source to path for ccai import
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
@@ -14,6 +13,7 @@ try:
     gi.require_version('Gtk', '3.0')
     from gi.repository import Gtk, Gdk, GLib
 except ImportError:
+    # GTK is only needed by the '--app' process; the test process runs without it.
     pass
 
 def run_app():
@@ -64,6 +64,7 @@ def run_app():
             origin = gdk_win.get_root_origin()
             print(f"APP_PROCESS: Window Root Origin (GDK): {origin}")
         except Exception:
+             # Diagnostic output only; some GDK backends (e.g. Wayland) cannot report a root origin.
              pass
         
     print("APP_PROCESS: App Ready.")

@@ -1,11 +1,12 @@
 import platform
-import subprocess
 import time
 
 from ccai import testbase
 from ccai.errors.exceptions import SkipError
 from ccai.tests.singlehost.uia.linux._desktop import (
-    launch_or_skip, require_automation_engine, require_display, require_pyatspi,
+    launch_or_skip,
+    require_display,
+    require_pyatspi,
 )
 from ccai.uia.factory import AutomationFactory
 from ccai.uia.model.declarative import ButtonHint
@@ -52,6 +53,7 @@ def test_linux_calc_type_keys():
         try:
             main_window.activate()
         except Exception:
+            # Activation is best-effort; the button clicks below do not depend on window focus.
             pass
         time.sleep(1.0)
 
