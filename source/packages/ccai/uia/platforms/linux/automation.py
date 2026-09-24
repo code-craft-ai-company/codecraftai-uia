@@ -15,7 +15,30 @@ class LinuxAutomation(AutomationEngine):
     def __init__(self):
         self._access_agent: AccessibilityAgent = None
         self._wm_agent: WindowManagerAgent = None
+        self._shut_down = False
         self._initialize_agents()
+
+    def shutdown(self) -> None:
+        """
+            Closes the window manager and accessibility agents, releasing what they hold (for example the Wayland
+            agent's ``/dev/uinput`` virtual mouse).  The engine must not be used afterwards.  Calling
+            :meth:`shutdown` more than once is safe.
+
+            :raises: OSError when an agent's resources cannot be released; the other agent is still closed.
+        """
+        if self._shut_down:
+            return
+        self._shut_down = True
+
+        wm_agent = self._wm_agent
+        access_agent = self._access_agent
+        try:
+            if wm_agent is not None:
+                wm_agent.close()
+        finally:
+            if access_agent is not None:
+                access_agent.close()
+        return
 
     def _initialize_agents(self):
         """

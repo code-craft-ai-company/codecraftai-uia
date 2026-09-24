@@ -21,7 +21,7 @@ from ccai.uia.platforms.base import (
     UIProgressBar,
     UISlider,
 )
-from ccai.uia.factory import AutomationFactory
+from ccai.uia.wellknown import UiaControllerSingleton
 
 T = TypeVar('T', bound=UIElement)
 
@@ -486,9 +486,13 @@ class DeclarativeApplication:
     def attach(cls, automation_engine: Optional[AutomationEngine] = None) -> Optional[UIApplication]:
         """
             Attaches to the running application matching the hint.
+
+            :param automation_engine: The engine to attach with.  When omitted, the process-wide engine from
+                                      :func:`ccai.uia.wellknown.UiaControllerSingleton` is used, so repeated attaches
+                                      share one engine and it is shut down when the interpreter exits.
         """
         if not automation_engine:
-             automation_engine = AutomationFactory.get_automation_engine()
+             automation_engine = UiaControllerSingleton()
              
         if cls.APPLICATION_NAME:
             app = automation_engine.get_application_by_name(cls.APPLICATION_NAME)

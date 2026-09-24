@@ -371,8 +371,11 @@ class MacApplication(WrappedObject, UIApplication):
 
     def find_element(self, **kwargs) -> Optional[UIElement]:
         """
-        Finds the first child element matching criteria.
-        Delegates to the accessibility root element.
+            Finds the first element in the application that matches the criteria, searching recursively from the
+            application's accessibility root unless ``recursive=False`` is passed.  See
+            :meth:`UiaAccessibilityElement.find_element` for the criteria.
+
+            :returns: The first matching element, or None.
         """
         try:
             return self.accessibility.root_element().find_element(**kwargs)
@@ -381,8 +384,11 @@ class MacApplication(WrappedObject, UIApplication):
 
     def find_elements(self, **kwargs) -> List[UIElement]:
         """
-        Finds all child elements matching criteria.
-        Delegates to the accessibility root element.
+            Finds every element in the application that matches the criteria, searching recursively from the
+            application's accessibility root unless ``recursive=False`` is passed.  See
+            :meth:`UiaAccessibilityElement.find_elements` for the criteria.
+
+            :returns: The matching elements, in depth-first order.
         """
         try:
             return self.accessibility.root_element().find_elements(**kwargs)

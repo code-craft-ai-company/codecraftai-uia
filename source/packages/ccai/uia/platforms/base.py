@@ -154,18 +154,36 @@ class UIElement(DisplayElement):
     @abstractmethod
     def find_element(self, **kwargs) -> Optional['UIElement']:
         """
-            Finds the first child element matching criteria.
-            :param kwargs: Search criteria (name, role, etc.)
-            :returns: Matching UIElement or None
+            Finds the first element under this one that matches the criteria.
+
+            The search is recursive by default: it walks all descendants, depth first, not only the immediate
+            children.  Pass ``recursive=False`` to look at the immediate children only.
+
+            :param name: The name/label to match.  ``~text`` matches names containing *text*, ``text*`` matches
+                         names starting with *text* and ``*text`` matches names ending with *text*.
+            :param role: The role name to match.
+            :param recursive: Search all descendants (True, the default) or only the immediate children (False).
+            :param max_depth: The deepest level the recursive search descends to, where supported by the platform.
+
+            :returns: The first matching UIElement, or None.
         """
         pass
 
     @abstractmethod
     def find_elements(self, **kwargs) -> List['UIElement']:
         """
-            Finds all child elements matching criteria.
-            :param kwargs: Search criteria (name, role, etc.)
-            :returns: List of matching UIElements
+            Finds every element under this one that matches the criteria.
+
+            The search is recursive by default: it collects matching descendants at every depth, not only the
+            immediate children.  Pass ``recursive=False`` to look at the immediate children only.
+
+            :param name: The name/label to match.  ``~text`` matches names containing *text*, ``text*`` matches
+                         names starting with *text* and ``*text`` matches names ending with *text*.
+            :param role: The role name to match.
+            :param recursive: Search all descendants (True, the default) or only the immediate children (False).
+            :param max_depth: The deepest level the recursive search descends to, where supported by the platform.
+
+            :returns: The matching UIElements, in search order.
         """
         pass
 
@@ -659,7 +677,35 @@ class UIApplication(ScreenElement):
 class AutomationEngine(ABC):
     """
         Abstract base class for the automation engine.
+
+        An engine can hold operating-system resources (for example a virtual input device on Wayland).  Call
+        :meth:`shutdown` when the engine is no longer needed, or use the engine in a ``with`` block.
     """
+
+    def shutdown(self) -> None:
+        """
+            Releases the operating-system resources held by the engine.  The engine must not be used afterwards.
+            Calling :meth:`shutdown` more than once is safe.  Engines that hold no such resources do nothing.
+        """
+        return
+
+    def __enter__(self) -> "AutomationEngine":
+        """
+            Returns the engine for use in a ``with`` block; :meth:`shutdown` runs when the block exits.
+
+            :returns: This engine.
+        """
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_tb) -> bool:
+        """
+            Shuts the engine down at the end of a ``with`` block.
+
+            :returns: False, so an exception raised inside the block is never suppressed.
+        """
+        self.shutdown()
+        rtnval = False
+        return rtnval
 
     @abstractmethod
     def get_application_by_name(self, application_name: str) -> UIApplication:

@@ -460,11 +460,17 @@ class UiaAccessibilityElement(UIElement):
 
     def find_element(self, **kwargs) -> Optional['UIElement']:
         """
-        Finds the first child element matching criteria.
-        Args:
-            name (str): The name/label of the element (supports wildcards *, ~)
-            role (str): The role of the element
-            recursive (bool): Whether to search recursively (default: True)
+            Finds the first element under this one that matches the criteria.
+
+            The search is recursive by default: it walks all descendants, depth first, not only the immediate
+            children.  Pass ``recursive=False`` to look at the immediate children only.
+
+            :param name: The name/label to match.  ``~text`` matches names containing *text*, ``text*`` matches
+                         names starting with *text* and ``*text`` matches names ending with *text*.
+            :param role: The role name to match.
+            :param recursive: Search all descendants (True, the default) or only the immediate children (False).
+
+            :returns: The first matching element, or None.
         """
         name = kwargs.get('name')
         role = kwargs.get('role')
@@ -482,7 +488,17 @@ class UiaAccessibilityElement(UIElement):
 
     def find_elements(self, **kwargs) -> List['UIElement']:
         """
-        Finds all child elements matching criteria.
+            Finds every element under this one that matches the criteria.
+
+            The search is recursive by default: it collects matching descendants at every depth, not only the
+            immediate children.  Pass ``recursive=False`` to look at the immediate children only.
+
+            :param name: The name/label to match.  ``~text`` matches names containing *text*, ``text*`` matches
+                         names starting with *text* and ``*text`` matches names ending with *text*.
+            :param role: The role name to match.
+            :param recursive: Search all descendants (True, the default) or only the immediate children (False).
+
+            :returns: The matching elements, in depth-first order.
         """
         name = kwargs.get('name')
         role = kwargs.get('role')

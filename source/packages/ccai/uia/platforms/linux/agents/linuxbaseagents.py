@@ -6,6 +6,15 @@ class AccessibilityAgent(ABC):
     """
     Abstract base class for interacting with the Accessibility layer (e.g., AT-SPI).
     """
+
+    def close(self) -> None:
+        """
+            Releases operating-system resources held by the agent.  Calling :meth:`close` more than once is safe.
+            Agents that hold no such resources do nothing; agents that do (for example the Wayland agent's
+            virtual input device) override this.
+        """
+        return
+
     @abstractmethod
     def get_root(self) -> Any:
         pass
@@ -61,6 +70,14 @@ class WindowManagerAgent(ABC):
     """
     Abstract base class for interacting with the Window Manager (e.g., X11, Wayland).
     """
+
+    def close(self) -> None:
+        """
+            Releases operating-system resources held by the agent.  Calling :meth:`close` more than once is safe.
+            Agents that hold no such resources do nothing; agents that do (for example the Wayland agent's
+            virtual input device) override this.
+        """
+        return
 
     
 
