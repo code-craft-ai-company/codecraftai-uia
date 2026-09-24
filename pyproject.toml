@@ -1,6 +1,6 @@
 [project]
 name = "codecraftai-uia"
-version = "1.3.0"
+version = "1.4.0"
 description = "The Code Craft AI - User Interface Automation Package"
 readme = "README.rst"
 license = "LicenseRef-CodeCraftAI-Dual-License"
