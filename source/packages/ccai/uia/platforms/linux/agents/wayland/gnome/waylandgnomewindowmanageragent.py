@@ -6,11 +6,15 @@ Provides window management and input capabilities for Gnome Wayland sessions.
 Uses the Automation Broker extension to bypass Wayland security restrictions for window enumeration.
 """
 
-from typing import Any, List, Optional
+from types import TracebackType
+from typing import Any, List, Optional, Type
 import os
 import time
 from ccai.uia.platforms.linux.agents.x11.x11windowmanageragent import X11WindowManagerAgent
 from ccai.uia.platforms.linux.agents.wayland.gnome.broker_client import BrokerClient
+
+# The uinput ioctl that destroys the virtual device created with UI_DEV_CREATE (0x5501).
+UI_DEV_DESTROY = 0x5502
 
 class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
     """
@@ -19,12 +23,19 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
     Inherits from X11WindowManagerAgent to handle XWayland applications,
     while adding Wayland-specific capability detection and using the 
     Automation Broker for window management.
+
+    The agent owns a uinput virtual mouse device (``/dev/uinput``).  Release it with
+    :meth:`close`, or use the agent as a context manager; ``__del__`` only calls
+    :meth:`close` as a fallback for agents that were never closed.
     """
-    
+
     def __init__(self):
         """
         Initialize Wayland Gnome agent.
         """
+        # Set first so close() and __del__ find it even when the constructor raises below.
+        self._uinput_fd = None
+
         self._wayland_display = os.environ.get('WAYLAND_DISPLAY')
         if not self._wayland_display:
             raise RuntimeError(
@@ -40,7 +51,6 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             self._has_xwayland = False
             
         # Initialize UInput for mouse/keyboard injection
-        self._uinput_fd = None
         self._last_x = 0
         self._last_y = 0
         self._setup_uinput()
@@ -221,10 +231,14 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
             
         except PermissionError:
             print("WARNING: Failed to open /dev/uinput (Permission denied). Mouse control will be limited.")
-            self._uinput_fd = None
+            # An EPERM from a configuration ioctl also lands here after /dev/uinput was opened; release the
+            # descriptor rather than dropping it.
+            self.close()
         except Exception as e:
             print(f"WARNING: Failed to setup uinput: {e}")
-            self._uinput_fd = None
+            # /dev/uinput may already be open when a later configuration step fails; release it rather
+            # than dropping the descriptor.
+            self.close()
 
     def _emit(self, type, code, value):
         if self._uinput_fd is None: return
@@ -344,23 +358,64 @@ class WaylandGnomeWindowManagerAgent(X11WindowManagerAgent):
 
         return None
     
+    def close(self) -> None:
+        """
+            Destroys the uinput virtual mouse device and closes its ``/dev/uinput`` descriptor.
+
+            Calling :meth:`close` more than once is safe; calls after the first do nothing.  Once
+            closed, :meth:`move_mouse`, :meth:`click` and :meth:`drag_and_drop` fall back to the
+            inherited X11 (XWayland) implementations, as they do when uinput could not be set up.
+
+            :raises: OSError when the ``/dev/uinput`` descriptor cannot be closed.
+        """
+        uinput_fd = self._uinput_fd
+        if uinput_fd is not None:
+            # Forget the descriptor before the teardown so a repeated close(), or __del__ after close(),
+            # never touches a descriptor number the process may have reused.
+            self._uinput_fd = None
+
+            import fcntl
+            try:
+                fcntl.ioctl(uinput_fd, UI_DEV_DESTROY)
+            except OSError:
+                # The device may never have been created (setup failed part way) or may already be gone; the
+                # kernel also destroys it when the descriptor is closed below, so the close still releases it.
+                pass
+
+            os.close(uinput_fd)
+        return
+
+    def __enter__(self) -> "WaylandGnomeWindowManagerAgent":
+        """
+            Returns the agent for use in a ``with`` block; :meth:`close` runs when the block exits.
+
+            :returns: This agent.
+        """
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]], exc_value: Optional[BaseException],
+                 exc_tb: Optional[TracebackType]) -> bool:
+        """
+            Closes the agent at the end of a ``with`` block.
+
+            :param exc_type: The type of the exception that ended the block, or None.
+            :param exc_value: The exception that ended the block, or None.
+            :param exc_tb: The traceback of the exception that ended the block, or None.
+
+            :returns: False, so an exception raised inside the block is never suppressed.
+        """
+        self.close()
+        rtnval = False
+        return rtnval
+
     def __del__(self):
+        """
+            Fallback teardown for an agent that was never closed; see :meth:`close`.
+        """
         try:
-            if self._uinput_fd is not None:
-                import fcntl
-                try:
-                    fcntl.ioctl(self._uinput_fd, 0x5502) # UI_DEV_DESTROY
-                except OSError:
-                    # Best-effort teardown; the device may already be gone, and the fd is still closed below.
-                    pass
-                try:
-                    os.close(self._uinput_fd)
-                except OSError:
-                    # Best-effort teardown; the fd may already be closed.
-                    pass
-                self._uinput_fd = None
+            self.close()
         except Exception:
-            # A finalizer must never raise; it can run on a partially constructed instance or during
-            # interpreter shutdown when module globals are already torn down.
+            # A finalizer must never raise; it can run during interpreter shutdown when module globals
+            # are already torn down.
             pass
         return

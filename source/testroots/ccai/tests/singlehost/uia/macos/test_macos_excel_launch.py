@@ -61,24 +61,8 @@ def test_macos_excel_launch_creates_workbook(uia_controller=None):
 
         testbase.assert_equal(hint == MicrosoftExcel.MainWindow, True)
 
-        if hint != MicrosoftExcel.MainWindow:
-             # Fallback to menu creation if we are still not in a workbook
-            menu_bar = MicrosoftExcel.MenuBar.resolve(app)
-            if menu_bar:
-                file_menu_item = MicrosoftExcel.MenuFile.resolve(menu_bar)
-                if file_menu_item:
-                    file_menu_item.click()
-                    file_menu = MicrosoftExcel.FileMenu.resolve(file_menu_item)
-                    if file_menu:
-                        new_item = MicrosoftExcel.FileNew.resolve(file_menu)
-                        if new_item:
-                            new_item.click()
-        
-        # Final check
+        # Final check: the workbook window still has the focus.
         window = app.get_focus_window()
-        # We might accept MainWindow or just that we have a window that isn't the start dialog
-        # But strictly checking hint is better if our hint logic is sound.
-        # For now, let's assert we have a window.
         testbase.assert_equal(window is not None, True)
 
     finally:

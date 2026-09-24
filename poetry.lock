@@ -786,23 +786,6 @@ files = [
 ]
 
 [[package]]
-name = "pyobjc-framework-applescriptkit"
-version = "11.1"
-description = "Wrappers for the framework AppleScriptKit on macOS"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-markers = "sys_platform == \"darwin\""
-files = [
-    {file = "pyobjc_framework_applescriptkit-11.1-py2.py3-none-any.whl", hash = "sha256:e22cbc9d1a25a4a713f21aa94dd017c311186b02062fc7ffbde3009495fb0067"},
-    {file = "pyobjc_framework_applescriptkit-11.1.tar.gz", hash = "sha256:477707352eaa6cc4a5f8c593759dc3227a19d5958481b1482f0d59394a4601c3"},
-]
-
-[package.dependencies]
-pyobjc-core = ">=11.1"
-pyobjc-framework-Cocoa = ">=11.1"
-
-[[package]]
 name = "pyobjc-framework-applicationservices"
 version = "11.1"
 description = "Wrappers for the framework ApplicationServices on macOS"
@@ -1316,4 +1299,4 @@ zstd = ["backports-zstd (>=1.0.0) ; python_version < \"3.14\""]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "d502d006c55ad50b9fe8a5b13e8cd525bc9ebdcf05930dd6052d358230926e6e"
+content-hash = "939a94e5bab84d42234d61462ba12a10d72397941056471d36f7de9e221a0f36"

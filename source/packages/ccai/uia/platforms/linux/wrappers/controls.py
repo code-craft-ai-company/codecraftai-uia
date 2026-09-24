@@ -9,24 +9,31 @@ from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 from ccai.uia.exceptions import InteractionError
 
 
-def _states_include_selected(states: List[Any]) -> bool:
+def _states_include(states: List[Any], state_name: str) -> bool:
     """
-        Checks a state list returned by :meth:`AccessibilityAgent.get_states` for the selected state.
-        pyatspi reports states as ``StateType`` values whose string form is ``STATE_SELECTED``, while
-        other agents report the plain name ``selected``; both forms are accepted, the same way
-        :class:`LinuxElement` checks the visible and enabled states.
+        Checks a state list returned by :meth:`AccessibilityAgent.get_states` for a named state.
+        pyatspi reports states as ``StateType`` values whose string form is ``STATE_<NAME>`` (for
+        example ``STATE_CHECKED``, ``STATE_EXPANDED`` or ``STATE_SELECTED``), while other agents
+        report the plain name (``checked``); both forms are accepted.  The whole name is compared,
+        so ``STATE_CHECKABLE``, ``STATE_EXPANDABLE`` and ``STATE_SELECTABLE`` do not satisfy
+        ``checked``, ``expanded`` and ``selected``.
 
         :param states: The states of an accessible element.
+        :param state_name: The plain, lower-case state name, such as ``checked``, ``expanded`` or
+                           ``selected``.
 
-        :returns: True when the selected state is present.
+        :returns: True when the named state is present.
     """
+    pyatspi_suffix = "STATE_" + state_name.upper()
+
     rtnval = False
     for state in states:
-        state_name = str(state)
-        if state_name == "selected" or state_name.endswith("SELECTED"):
+        candidate = str(state)
+        if candidate == state_name or candidate.endswith(pyatspi_suffix):
             rtnval = True
             break
     return rtnval
+
 
 class LinuxCheckBox(LinuxElement, UICheckBox):
     """
@@ -35,9 +42,12 @@ class LinuxCheckBox(LinuxElement, UICheckBox):
     
     @property
     def is_checked(self) -> bool:
-        # AT-SPI: State 'checked'
+        """
+            True when the checkbox carries the checked state (``STATE_CHECKED`` from pyatspi).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        return any(str(s) == 'checked' for s in states)
+        rtnval = _states_include(states, "checked")
+        return rtnval
 
     def toggle(self) -> None:
         """
@@ -70,13 +80,19 @@ class LinuxRadioButton(LinuxElement, UIRadioButton):
     
     @property
     def is_selected(self) -> bool:
-        # AT-SPI: State 'checked' (often used for radio buttons too) or 'selected'
+        """
+            True when the radio button carries the checked state (``STATE_CHECKED`` from pyatspi,
+            which is how toolkits mark the chosen radio button) or the selected state
+            (``STATE_SELECTED``).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        for s in states:
-            s_str = str(s)
-            if s_str == 'checked' or s_str == 'selected':
-                return True
-        return False
+
+        rtnval = False
+        if _states_include(states, "checked"):
+            rtnval = True
+        elif _states_include(states, "selected"):
+            rtnval = True
+        return rtnval
 
     def select(self) -> None:
         """
@@ -94,9 +110,12 @@ class LinuxComboBox(LinuxElement, UIComboBox):
     
     @property
     def is_expanded(self) -> bool:
-        # AT-SPI: State 'expanded'
+        """
+            True when the combo box carries the expanded state (``STATE_EXPANDED`` from pyatspi).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        return any(str(s) == 'expanded' for s in states)
+        rtnval = _states_include(states, "expanded")
+        return rtnval
 
     def expand(self) -> None:
         """
@@ -148,7 +167,7 @@ class LinuxComboBox(LinuxElement, UIComboBox):
         for candidate in descendants:
             if candidate.role_name in ('menu item', 'list item'):
                 candidate_states = self.access_agent.get_states(candidate.native_obj)
-                if _states_include_selected(candidate_states):
+                if _states_include(candidate_states, "selected"):
                     rtnval = candidate
                     break
         return rtnval
@@ -235,7 +254,7 @@ class LinuxTabItem(LinuxElement, UITabItem):
             True when the tab carries the selected state (``STATE_SELECTED`` from pyatspi).
         """
         states = self.access_agent.get_states(self._native_obj)
-        rtnval = _states_include_selected(states)
+        rtnval = _states_include(states, "selected")
         return rtnval
 
     def select(self) -> None:
@@ -260,9 +279,13 @@ class LinuxTreeItem(LinuxElement, UITreeItem):
     
     @property
     def is_expanded(self) -> bool:
+        """
+            True when the tree item carries the expanded state (``STATE_EXPANDED`` from pyatspi).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        return any(str(s) == 'expanded' for s in states)
-        
+        rtnval = _states_include(states, "expanded")
+        return rtnval
+
     def expand(self) -> None:
         """
             Expands the tree item.
@@ -281,8 +304,12 @@ class LinuxTreeItem(LinuxElement, UITreeItem):
 
     @property
     def is_selected(self) -> bool:
+        """
+            True when the tree item carries the selected state (``STATE_SELECTED`` from pyatspi).
+        """
         states = self.access_agent.get_states(self._native_obj)
-        return any(str(s) == 'selected' for s in states)
+        rtnval = _states_include(states, "selected")
+        return rtnval
 
     def select(self) -> None:
         """

@@ -1,8 +1,10 @@
 """
     Display-free tests for :class:`LinuxElement`: weak agent references, keyboard
     delegation to the window-manager agent, search over a fake accessibility tree,
-    and the click fallback chain.  No AT-SPI or X11 is involved; both agents are
-    the recording fakes from :mod:`ccai.testshared.fakes.uia.fakeelements`.
+    the click fallback chain and value writes.  No AT-SPI or X11 is involved; the
+    agents are the recording fakes from :mod:`ccai.testshared.fakes.uia.fakeelements`,
+    or, for value writes, :class:`PyAtspiAccessibilityAgent` over the pyatspi
+    stand-ins from :mod:`ccai.testshared.fakes.uia.fakepyatspi`.
 """
 
 import gc
@@ -14,6 +16,7 @@ from ccai.uia.exceptions import InteractionError, PlatformNotSupportedError
 from ccai.uia.platforms.linux.wrappers.uiaelement import LinuxElement
 
 from ccai.testshared.fakes.uia.fakeelements import FakeAccessibilityAgent, FakeNativeNode, FakeWindowManagerAgent
+from ccai.testshared.fakes.uia.fakepyatspi import FakeAccessible, FakeValueInterface, create_pyatspi_agent
 
 
 def _build_window() -> FakeNativeNode:
@@ -242,5 +245,68 @@ def test_click_raises_when_no_action_and_no_coordinates():
         raised = xcpt
 
     testbase.assert_true(raised is not None, "InteractionError raised")
+
+    return
+
+
+def test_set_value_writes_through_the_accessibility_agent():
+    """
+        ``set_value`` writes the element's Value interface through the
+        accessibility agent.
+    """
+    agent = create_pyatspi_agent()
+    value_iface = FakeValueInterface()
+    element = LinuxElement(FakeAccessible("Zoom", "slider", value_iface=value_iface), agent, None)
+
+    element.set_value(125)
+
+    testbase.assert_equal(value_iface.currentValue, 125.0)
+
+    return
+
+
+def test_set_value_raises_when_the_value_interface_is_missing():
+    """
+        An element without the Value interface raises the agent's
+        ``InteractionError`` (naming the element and value, chained to the original
+        error) instead of printing the failure and returning.
+    """
+    agent = create_pyatspi_agent()
+    element = LinuxElement(FakeAccessible("Title", "label"), agent, None)
+
+    raised = None
+    try:
+        element.set_value(3.5)
+    except InteractionError as xcpt:
+        raised = xcpt
+
+    testbase.assert_true(raised is not None, "InteractionError raised")
+    message = str(raised)
+    testbase.assert_true("Title" in message, "element name in the message")
+    testbase.assert_true("label" in message, "element role in the message")
+    testbase.assert_true("3.5" in message, "value in the message")
+    testbase.assert_true(isinstance(raised.__cause__, NotImplementedError), "original error chained")
+
+    return
+
+
+def test_set_value_raises_when_the_assignment_fails():
+    """
+        A Value interface that rejects the assignment surfaces as an
+        ``InteractionError`` chained to the original failure.
+    """
+    agent = create_pyatspi_agent()
+    failure = RuntimeError("value is read-only")
+    value_iface = FakeValueInterface(failure=failure)
+    element = LinuxElement(FakeAccessible("Progress", "progress bar", value_iface=value_iface), agent, None)
+
+    raised = None
+    try:
+        element.set_value(50)
+    except InteractionError as xcpt:
+        raised = xcpt
+
+    testbase.assert_true(raised is not None, "InteractionError raised")
+    testbase.assert_true(raised.__cause__ is failure, "original error chained")
 
     return

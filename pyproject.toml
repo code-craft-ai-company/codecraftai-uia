@@ -23,7 +23,6 @@ dependencies = [
     "pyobjc-framework-scriptingbridge>=11.1,<12.0.0; sys_platform == 'darwin'",
     "pyobjc-framework-cocoa>=11.1,<12.0.0; sys_platform == 'darwin'",
     "pyobjc-framework-applicationservices>=11.1,<12.0.0; sys_platform == 'darwin'",
-    "pyobjc-framework-applescriptkit>=11.1,<12.0.0; sys_platform == 'darwin'",
     "pywin32==310; sys_platform == 'win32'",
     "uiautomation==2.0.28; sys_platform == 'win32'",
     "pygobject>=3.42.0,<4.0.0; sys_platform == 'linux'",

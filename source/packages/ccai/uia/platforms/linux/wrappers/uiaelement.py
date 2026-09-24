@@ -300,14 +300,16 @@ class LinuxElement(UIElement):
 
     def set_value(self, value: float) -> None:
         """
-            Sets a numeric value on an element using the Value interface.
+            Sets a numeric value on an element using the Value interface.  The write goes through
+            the accessibility agent (:meth:`AccessibilityAgent.set_value`), the same path
+            :meth:`LinuxSlider.set_value` uses, so a failure is reported instead of printed.
+
+            :param value: The value to set.
+
+            :raises: InteractionError when the element does not provide the Value interface or the
+                     value cannot be assigned; the original error is chained as the cause.
         """
-        try:
-            value_iface = self._native_obj.queryValue()
-            if value_iface:
-                value_iface.currentValue = value
-        except Exception as e:
-            print(f"Error setting value: {e}")
+        self.access_agent.set_value(self._native_obj, value)
         return
 
     def drag_to(self, end_x: int, end_y: int, duration: float = 0.5) -> None:
