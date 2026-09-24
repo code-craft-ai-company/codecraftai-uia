@@ -115,10 +115,10 @@ class ElementHint(Generic[T]):
 
     def _resolve_path(self, parent: UIElement, path: str) -> Optional[T]:
         """
-            Resolves an XPath-style path.
+            Resolves an XPath-style path, relative to the element the path starts from.
             Syntax:
-              // : recursive descendant
-              /  : direct child
+              // : any descendant, at any depth
+              /  : direct child (a leading '/' is optional: '/a' and 'a' are the same)
               .  : current element (start)
               *  : wildcard node (any)
               {key:value} : filter properties
@@ -139,30 +139,18 @@ class ElementHint(Generic[T]):
             
             for el in current_context:
                 if op == 'descendant': # //
-                    # Find all descendants matching filters
-                    # We need a recursive find all. 
-                    # Assuming find_elements supports recursion or we iterate.
-                    # Base find_elements usually is shallow or deep depending on impl.
-                    # Standardizing: find_descendants implies deep.
-                    
+                    # Every descendant matching the filters, found by walking the tree one level at a time.
                     if hasattr(el, 'find_elements'):
-                        # If filters is empty/wildcard, we need everything? 
-                        # usually //* means all descendants.
-                        
-                        # Optimization: if underlying engine supports XPath or deep search with criteria, use it.
-                        # For now, generic fallback: find_elements() is not guaranteed to search deeply on
-                        # every platform, so we do a manual walk for generic support.
                         matches = self._find_descendants_generic(el, filters)
                         next_context.extend(matches)
                         
                 elif op == 'child': # /
-                    # Direct children
+                    # Direct children only.  find_elements() searches all descendants by default on every
+                    # platform, so recursive=False is what limits the step to the immediate children.
                     if hasattr(el, 'find_elements'):
-                         # Get children and filter
-                         # Assuming find_elements returns children
                          children = []
                          try:
-                             children = el.find_elements()
+                             children = el.find_elements(recursive=False)
                          except Exception:
                              # An element whose children cannot be enumerated contributes no children, so the
                              # path does not resolve through it and resolution reports the element as not found.
@@ -334,14 +322,13 @@ class ElementHint(Generic[T]):
 
     def _find_descendants_generic(self, parent: UIElement, filters: dict) -> List[UIElement]:
         """
-            Recursive walk to find descendants matching filters.
+            Walks the tree below 'parent' depth first and returns every descendant matching the filters.  Each level
+            asks only for the immediate children (recursive=False), so every descendant is visited exactly once.
         """
         results = []
-        # BFS or DFS? DFS easier
-        # Try finding children
         children = []
         if hasattr(parent, 'find_elements'):
-            children = parent.find_elements()
+            children = parent.find_elements(recursive=False)
         elif hasattr(parent, 'get_children'): # Internal
             children = parent.get_children()
             
