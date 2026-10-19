@@ -3,7 +3,7 @@ name = "codecraftai-uia"
 version = "1.5.0"
 description = "The Code Craft AI - User Interface Automation Package"
 readme = "README.rst"
-license = "LicenseRef-CodeCraftAI-Dual-License"
+license = "LicenseRef-CodeCraftAI-Source-Available"
 authors = [{name = "Myron Walker", email = "myron.walker@gmail.com"}]
 keywords = [
     "python"
