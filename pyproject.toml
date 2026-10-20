@@ -14,10 +14,10 @@ classifiers = [
 ]
 requires-python = ">=3.10,<4.0"
 dependencies = [
-    "codecraftai-this-app<2.0.0",
-    "codecraftai-arcli<2.0.0",
-    "codecraftai-foundations<2.0.0",
-    "codecraftai-credentials<2.0.0",
+    "codecraftai-this-app>=1.0.0,<2.0.0",
+    "codecraftai-arcli>=1.0.0,<2.0.0",
+    "codecraftai-foundations>=1.0.0,<2.0.0",
+    "codecraftai-credentials>=1.0.0,<2.0.0",
     "pyyaml>=6.0.1,<7.0.0",
     "pyobjc-core>=11.1,<12.0.0; sys_platform == 'darwin'",
     "pyobjc-framework-scriptingbridge>=11.1,<12.0.0; sys_platform == 'darwin'",
@@ -38,7 +38,7 @@ Issues = "https://github.com/code-craft-ai-company/codecraftai-uia/issues"
 
 [dependency-groups]
 dev = [
-    "codecraftai-testbase<2.0.0",
+    "codecraftai-testbase>=1.0.0,<2.0.0",
     "myst-parser>=0.18.1,<0.19.0",
     "sphinx>=1.6,<6",
     "sphinx-rtd-theme>=1.1.1,<2.0.0",
@@ -46,28 +46,6 @@ dev = [
 
 [tool.poetry]
 packages = [{include="ccai", from="source/packages"}]
-
-[tool.poetry.dependencies]
-codecraftai-this-app = {source = "codecraftai"}
-codecraftai-arcli = {source = "codecraftai"}
-codecraftai-foundations = {source = "codecraftai"}
-codecraftai-credentials = {source = "codecraftai"}
-
-[tool.poetry.group.dev.dependencies]
-codecraftai-testbase = {source = "codecraftai"}
-
-[[tool.poetry.source]]
-name = "codecraftai"
-url = "https://code-craft.ai/licensed-repository/simple/"
-priority = "supplemental"
-
-[[tool.uv.index]]
-# Same licensed index as [[tool.poetry.source]]. Listed before PyPI so that
-# codecraftai-* packages (direct and transitive) resolve from it; everything
-# else falls through to PyPI. Credentials: UV_INDEX_CODECRAFTAI_USERNAME /
-# UV_INDEX_CODECRAFTAI_PASSWORD, or `uv auth login`.
-name = "codecraftai"
-url = "https://code-craft.ai/licensed-repository/simple/"
 
 [tool.ruff.lint]
 # Deliberately narrow.  This gate exists for one reason: a bare `except:`
